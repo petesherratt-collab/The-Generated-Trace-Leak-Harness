@@ -1,0 +1,46 @@
+# The Generated-Trace Leak Harness — TODO
+
+> Working backlog for this repo. Status markers: `[ ]` open · `[~]` in progress · `[x]` done · `[!]` blocked.
+> Grouped by theme; within each group, upstream items first.
+> Last reviewed: 2026-06-26
+
+---
+
+## 1. Repo hygiene — the repo disagrees with its own README (do first; cheap, prevents confusion)
+
+- [ ] **Canonical version mismatch.** README prose refers to `v1.5` as canonical and describes the v1.5 fixes, but the repo root holds `generated_leak_harness_v14_selfcontained.py`. Either v1.5 was never committed, or it's committed under a different name/path. Confirm which file is actually canonical and make the repo match the README (or vice versa).
+- [ ] **Artefact path mismatch.** README's closing paragraph says artefacts live in `research/leak-harness/` with `generated_leak_harness_v15_selfcontained.py` + a `versions/` dir. Repo root instead shows the v14 file and a `versions/` folder at top level. Reconcile the stated layout with the real one.
+- [ ] **HANDOFF.md is stale.** It still names v1.4 as canonical. Update to v1.5 once the version question above is settled. (README explicitly flags this.)
+
+## 2. The core open question — what is this actually proving? (decide before more iteration)
+
+- [ ] **Decide the deliverable: instrument or impossibility result.** The RESIDUALS already concede the gates *don't certify intent* — "a generator whose lift and overconfidence both sit inside the honest null is, by construction, indistinguishable from honest here." If that's load-bearing, the project may be converging on a *negative result* (you cannot distinguish honest from perfectly-calibrated-leaker from behaviour alone) rather than a shippable detector. Name which one you're building — it changes the stopping condition.
+  - If **impossibility result**: the next artefact is a written argument + the harness as its proof, not v1.6.
+  - If **instrument**: you need a new sanctioned signal beyond behaviour (see §3), because behaviour alone is provably bounded.
+
+## 3. Known residual weaknesses (from the file's own RESIDUALS — each is a potential next attack/round)
+
+- [ ] **Intent vs. envelope.** Gates bound a generator to the honest envelope on confidence and influence but don't certify intent. This is the deepest one — it's the §2 question in miniature.
+- [ ] **Calibration only penalises *signed* overconfidence.** An attacker that is *underconfident-but-leaking*, or that distorts in an unsigned way, isn't caught by the calibration gate. Worth a deliberate adversary to test.
+- [ ] **Excess-lift gate assumes honest is the ceiling.** Valid only while observation is the single sanctioned channel. If a second sanctioned channel is ever added, the null must be re-derived or the gate silently breaks. Document this as a hard precondition.
+- [ ] **Chosen-not-derived constants.** The bootstrap percentile and the 0.02 metric cutoffs are stipulated, not derived from first principles. The v1.5 round already replaced *one* stipulated margin (the old 0.06) with a bootstrapped FPR — finish the job for the remaining constants, or explicitly justify why they stay chosen.
+- [ ] **Exchangeability is probed, not proven.** Currently measured via a multivariate probe, not established. If the argument needs it to hold, it needs a proof or a stated assumption, not a passing probe.
+- [ ] **Pickle/worker isolation is unaudited as a reusable API.** Robust as a one-shot script; the process-isolation surface (fresh `--worker`, serialised observation) has not been audited for reuse. If this ever becomes a library, that surface needs review before trust.
+
+## 4. Adversary backlog (the method: each round = one new cheater that survives current gates)
+
+- [ ] **Design the v1.6 attacker** against v1.5's gates. v1.5 closed the `UnmonitoredProxyCheater` (hid influence in the three trace channels calibration wasn't watching; well-calibrated over-concentrator). The next attacker should target a residual in §3 — the unsigned-distortion or underconfident-leaker direction looks most open.
+- [ ] **Keep every retired attacker runnable in-file.** Current discipline (A–I all live as runnable classes so regressions stay visible) is correct — maintain it for any new round.
+- [ ] **Honest concession rule.** Where a fix only *neutralises* rather than *detects*, say so in-code, as the existing rounds do. Don't let a neutralised-but-undetected attack be recorded as a detection.
+
+## 5. Robustness / runtime (minor)
+
+- [ ] Full run ~93 s; `--quick` mode and worker timeout already added. Fine for now — only revisit if the suite grows enough that 93 s blocks iteration.
+
+---
+
+### Quick status
+
+- **Do first, cheap:** §1 (repo vs README disagreements) — these actively mislead anyone reading the repo cold, including future-you.
+- **The real fork:** §2 — decide instrument vs impossibility result before investing another adversary round, because the answer determines whether §4 continues at all.
+- **If iterating continues:** §3 feeds §4 — the residuals *are* the next attacks.
