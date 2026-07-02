@@ -36,7 +36,7 @@
 ## 5. Robustness / runtime (minor)
 
 - [ ] Full run ~93 s; `--quick` mode and worker timeout already added. Fine for now — only revisit if the suite grows enough that 93 s blocks iteration.
-
+## 6. BBYOK readiness
 ---
 
 ### Quick status
