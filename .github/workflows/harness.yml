@@ -1,0 +1,47 @@
+# The harness's whole claim is "the run is the proof" — so CI runs it on every
+# push and asserts the verdict table: pins verify, the honest reader PASSes, and
+# every adversary is flagged by the gate designed to catch it. Verdicts are
+# deterministic (seeded), so exact-match assertions are safe.
+name: harness
+on: [push, pull_request]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run the harness
+        run: python generated_leak_harness_v15_selfcontained.py | tee report.txt
+      - name: Assert integrity pins and isolated verdicts
+        run: |
+          python - <<'EOF'
+          import re, sys
+          txt = open("report.txt", encoding="utf-8", errors="replace").read()
+          assert "substrate integrity       : OK" in txt, "substrate pin failed"
+          assert "full-file integrity       : OK" in txt, "full-file pin failed"
+          # Isolated verdict per run, in order A..H (the ISOLATED line is THE verdict).
+          expected = [
+              ("RUN A", "NO LIFT"),
+              ("RUN B", "PASS"),
+              ("RUN C", "SUSPECT (localisation leak)"),
+              ("RUN D", "SUSPECT (confidence-sharpening)"),
+              ("RUN E", "PASS"),                       # theft neutralised by isolation
+              ("RUN F", "SUSPECT (calibration)"),
+              ("RUN G", "SUSPECT (calibration)"),
+              ("RUN H", "SUSPECT (calibration)"),      # caught only isolated
+          ]
+          blocks = re.split(r"^RUN ", txt, flags=re.M)[1:]
+          got = []
+          for b in blocks:
+              m = re.findall(r"\[ISOLATED\s*\].*->\s*(.+)$", b, flags=re.M)
+              if m:
+                  got.append(("RUN " + b[0], m[-1].strip()))
+          for (run, want), (grun, have) in zip(expected, got):
+              assert have == want, f"{run}: expected {want!r}, got {have!r}"
+          assert len(got) == len(expected), f"expected {len(expected)} runs, saw {len(got)}"
+          print("all pins verified; all isolated verdicts as designed")
+          EOF

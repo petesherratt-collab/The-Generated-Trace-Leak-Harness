@@ -9,21 +9,26 @@ This document gives a fresh session everything needed to continue.
 
 ## TL;DR
 
-- **Canonical file:** `generated_leak_harness_v14_selfcontained.py` (run it; it is
-  the current state of the art in this line). Takes ~1–3 min (it spawns isolation
+- **Canonical file:** `generated_leak_harness_v15_selfcontained.py` (run it; it is
+  the current state of the art in this line). Takes ~2–3 min (it spawns isolation
   workers and fits a small model for the exchangeability probe — expected, not a hang).
-- **Run:** `python3 generated_leak_harness_v14_selfcontained.py`
+- **Run:** `python3 generated_leak_harness_v15_selfcontained.py`
   (pure Python 3.10+, no dependencies, no network, no other files needed).
   `--worker` is an internal isolation-worker mode; do not run it directly.
-- **It self-verifies:** at startup it hashes its own vendored substrate block and
-  refuses to run if the hash ≠ the pin
-  `043d608b1dc88ab5c70ba74c525367be9ec1cf1de7c1342efd609b45fb2ec883`.
-  This pin is **byte-identical across every version v0.6–v1.4.**
-- **As of v1.4, calibration and isolated-verdict are CLOSED.** Localisation leaks,
-  side-channel theft, base-rate learning, selection bias, in-process frame/condition
-  theft (under isolation) and over-confidence (calibration) are all handled. The
-  open items are now the trust *foundations*: the unaudited pickle/worker isolation
-  surface, and the stipulated (not derived) thresholds/margin. See "Where to go next".
+- **It self-verifies:** at startup it hashes its vendored substrate block AND (since
+  v1.5) the whole file, and refuses to run if either hash ≠ its pin. The substrate pin
+  `043d608b1dc88ab5c70ba74c525367be9ec1cf1de7c1342efd609b45fb2ec883`
+  is **byte-identical across every version v0.6–v1.5.** The full-file check runs in
+  both the main path and the `--worker` path (the worker produces the verdict).
+- **As of v1.5, calibration, isolated-verdict, and the isolation SURFACE are CLOSED.**
+  Localisation leaks, side-channel theft, base-rate learning, selection bias,
+  in-process frame/condition theft (under isolation) and over-confidence (calibration)
+  are all handled; v1.5 additionally pins the whole file (the verdict logic was
+  previously unpinned), makes the worker self-verify, and HMAC-authenticates +
+  allowlists + time-bounds the worker I/O. The open items are now the stipulated
+  (not derived) thresholds/margin and the unified calibration sensor — a designed
+  v1.6 round (bootstrapped gates + excess-lift ceiling) that has NOT yet been
+  implemented as a runnable file. See "Where to go next".
 
 ---
 
@@ -93,6 +98,7 @@ DIAGNOSTIC, EXCHANGEABILITY SELF-CHECK (single + multivariate vs null), and RESI
 | v1.2 | "full-suite" laundering; header lie; exchangeability asserted | honest domain accounting; inertness proof; exchangeability *measured* |
 | v1.3 | **Omniscient Frame Thief** — steals condition label `c` + cause `T` from the call frame; RNG reversibility | **process isolation** (`--worker`); multivariate exchangeability probe; exhaustive inertness; deleted the lingering false docstring |
 | v1.4 | **calibration** — once leak/theft closed, the objective rewarded uncalibrated observation amplification (a sharpener PASSED with the biggest lift) | **signed-overconfidence CALIBRATION gate** (self-referenced to honest baseline + margin); **isolated verdict by default** (each generator shows `[in-process]` + `[ISOLATED]`, verdict from isolated) |
+| v1.5 | **the verdict logic was unpinned** — only the substrate block was hashed, so `verdict()`/`_CAL_MARGIN`/the worker could be edited with the banner still printing OK; the `--worker` entrypoint ran zero integrity check and `pickle.loads`'d raw stdin into an input-named class | **full-file hash pin** (pin lines excluded, endings normalised, checked in main AND worker paths); **self-verifying worker**; **HMAC-authenticated + allowlisted worker I/O**; **bounded worker** (timeout) |
 
 Each adversary lives in the file as a runnable `*Cheater`/`*Thief` class, so regressions
 are visible. Current **isolated** verdicts (v1.4): Clean → NO LIFT; Honest → PASS (the
@@ -128,52 +134,53 @@ Conventions: bump the filename `vNN`, update the banner string AND the module do
 
 ---
 
-## Where to go next — calibration is DONE; the open front is the FOUNDATIONS
+## Where to go next — the isolation surface is CLOSED (v1.5); the open front is the THRESHOLDS
 
-v1.4 closed calibration (the v1.3 load-bearing residual) and made the verdict isolated by
-default. The remaining weaknesses are no longer about new leak *channels* — they are about
-the things the harness still *assumes* rather than *derives* or *audits*. Likely next attacks:
+v1.5 closed the isolation/serialisation surface that this section previously named as the
+most likely next target (full-file pin verified in both paths, self-verifying worker,
+HMAC-authenticated + allowlisted + time-bounded worker I/O). The remaining weaknesses are
+about what the harness still *assumes* rather than *derives*. A v1.6 round addressing items
+1–2 below (bootstrapped gates derived from the honest null + an excess-lift ceiling, and a
+calibration sensor unified with the quantity that actually moves blame) was designed in
+review dialogue but has NOT yet been implemented as a runnable file — implementing it,
+with its adversary (a well-calibrated over-concentrator that hides influence in the trace
+channels calibration doesn't watch), is the natural next session.
 
-1. **The isolation/serialisation surface (most likely next target).** The verdict now
-   *depends* on the `--worker` boundary, but that boundary is unaudited: the parent pickles
-   payloads to and unpickles results from the worker, and the worker re-imports the whole
-   module (running top-level code). A hostile generator could attack via crafted pickle,
-   import-time side effects, resource exhaustion, or simply by having the worker write to
-   shared state. "Process isolation" is asserted as clean; it has not been adversarially
-   tested. Build: a generator/worker that tries to escape or corrupt the boundary, and
-   harden it (restricted unpickling, read-only payloads, timeouts, no shared FS).
-2. **Stipulated thresholds (the last free parameters).** `eps = 0.02`, `trace_weight`, and
+1. **Stipulated thresholds (the last free parameters).** `eps = 0.02`, `trace_weight`, and
    the calibration margin `_CAL_MARGIN = 0.06` are all hand-set. The honest move is to
    *derive* them — e.g. bootstrap confidence intervals on each metric under the null
    (CleanGenerator / honest baseline) and flag only statistically significant deviations,
    replacing magic constants with calibrated false-positive rates.
-3. **Calibration is self-referenced to the honest baseline.** This is principled (calibration
+2. **Calibration is self-referenced to the honest baseline.** This is principled (calibration
    is bounded away from 0 under blinding) but it means a degraded reference would move the
    gate. And `OVERCONF` is measured on `anomaly_score`; a generator could state a *separate*
    confidence channel. Worth probing whether the confidence target is gameable.
-4. **Exchangeability is PROBED, not proven** — single + multivariate distinguishers vs a
+3. **Exchangeability is PROBED, not proven** — single + multivariate distinguishers vs a
    null, both at the floor even on heterogeneous opacity; a stronger learner or a
    draw-asymmetric suite could re-open it.
-5. **`SHARPEN`** only catches confidence gated on **side-channel agreement**; a gate on a
+4. **`SHARPEN`** only catches confidence gated on **side-channel agreement**; a gate on a
    different statistic is not proven to reduce to it.
+5. **The HMAC worker key passes via environment** — readable by same-user processes,
+   which already have stronger attacks available; documented limitation, not a silent gap.
 
-(These are exactly the v1.4 in-file RESIDUALS; the run prints them.)
+(The in-file RESIDUALS block prints the current version of this list on every run.)
 
 ---
 
 ## Files in this bundle
 
-- `generated_leak_harness_v14_selfcontained.py` — **canonical, run this.**
-- `versions/` — full history v0.6 → v1.3, each self-contained and runnable, for
+- `generated_leak_harness_v15_selfcontained.py` — **canonical, run this.**
+- `versions/` — full history v0.6 → v1.4, each self-contained and runnable, for
   diffing the evolution of the argument. (v0.6 is the original given starting point.)
 - All versions share the identical pinned substrate block.
 
 ## Quick start in a new session
 
 ```
-python3 generated_leak_harness_v14_selfcontained.py        # full report (~1–3 min)
+python3 generated_leak_harness_v15_selfcontained.py        # full report (~2–3 min)
 ```
 (`--worker` is the internal isolation-worker mode; the harness invokes it itself.)
 
-Then: pick up the foundations (isolation-surface hardening or threshold derivation), or
-hand the file to the reviewer for the next repricing.
+Then: implement the designed v1.6 round (threshold derivation + unified sensor +
+excess-lift ceiling, with its over-concentrator adversary), or hand the file to the
+reviewer for the next repricing.
