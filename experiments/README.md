@@ -87,10 +87,12 @@ python3 experiments/judge_integrity_real.py
 ```
 
 **First real result:** see [`results/FINDINGS.md`](results/FINDINGS.md). Across 5 models,
-terse (score-only) grading anchored hard on an injected reference — marking correct
-answers wrong under a poisoned key — while `--reason` (let the judge work it out first)
-flipped 4 of 5 to grounded. The dangerous config is exactly the common one: LLM-judge
-pipelines that demand a bare number/JSON.
+score-only grading anchored hard on an injected reference — marking correct answers wrong
+under a poisoned key. A 2×2 factorial (`--condition A|B|C|D`, verify-instruction ×
+explanation) then isolated the fix: the verify *instruction alone was inert*, requiring a
+*written worked solution* was the main lever (but incomplete for some models), and
+requiring *both* eliminated the measured effect in all five. The dangerous config is the
+common one — LLM-judge pipelines that demand a bare number/JSON.
 
 **Before any real run, freeze `PREREGISTRATION.md`** — fixed thresholds, ground-truth
 strategy, the mandatory positive control, confound controls (poison plausibility,

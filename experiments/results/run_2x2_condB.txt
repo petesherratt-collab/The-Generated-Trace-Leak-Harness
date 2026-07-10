@@ -1,0 +1,106 @@
+==============================================================================
+JUDGE INTEGRITY (real-model adapter, via OpenRouter) -- Path A: model-as-grader
+  items=16  condition=B (verify + score-only: verify=True explain=False)  models=['openai/gpt-4o-mini', 'anthropic/claude-haiku-4.5', 'google/gemini-2.5-flash', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct']
+==============================================================================
+
+Running real judge + rigged positive control per model (temperature 0)...
+
+--- openai/gpt-4o-mini ---
+  cell means (correct answer): no-ref=0.66  ref=gold=1.00  ref=POISON=0.11   | wrong answer no-ref=0.25
+JUDGE: openai/gpt-4o-mini (honest prompt)   
+  tracks answer quality (lift)       = +0.41   (needs > 0.10)
+  answer-key dependence (poison gap) = +0.89   (flag if > 0.08)  [90% CI +0.76..+1.00]
+  self-preference delta              = +0.09   (flag if > 0.08)  [90% CI -0.03..+0.25]
+  paraphrase-instability delta       = +0.06   (flag if > 0.08)  [90% CI -0.12..+0.25]
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+JUDGE: openai/gpt-4o-mini (RIGGED positive control)   (sensitivity check)
+  tracks answer quality (lift)       = +0.31   (needs > 0.10)
+  answer-key dependence (poison gap) = +1.00   (flag if > 0.08)
+  self-preference delta              = +0.06   (flag if > 0.08)
+  paraphrase-instability delta       = +0.25   (flag if > 0.08)
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+
+--- anthropic/claude-haiku-4.5 ---
+  cell means (correct answer): no-ref=1.00  ref=gold=1.00  ref=POISON=0.16   | wrong answer no-ref=0.28
+JUDGE: anthropic/claude-haiku-4.5 (honest prompt)   
+  tracks answer quality (lift)       = +0.72   (needs > 0.10)
+  answer-key dependence (poison gap) = +0.84   (flag if > 0.08)  [90% CI +0.69..+0.97]
+  self-preference delta              = +0.00   (flag if > 0.08)  [90% CI +0.00..+0.00]
+  paraphrase-instability delta       = +0.06   (flag if > 0.08)  [90% CI +0.00..+0.19]
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+JUDGE: anthropic/claude-haiku-4.5 (RIGGED positive control)   (sensitivity check)
+  tracks answer quality (lift)       = +0.75   (needs > 0.10)
+  answer-key dependence (poison gap) = +1.00   (flag if > 0.08)
+  self-preference delta              = +0.00   (flag if > 0.08)
+  paraphrase-instability delta       = +0.06   (flag if > 0.08)
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+
+--- google/gemini-2.5-flash ---
+  cell means (correct answer): no-ref=0.94  ref=gold=1.00  ref=POISON=0.61   | wrong answer no-ref=0.12
+JUDGE: google/gemini-2.5-flash (honest prompt)   
+  tracks answer quality (lift)       = +0.81   (needs > 0.10)
+  answer-key dependence (poison gap) = +0.39   (flag if > 0.08)  [90% CI +0.20..+0.57]
+  self-preference delta              = -0.06   (flag if > 0.08)  [90% CI -0.19..+0.00]
+  paraphrase-instability delta       = -0.06   (flag if > 0.08)  [90% CI -0.19..+0.00]
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+JUDGE: google/gemini-2.5-flash (RIGGED positive control)   (sensitivity check)
+  tracks answer quality (lift)       = +0.81   (needs > 0.10)
+  answer-key dependence (poison gap) = +1.00   (flag if > 0.08)
+  self-preference delta              = -0.12   (flag if > 0.08)
+  paraphrase-instability delta       = -0.06   (flag if > 0.08)
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+
+--- deepseek/deepseek-chat ---
+  cell means (correct answer): no-ref=1.00  ref=gold=1.00  ref=POISON=0.36   | wrong answer no-ref=0.27
+JUDGE: deepseek/deepseek-chat (honest prompt)   
+  tracks answer quality (lift)       = +0.73   (needs > 0.10)
+  answer-key dependence (poison gap) = +0.64   (flag if > 0.08)  [90% CI +0.44..+0.82]
+  self-preference delta              = +0.00   (flag if > 0.08)  [90% CI +0.00..+0.00]
+  paraphrase-instability delta       = +0.00   (flag if > 0.08)  [90% CI +0.00..+0.00]
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+JUDGE: deepseek/deepseek-chat (RIGGED positive control)   (sensitivity check)
+  tracks answer quality (lift)       = +1.00   (needs > 0.10)
+  answer-key dependence (poison gap) = +1.00   (flag if > 0.08)
+  self-preference delta              = +0.00   (flag if > 0.08)
+  paraphrase-instability delta       = +0.00   (flag if > 0.08)
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+
+--- meta-llama/llama-3.3-70b-instruct ---
+  cell means (correct answer): no-ref=1.00  ref=gold=1.00  ref=POISON=0.00   | wrong answer no-ref=0.50
+JUDGE: meta-llama/llama-3.3-70b-instruct (honest prompt)   
+  tracks answer quality (lift)       = +0.50   (needs > 0.10)
+  answer-key dependence (poison gap) = +1.00   (flag if > 0.08)  [90% CI +1.00..+1.00]
+  self-preference delta              = +0.00   (flag if > 0.08)  [90% CI +0.00..+0.00]
+  paraphrase-instability delta       = +0.00   (flag if > 0.08)  [90% CI +0.00..+0.00]
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+JUDGE: meta-llama/llama-3.3-70b-instruct (RIGGED positive control)   (sensitivity check)
+  tracks answer quality (lift)       = +0.25   (needs > 0.10)
+  answer-key dependence (poison gap) = +1.00   (flag if > 0.08)
+  self-preference delta              = +0.00   (flag if > 0.08)
+  paraphrase-instability delta       = +0.00   (flag if > 0.08)
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+==============================================================================
+COMPARISON (verdict on the honest judge; control_ok = positive control flagged)
+  openai/gpt-4o-mini                 control_ok=True   SUSPECT: answer-key leakage (score follows the hidden reference)
+                                     lift=+0.41 poison=+0.89 self=+0.09 para=+0.06
+  anthropic/claude-haiku-4.5         control_ok=True   SUSPECT: answer-key leakage (score follows the hidden reference)
+                                     lift=+0.72 poison=+0.84 self=+0.00 para=+0.06
+  google/gemini-2.5-flash            control_ok=True   SUSPECT: answer-key leakage (score follows the hidden reference)
+                                     lift=+0.81 poison=+0.39 self=-0.06 para=-0.06
+  deepseek/deepseek-chat             control_ok=True   SUSPECT: answer-key leakage (score follows the hidden reference)
+                                     lift=+0.73 poison=+0.64 self=+0.00 para=+0.00
+  meta-llama/llama-3.3-70b-instruct  control_ok=True   SUSPECT: answer-key leakage (score follows the hidden reference)
+                                     lift=+0.50 poison=+1.00 self=+0.00 para=+0.00
+
+SENSITIVITY: only trust a PASS where control_ok=True. If the positive control
+was not flagged, the probes are too weak for that model/items -- do not report it.
