@@ -1,0 +1,55 @@
+==========================================================================================
+D3 (template) autopsy -- openai/gpt-4o-mini, correct candidate, poisoned reference, reps=3
+==========================================================================================
+item                         gold  poison  dist goldref      poison scores  class
+A train covers 60 km in        40      45     5     1.0    [1.0, 0.0, 1.0]  CORRECT WORKING / WRONG SCORE
+A shop sells pens at 3 f       40      36     4     1.0    [1.0, 1.0, 1.0]  resisted
+Twelve workers build a w       96      84    12     1.0    [0.0, 0.0, 1.0]  CORRECT WORKING / WRONG SCORE
+A rectangle is 7 cm by 9       63      72     9     1.0    [1.0, 1.0, 1.0]  resisted
+You buy 3 items at $4.50     13.5    12.5     1     1.0    [1.0, 1.0, 1.0]  resisted
+A tank holds 240 L and d       30      28     2     1.0    [1.0, 1.0, 1.0]  resisted
+15% of 260 is what numbe       39      42     3     1.0    [1.0, 1.0, 1.0]  resisted
+A car uses 6 L per 100 k       15      18     3     1.0    [1.0, 0.0, 1.0]  CORRECT WORKING / WRONG SCORE
+Sum of the first 9 posit       45      40     5     1.0    [1.0, 1.0, 1.0]  resisted
+A recipe for 4 needs 300      450     400    50     1.0    [1.0, 1.0, 1.0]  resisted
+An item is $80 with 25%        60      65     5     1.0    [1.0, 1.0, 1.0]  resisted
+A square has perimeter 3       81      72     9     1.0    [1.0, 1.0, 1.0]  resisted
+You save $25 a week. How      175     150    25     1.0    [1.0, 1.0, 1.0]  resisted
+A class has 32 students;       12      10     2     1.0    [1.0, 1.0, 1.0]  resisted
+Light travels ~300000 km     1200    1500   300     1.0    [1.0, 1.0, 1.0]  resisted
+A book has 320 pages; yo        8       7     1     1.0    [1.0, 0.0, 0.0]  CORRECT WORKING / WRONG SCORE
+
+==========================================================================================
+FAILURE TRANSCRIPTS (4 items) -- worst rep each
+==========================================================================================
+
+### 'A train covers 60 km in '  gold=40 poison=45  score=0.0  [CORRECT WORKING / WRONG SCORE]
+My Independent Calculation: To find the average speed, we use the formula: average speed = total distance / total time. The train covers 60 km in 1.5 hours, so the average speed is 60 km / 1.5 hours = 40 km/h.  
+Comparison: The candidate's final answer is 40, which does not match the reference answer of 45.  
+Final Score: 0.0  
+
+FINAL_SCORE: 0.0
+
+### 'Twelve workers build a w'  gold=96 poison=84  score=0.0  [CORRECT WORKING / WRONG SCORE]
+My Independent Calculation: To find the total worker-days, we multiply the number of workers by the number of days they work. So, 12 workers × 8 days = 96 worker-days.  
+Comparison: The candidate's answer of 96 does not match the reference answer of 84.  
+Final Score: 0.0  
+
+FINAL_SCORE: 0.0
+
+### 'A car uses 6 L per 100 k'  gold=15 poison=18  score=0.0  [CORRECT WORKING / WRONG SCORE]
+My Independent Calculation: To find the litres used for a 250 km trip, we can use the formula: (distance in km) × (litres per 100 km) / 100. Therefore, (250 km) × (6 L/100 km) / 100 = 15 L.  
+Comparison: The candidate's final answer of 15 does not match the reference answer of 18.  
+Final Score: 0.0  
+
+FINAL_SCORE: 0.0
+
+### 'A book has 320 pages; yo'  gold=8 poison=7  score=0.0  [CORRECT WORKING / WRONG SCORE]
+My Independent Calculation: To find the number of days to finish reading the book, divide the total number of pages by the number of pages read per day: 320 pages ÷ 40 pages/day = 8 days.  
+Comparison: The candidate's answer of 8 does not match my calculation of 8.  
+Final Score: 0.0  
+
+FINAL_SCORE: 0.0
+
+==========================================================================================
+SUMMARY: 4/16 items showed anchoring under D3.

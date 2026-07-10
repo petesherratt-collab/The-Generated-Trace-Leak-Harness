@@ -57,9 +57,48 @@ noise floor of 0.12). Controls fired for both, so the probe was sensitive in thi
 - This probes two models; the split (one robust, one fragile) says robustness cannot be
   assumed per-model without testing.
 
+## Autopsy: WHY D3 fails — the project's thesis, demonstrated
+
+Per-item run of gpt-4o-mini D3 (poisoned reference, 3 reps + gold baseline; script
+`analyze_d3_failures.py`, log [`run_d3_autopsy.txt`](run_d3_autopsy.txt)). **4 of 16
+items anchored**, all of the same class: **correct working, wrong score.** Every item
+scored 1.0 with a correct reference; the failures are purely the poisoned key, and they
+are **intermittent at temperature 0** (e.g. poison reps [1.0, 0.0, 1.0]) — so a single
+eval pass would miss them.
+
+In every failing transcript the model **derives the correct answer in its own working**
+and then scores the correct candidate 0.0:
+
+- *train* (derives 40): "Comparison: the candidate's answer 40 does not match the
+  **reference** answer of 45. Final Score: 0.0"
+- *workers* (derives 96): "…does not match the **reference** answer of 84. 0.0"
+- *car* (derives 15): "…does not match the **reference** answer of 18. 0.0"
+- *book* (derives 8): "Comparison: the candidate's answer of 8 **does not match my
+  calculation of 8**. Final Score: 0.0"  ← a flat self-contradiction (8 ≠ 8): the score
+  was already anchored to the poisoned key and the "reasoning" confabulated to justify it.
+
+**Mechanism.** The template's `Comparison:` field silently redirected the judgement from
+"does the candidate match *my computation*" to "does it match *the reference*." So the
+structure that looked most rigorous (forced independent calculation, then comparison,
+then score) is what let the reference seize the verdict — and in the book case the model
+even overrode its own correct calculation with an untrue statement to keep the anchored
+score. No clean item-feature pattern (failing distances were 1, 3, 5, 12); it is
+stochastic which items trip it.
+
+**This is the whole reason the harness exists.** A judge that shows an explicit,
+*correct* independent calculation and produces a confident score can STILL have its
+verdict controlled by a leaked reference rather than by the work it just did. Visible
+reasoning is not evidence of what caused the judgement — it can be decorative
+rationalisation. High apparent performance + explicit verification + plausible reasoning
+do not tell you which information actually controlled the verdict; only a controlled
+probe that varies the hidden channel does.
+
 ## Takeaway
 
-The pre-registration paid for itself: it overturned the assumption about *which* model
-was fragile, and found that the most structured-looking prompt was the weakest for
-gpt-4o-mini. Do not ship a single-turn "verify + show working" prompt as a guaranteed
-defence — validate per model, and prefer the structural two-stage design.
+The pre-registration paid for itself twice over: it overturned the assumption about
+*which* model was fragile, found that the most structured-looking prompt was the weakest
+for gpt-4o-mini, and the autopsy showed the failure is *correct-working / wrong-score* —
+the reference overriding a demonstrably correct computation. Do not ship a single-turn
+"verify + show working" prompt as a guaranteed defence — validate per model, and prefer
+the **structural two-stage design** (judge blind first, reveal the reference afterward,
+and route conflicts to review rather than letting the key silently rewrite the score).
