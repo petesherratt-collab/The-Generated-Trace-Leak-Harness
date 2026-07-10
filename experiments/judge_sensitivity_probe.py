@@ -142,11 +142,18 @@ def main():
               f"({'OK, probe is sensitive' if ctrl > 0.30 else 'WARNING: control weak -- null unsafe'})")
         summary = {}
         for name, fn in VARIANTS.items():
-            gaps = [poison_gap(fn, items, model, key) for _ in range(args.reps)]
+            try:
+                gaps = [poison_gap(fn, items, model, key) for _ in range(args.reps)]
+            except Exception as e:                          # keep other variants' results
+                print(f"  {name:16s} ERROR {type(e).__name__}: {str(e)[:120]}")
+                continue
             mean = statistics.fmean(gaps)
             rng = max(gaps) - min(gaps)
             summary[name] = (mean, rng, gaps)
             print(f"  {name:16s} gap mean={mean:+.2f}  range={rng:.2f}  reps={[round(g,2) for g in gaps]}")
+        if len(summary) < len(VARIANTS):
+            print("  -> some variants errored; interpretation skipped for this model.")
+            continue
         # pre-registered interpretation
         noise = max(r for _, r, _ in summary.values())
         means = {n: m for n, (m, _, _) in summary.items()}

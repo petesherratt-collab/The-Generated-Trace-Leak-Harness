@@ -45,6 +45,7 @@ model (real + rigged control), at temperature 0.
 
 from __future__ import annotations
 import argparse
+import http.client
 import json
 import os
 import random
@@ -178,8 +179,9 @@ def call_openrouter(prompt, model, key, timeout=60, max_tokens=64, retries=5):
             if e.code != 429 and e.code < 500:
                 raise
             last = e
-        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
-            last = e                                        # connection reset / timeout
+        except (urllib.error.URLError, TimeoutError, ConnectionError,
+                http.client.HTTPException, json.JSONDecodeError) as e:
+            last = e            # connection reset / timeout / truncated (IncompleteRead) / bad body
         time.sleep(2 ** attempt)                            # 1, 2, 4, 8, 16 s
     raise last
 
