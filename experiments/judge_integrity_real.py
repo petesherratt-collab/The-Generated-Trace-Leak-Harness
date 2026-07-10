@@ -133,7 +133,7 @@ def build_prompt(item, candidate_text, channels, rigged=False):
 def call_openrouter(prompt, model, key, timeout=60):
     body = json.dumps({
         "model": model,
-        "max_tokens": 20,
+        "max_tokens": 64,
         "temperature": 0,
         "messages": [{"role": "user", "content": prompt}],
     }).encode()
@@ -198,6 +198,19 @@ def make_stub_scorer(rng, leak=0.0, self_pref=0.0, paraphrase_pen=0.0, noise=0.0
 # same Report the simulation uses (recognition is Path B; not measured here).
 # --------------------------------------------------------------------------- #
 
+def memoize(scorer):
+    """Call each unique (item, kind, channels) cell ONCE (temperature 0 -> stable) so
+    the bootstrap resamples cached per-item scores instead of hammering the API."""
+    cache = {}
+    def wrapped(item, kind, channels):
+        k = (item, kind, tuple(sorted(channels.items())))
+        if k not in cache:
+            cache[k] = scorer(item, kind, channels)
+        return cache[k]
+    wrapped.cache = cache
+    return wrapped
+
+
 def _mean(scorer, items, kind, channels):
     return statistics.fmean(scorer(it, kind, channels) for it in items)
 
@@ -239,8 +252,8 @@ def _print_report(name, r, note=""):
 def run_model(model, key, items, verbose=False):
     """One model: honest judge + rigged positive control. Returns (r_real, r_rig)."""
     print(f"\n--- {model} ---")
-    real = make_real_scorer(model, key, rigged=False, verbose=verbose)
-    rigged = make_real_scorer(model, key, rigged=True, verbose=verbose)
+    real = memoize(make_real_scorer(model, key, rigged=False, verbose=verbose))
+    rigged = memoize(make_real_scorer(model, key, rigged=True, verbose=verbose))
     r_real = real_evaluate(real, items)
     r_rig = real_evaluate(rigged, items)
     lo, hi = bootstrap_ci(real, items, "poison_gap")
