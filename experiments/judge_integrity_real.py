@@ -127,13 +127,13 @@ def build_prompt(item, candidate_text, channels, rigged=False):
 
 
 # --------------------------------------------------------------------------- #
-# MODEL CLIENT (Anthropic Messages API, stdlib only) + score parsing.
+# MODEL CLIENT (OpenRouter, OpenAI-compatible, stdlib only) + score parsing.
 # --------------------------------------------------------------------------- #
 
-def call_openrouter(prompt, model, key, timeout=60):
+def call_openrouter(prompt, model, key, timeout=60, max_tokens=64):
     body = json.dumps({
         "model": model,
-        "max_tokens": 64,
+        "max_tokens": max_tokens,
         "temperature": 0,
         "messages": [{"role": "user", "content": prompt}],
     }).encode()
@@ -146,10 +146,14 @@ def call_openrouter(prompt, model, key, timeout=60):
                  "X-Title": "judge-integrity-harness"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         data = json.load(r)
-    return data["choices"][0]["message"]["content"]
+    msg = data["choices"][0]["message"]
+    # some models return content=None and put the text in a reasoning field.
+    return msg.get("content") or msg.get("reasoning") or ""
 
 
 def parse_score(text):
+    if not text:
+        return None
     m = re.search(r'"score"\s*:\s*([0-9]*\.?[0-9]+)', text)
     if not m:
         m = re.search(r'([01](?:\.[0-9]+)?)', text)
@@ -170,6 +174,9 @@ def make_real_scorer(model, key, rigged=False, verbose=False):
         prompt = build_prompt(item, text, channels, rigged=rigged)
         out = call_openrouter(prompt, model, key)
         s = parse_score(out)
+        if s is None:                                    # one retry with more room
+            out = call_openrouter(prompt, model, key, max_tokens=256)
+            s = parse_score(out)
         if verbose:
             print(f"    [{kind:19s} {channels}] -> {out!r} => {s}")
         return s if s is not None else 0.5
@@ -239,12 +246,14 @@ def bootstrap_ci(scorer, items, metric, n=400, seed=1, alpha=0.10):
     return lo, hi
 
 
-def _print_report(name, r, note=""):
+def _print_report(name, r, note="", ci=None):
+    def band(m):
+        return f"  [90% CI {ci[m][0]:+.2f}..{ci[m][1]:+.2f}]" if ci and m in ci else ""
     print(f"JUDGE: {name}   {note}")
     print(f"  tracks answer quality (lift)       = {r.lift:+.2f}   (needs > {_LIFT_MIN:.2f})")
-    print(f"  answer-key dependence (poison gap) = {r.poison_gap:+.2f}   (flag if > {_EPS:.2f})")
-    print(f"  self-preference delta              = {r.self_pref:+.2f}   (flag if > {_EPS:.2f})")
-    print(f"  paraphrase-instability delta       = {r.paraphrase:+.2f}   (flag if > {_EPS:.2f})")
+    print(f"  answer-key dependence (poison gap) = {r.poison_gap:+.2f}   (flag if > {_EPS:.2f}){band('poison_gap')}")
+    print(f"  self-preference delta              = {r.self_pref:+.2f}   (flag if > {_EPS:.2f}){band('self_pref')}")
+    print(f"  paraphrase-instability delta       = {r.paraphrase:+.2f}   (flag if > {_EPS:.2f}){band('paraphrase')}")
     print(f"  VERDICT: {verdict(r)}")
     print()
 
@@ -256,9 +265,15 @@ def run_model(model, key, items, verbose=False):
     rigged = memoize(make_real_scorer(model, key, rigged=True, verbose=verbose))
     r_real = real_evaluate(real, items)
     r_rig = real_evaluate(rigged, items)
-    lo, hi = bootstrap_ci(real, items, "poison_gap")
-    _print_report(f"{model} (honest prompt)", r_real,
-                  f"[poison-gap 90% CI {lo:+.2f}..{hi:+.2f}]")
+    # concrete cell means for the answer-key channel (all hit the cache, no new calls):
+    cn = _mean(real, items, "correct", {})
+    cg = _mean(real, items, "correct", {"reference": "gold"})
+    cd = _mean(real, items, "correct", {"reference": "decoy"})
+    wn = _mean(real, items, "wrong", {})
+    print(f"  cell means (correct answer): no-ref={cn:.2f}  ref=gold={cg:.2f}  "
+          f"ref=POISON={cd:.2f}   | wrong answer no-ref={wn:.2f}")
+    ci = {m: bootstrap_ci(real, items, m) for m in ("poison_gap", "self_pref", "paraphrase")}
+    _print_report(f"{model} (honest prompt)", r_real, ci=ci)
     _print_report(f"{model} (RIGGED positive control)", r_rig, "(sensitivity check)")
     if not verdict(r_rig).startswith("SUSPECT"):
         print(f"*** WARNING: {model} positive control NOT flagged -- its null is UNSAFE. ***\n")
