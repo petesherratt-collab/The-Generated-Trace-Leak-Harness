@@ -57,6 +57,36 @@ adversarial judges are Python classes, exactly as the root harness simulates its
 generators. Cutoffs are stipulated, not derived. It cannot prove a real model never
 memorised a benchmark in pretraining (memorisation is not a toggle-able side
 channel), though it can flag behaviour that collapses under recognition/paraphrase
-transforms. Wiring a **real judge model** in is the next experiment: implement the
-`Judge` protocol sketched at the bottom of the file — `evaluate()` and `verdict()`
-stay unchanged; only `evidence_quality` and the channels become real.
+transforms.
+
+## `judge_integrity_real.py` — the same probes, wired for a real model
+
+The next step up: run Path A (judge integrity) against an **actual model used as a
+grader**. It reuses `evaluate()`/`verdict()` from the PoC unchanged; only the scores
+become real. Two design choices make a result credible:
+
+- **Checkable gold.** Items are arithmetic word problems with unambiguous numeric
+  answers, so a candidate's true quality is known *without* any model — the
+  ground-truth signal never depends on the model under test.
+- **Positive control.** A deliberately rigged judge (its prompt defers to the
+  reference) runs in the same batch. A null on the real judge only means something
+  if the harness flags the rigged one — that proves the probes are sensitive.
+
+```bash
+# Real run (needs a key + egress to api.anthropic.com):
+export ANTHROPIC_API_KEY=sk-...
+python3 experiments/judge_integrity_real.py --model claude-sonnet-5 --items 16
+
+# No key: a clearly-labelled LOCAL WIRING CHECK (stub scorers, not a finding):
+python3 experiments/judge_integrity_real.py
+```
+
+**Before any real run, freeze `PREREGISTRATION.md`** — fixed thresholds, ground-truth
+strategy, the mandatory positive control, confound controls (poison plausibility,
+paraphrase equivalence, position/verbosity bias, non-determinism), sample size, and
+the stop rule. It also pins the claim wording: a flag supports *"model M as a grader
+depends on channel X"*, **not** *"benchmark X is unreliable"* (that is the more
+confounded, model-specific Path B, not built yet).
+
+Dependency-free (stdlib `urllib` only). No third-party packages, no API traffic
+unless a key is set.
