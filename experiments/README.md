@@ -72,10 +72,14 @@ become real. Two design choices make a result credible:
   reference) runs in the same batch. A null on the real judge only means something
   if the harness flags the rigged one — that proves the probes are sensitive.
 
+Runs via **OpenRouter** (one key, many models, OpenAI-compatible) so multi-model
+comparison — which the method wants — is a single flag.
+
 ```bash
-# Real run (needs a key + egress to api.anthropic.com):
-export ANTHROPIC_API_KEY=sk-...
-python3 experiments/judge_integrity_real.py --model claude-sonnet-5 --items 16
+# Real run (needs an OpenRouter key + egress to openrouter.ai):
+export OPENROUTER_API_KEY=sk-or-...
+python3 experiments/judge_integrity_real.py \
+    --models openai/gpt-4o-mini,anthropic/claude-3.5-haiku --items 16
 
 # No key: a clearly-labelled LOCAL WIRING CHECK (stub scorers, not a finding):
 python3 experiments/judge_integrity_real.py

@@ -58,7 +58,9 @@ LLM's opinion — that reintroduces the circularity this design removes.
 
 - Items: start ≥ 16 (built in); scale to ≥ 50 for a reportable result.
 - Run ≥ 2 models so "M leaks, M′ does not" is a contrast, not an isolated number.
-- Record: model id, date, item set hash, thresholds, k (calls/cell), raw scores.
+  Via OpenRouter this is one flag: `--models slugA,slugB,...`.
+- Record: model id (OpenRouter slug), date, item set hash, thresholds, k (calls/cell),
+  raw scores.
 
 ## 6. Stop rule
 

@@ -29,15 +29,18 @@ WHAT A RESULT MEANS / DOES NOT:
     not the benchmark-familiarity Path B). Report effect sizes + bootstrap CIs, and
     PRE-REGISTER thresholds (see PREREGISTRATION.md) before looking at the target.
 
-RUNNING IT:
-  * Real run needs an Anthropic API key and open egress to api.anthropic.com:
-        export ANTHROPIC_API_KEY=sk-...      # your key
-        python3 experiments/judge_integrity_real.py --model claude-sonnet-5 --items 16
+RUNNING IT (via OpenRouter -- one key, many models, OpenAI-compatible):
+  * Real run needs an OpenRouter key and egress to openrouter.ai:
+        export OPENROUTER_API_KEY=sk-or-...
+        python3 experiments/judge_integrity_real.py \
+            --models openai/gpt-4o-mini,anthropic/claude-3.5-haiku --items 16
+    Multiple --models runs each and prints a comparison (the method wants >= 2 models
+    so "M leaks, M' does not" is a contrast, not an isolated number).
   * With NO key it runs a LOCAL WIRING CHECK (stub scorers, clearly labelled) so you
     can see the pipeline is assembled correctly. Those numbers are NOT a real finding.
 
-No third-party dependencies (urllib only). Cost scales as ~8 * items * 2 variants
-model calls at temperature 0.
+No third-party dependencies (urllib only). Cost scales as ~8 * items model calls per
+model (real + rigged control), at temperature 0.
 """
 
 from __future__ import annotations
@@ -127,7 +130,7 @@ def build_prompt(item, candidate_text, channels, rigged=False):
 # MODEL CLIENT (Anthropic Messages API, stdlib only) + score parsing.
 # --------------------------------------------------------------------------- #
 
-def call_anthropic(prompt, model, key, timeout=60):
+def call_openrouter(prompt, model, key, timeout=60):
     body = json.dumps({
         "model": model,
         "max_tokens": 20,
@@ -135,12 +138,15 @@ def call_anthropic(prompt, model, key, timeout=60):
         "messages": [{"role": "user", "content": prompt}],
     }).encode()
     req = urllib.request.Request(
-        "https://api.anthropic.com/v1/messages", data=body,
-        headers={"x-api-key": key, "anthropic-version": "2023-06-01",
-                 "content-type": "application/json"})
+        "https://openrouter.ai/api/v1/chat/completions", data=body,
+        headers={"Authorization": "Bearer " + key,
+                 "content-type": "application/json",
+                 # optional OpenRouter attribution headers:
+                 "HTTP-Referer": "https://github.com/petesherratt-collab/the-generated-trace-leak-harness",
+                 "X-Title": "judge-integrity-harness"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         data = json.load(r)
-    return "".join(b.get("text", "") for b in data.get("content", []))
+    return data["choices"][0]["message"]["content"]
 
 
 def parse_score(text):
@@ -162,7 +168,7 @@ def make_real_scorer(model, key, rigged=False, verbose=False):
                 "wrong": _wrong_text(decoy),
                 "correct_paraphrased": _correct_paraphrased(gold)}[kind]
         prompt = build_prompt(item, text, channels, rigged=rigged)
-        out = call_anthropic(prompt, model, key)
+        out = call_openrouter(prompt, model, key)
         s = parse_score(out)
         if verbose:
             print(f"    [{kind:19s} {channels}] -> {out!r} => {s}")
@@ -230,22 +236,40 @@ def _print_report(name, r, note=""):
     print()
 
 
+def run_model(model, key, items, verbose=False):
+    """One model: honest judge + rigged positive control. Returns (r_real, r_rig)."""
+    print(f"\n--- {model} ---")
+    real = make_real_scorer(model, key, rigged=False, verbose=verbose)
+    rigged = make_real_scorer(model, key, rigged=True, verbose=verbose)
+    r_real = real_evaluate(real, items)
+    r_rig = real_evaluate(rigged, items)
+    lo, hi = bootstrap_ci(real, items, "poison_gap")
+    _print_report(f"{model} (honest prompt)", r_real,
+                  f"[poison-gap 90% CI {lo:+.2f}..{hi:+.2f}]")
+    _print_report(f"{model} (RIGGED positive control)", r_rig, "(sensitivity check)")
+    if not verdict(r_rig).startswith("SUSPECT"):
+        print(f"*** WARNING: {model} positive control NOT flagged -- its null is UNSAFE. ***\n")
+    return r_real, r_rig
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="claude-sonnet-5")
+    ap.add_argument("--models", default="openai/gpt-4o-mini",
+                    help="comma-separated OpenRouter model slugs")
     ap.add_argument("--items", type=int, default=len(ITEMS))
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
     items = ITEMS[:max(1, min(args.items, len(ITEMS)))]
-    key = os.environ.get("ANTHROPIC_API_KEY")
+    models = [m.strip() for m in args.models.split(",") if m.strip()]
+    key = os.environ.get("OPENROUTER_API_KEY")
 
     print("=" * 78)
-    print("JUDGE INTEGRITY (real-model adapter) -- Path A: model-as-grader")
-    print(f"  items={len(items)}  model={args.model if key else '(none)'}")
+    print("JUDGE INTEGRITY (real-model adapter, via OpenRouter) -- Path A: model-as-grader")
+    print(f"  items={len(items)}  models={models if key else '(none)'}")
     print("=" * 78)
 
     if not key:
-        print("\nNO ANTHROPIC_API_KEY set -> LOCAL WIRING CHECK ONLY (stub scorers).")
+        print("\nNO OPENROUTER_API_KEY set -> LOCAL WIRING CHECK ONLY (stub scorers).")
         print("These numbers are NOT a model finding; they prove the pipeline is wired")
         print("and that the probes separate a clean judge from contaminated ones.\n")
         rng = random.Random(0)
@@ -255,27 +279,30 @@ def main():
         _print_report("stub: clean judge", real_evaluate(clean, items), "(expect PASS)")
         _print_report("stub: answer-key leaker", real_evaluate(leaker, items), "(expect SUSPECT: key)")
         _print_report("stub: self-preferrer", real_evaluate(selfp, items), "(expect SUSPECT: self-pref)")
-        print("To run for real: set ANTHROPIC_API_KEY and re-run (needs egress to")
-        print("api.anthropic.com). Pre-register thresholds first -- see PREREGISTRATION.md.")
+        print("To run for real: set OPENROUTER_API_KEY and re-run (needs egress to")
+        print("openrouter.ai). Pre-register thresholds first -- see PREREGISTRATION.md.")
         return
 
-    # Real run: the model under test AND a deliberately rigged positive control.
-    print("\nRunning real judge + rigged positive control (temperature 0)...\n")
-    real = make_real_scorer(args.model, key, rigged=False, verbose=args.verbose)
-    rigged = make_real_scorer(args.model, key, rigged=True, verbose=args.verbose)
+    print("\nRunning real judge + rigged positive control per model (temperature 0)...")
+    summary = {}
+    for m in models:
+        try:
+            r_real, r_rig = run_model(m, key, items, verbose=args.verbose)
+            summary[m] = (verdict(r_real), r_real, verdict(r_rig).startswith("SUSPECT"))
+        except Exception as e:                       # a bad slug / rate limit shouldn't kill the batch
+            print(f"*** {m}: ERROR {type(e).__name__}: {str(e)[:200]} ***\n")
+            summary[m] = ("ERROR", None, False)
 
-    r_real = real_evaluate(real, items)
-    r_rig = real_evaluate(rigged, items)
-    lo, hi = bootstrap_ci(real, items, "poison_gap")
-    _print_report(f"{args.model} (honest prompt)", r_real,
-                  f"[poison-gap 90% CI {lo:+.2f}..{hi:+.2f}]")
-    _print_report(f"{args.model} (RIGGED positive control)", r_rig, "(sensitivity check)")
-
-    print("SENSITIVITY: the positive control MUST be flagged for a clean result on the")
-    print("real judge to mean anything. If the rigged judge is not SUSPECT, the probe")
-    print("battery is too weak for this model/items -- do not report the null.")
-    if not verdict(r_rig).startswith("SUSPECT"):
-        print("\n*** WARNING: positive control not flagged -- null result is UNSAFE. ***")
+    print("=" * 78)
+    print("COMPARISON (verdict on the honest judge; control_ok = positive control flagged)")
+    for m, (v, r, ctrl_ok) in summary.items():
+        detail = (f"lift={r.lift:+.2f} poison={r.poison_gap:+.2f} "
+                  f"self={r.self_pref:+.2f} para={r.paraphrase:+.2f}") if r else ""
+        print(f"  {m:34s} control_ok={str(ctrl_ok):5s}  {v}")
+        if detail:
+            print(f"  {'':34s} {detail}")
+    print("\nSENSITIVITY: only trust a PASS where control_ok=True. If the positive control")
+    print("was not flagged, the probes are too weak for that model/items -- do not report it.")
 
 
 if __name__ == "__main__":
