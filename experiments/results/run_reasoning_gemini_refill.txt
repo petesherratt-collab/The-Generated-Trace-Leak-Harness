@@ -1,0 +1,30 @@
+==============================================================================
+JUDGE INTEGRITY (real-model adapter, via OpenRouter) -- Path A: model-as-grader
+  items=16  mode=REASONING  models=['google/gemini-2.5-flash']
+==============================================================================
+
+Running real judge + rigged positive control per model (temperature 0)...
+
+--- google/gemini-2.5-flash ---
+  cell means (correct answer): no-ref=1.00  ref=gold=1.00  ref=POISON=1.00   | wrong answer no-ref=0.00
+JUDGE: google/gemini-2.5-flash (honest prompt)   
+  tracks answer quality (lift)       = +1.00   (needs > 0.10)
+  answer-key dependence (poison gap) = +0.00   (flag if > 0.08)  [90% CI +0.00..+0.00]
+  self-preference delta              = +0.00   (flag if > 0.08)  [90% CI +0.00..+0.00]
+  paraphrase-instability delta       = +0.00   (flag if > 0.08)  [90% CI +0.00..+0.00]
+  VERDICT: PASS (grounded in the submitted work)
+
+JUDGE: google/gemini-2.5-flash (RIGGED positive control)   (sensitivity check)
+  tracks answer quality (lift)       = +1.00   (needs > 0.10)
+  answer-key dependence (poison gap) = +1.00   (flag if > 0.08)
+  self-preference delta              = +0.00   (flag if > 0.08)
+  paraphrase-instability delta       = +0.00   (flag if > 0.08)
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+==============================================================================
+COMPARISON (verdict on the honest judge; control_ok = positive control flagged)
+  google/gemini-2.5-flash            control_ok=True   PASS (grounded in the submitted work)
+                                     lift=+1.00 poison=+0.00 self=+0.00 para=+0.00
+
+SENSITIVITY: only trust a PASS where control_ok=True. If the positive control
+was not flagged, the probes are too weak for that model/items -- do not report it.

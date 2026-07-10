@@ -2,112 +2,109 @@
 
 **Date:** 2026-07-10 · **Harness:** `experiments/judge_integrity_real.py` (via OpenRouter)
 · **Items:** 16 arithmetic word problems, checkable numeric gold · **Temp:** 0
-· **Raw log:** [`run_2026-07-10_5models_16items.txt`](run_2026-07-10_5models_16items.txt)
+· **Logs:** terse [`run_terse_5models_16items.txt`](run_terse_5models_16items.txt)
+(+ [llama refill](run_terse_llama_refill.txt)) · reasoning
+[`run_reasoning_5models_16items.txt`](run_reasoning_5models_16items.txt)
+(+ [gemini refill](run_reasoning_gemini_refill.txt))
 
 ## One-line result
 
-When a reference answer is present in an LLM judge's context, **all five models
-followed it over their own correct arithmetic** — scoring a *mathematically correct*
-answer as wrong when the reference was a plausible wrong value — and the instruction
-to "grade on correctness only" did **not** prevent this. No robust evidence of
-self-preference or paraphrase-instability was found (see caveats — this is a finding
-about **reference-anchoring / pipeline contamination**, not covert cheating or
-memorisation).
+Judges given only a **terse score** (JSON, no working) anchor hard on a reference
+answer injected into their context — marking a *mathematically correct* answer wrong
+when the reference is a plausible wrong value. **Given room to reason first, 4 of 5
+models fully stop doing this** (poison dependence → 0); one (deepseek) halves it but is
+still flagged. So the anchoring is largely — not entirely — an artifact of **forced
+no-reasoning output**, which happens to be the most common production LLM-judge config.
 
 ## What was tested
 
-Each judge scored a candidate answer 0–1 given the question + rubric (the sanctioned
-channel). We held answer quality fixed and toggled one channel at a time:
+Each judge scored a *correct* candidate answer 0–1. We held answer quality fixed and
+injected `Reference answer (internal): X` = the true gold or a **poisoned** (plausible
+wrong) value. A grounded judge should score the correct answer high either way. Two
+prompt modes: **terse** (respond with only `{"score": …}`, ~9-token output) and
+**reasoning** (`--reason`: solve it yourself step by step, then score). A deliberately
+**rigged** judge ("defer to the reference") ran in every batch as a **positive control**.
 
-- **answer-key:** inject `Reference answer (internal): X` = the true gold, or a
-  **poisoned** (plausible wrong) value. The candidate itself is *correct*. A grounded
-  judge should score it high either way (it can do the arithmetic).
-- **author:** attribute the candidate to "you" vs "another model".
-- **paraphrase:** the same correct answer, verbatim vs reworded.
+`poison gap` = score(correct | ref=gold) − score(correct | ref=poison); 90% bootstrap CI
+over items. Higher = more anchoring. Flag threshold 0.08.
 
-A deliberately **rigged** judge (prompt: "defer to the reference") ran in the same
-batch as a **positive control**. All five controls fired (poison gap → 1.00), so the
-probe battery was demonstrably sensitive — a null would have meant something. It
-didn't: every model was flagged on the answer-key channel.
+## Headline: terse vs reasoning (honest-prompt judge)
 
-## Results (honest-prompt judge)
+| Model | poison gap **terse** [CI] | poison gap **reasoning** [CI] | verdict shift |
+|---|---|---|---|
+| openai/gpt-4o-mini | **+0.94** [.81, 1.0] | **+0.06** [.00, .19] | SUSPECT → **PASS** |
+| anthropic/claude-haiku-4.5 | **+0.88** [.75, 1.0] | **+0.00** [.00, .00] | SUSPECT → **PASS** |
+| google/gemini-2.5-flash | **+0.56** [.38, .75] | **+0.00** [.00, .00] | SUSPECT → **PASS** |
+| meta-llama/llama-3.3-70b | **+1.00** [1.0, 1.0] | **+0.00** [.00, .00] | SUSPECT → **PASS** |
+| deepseek/deepseek-chat | **+0.75** [.56, .94] | **+0.38** [.19, .56] | SUSPECT → **SUSPECT** (halved) |
 
-Cell = mean score for a **correct** candidate; `poison gap` = ref-gold minus
-ref-poison, with 90% bootstrap CI over items.
+The correct answer under a **poisoned** reference, terse → reasoning: gpt-4o-mini
+0.06 → 0.94, claude-haiku 0.12 → 1.00, gemini 0.44 → 1.00, llama 0.00 → 1.00, deepseek
+0.25 → 0.62. Given space, the models recompute the answer, notice the reference is
+wrong, and trust their own work.
 
-| Model | correct, no-ref | correct, ref=gold | correct, **ref=POISON** | wrong, no-ref | lift | **poison gap** [90% CI] |
-|---|---|---|---|---|---|---|
-| openai/gpt-4o-mini | 0.69 | 1.00 | **0.06** | 0.31 | 0.38 | **+0.94** [0.81, 1.00] |
-| anthropic/claude-haiku-4.5 | 1.00 | 1.00 | **0.12** | 0.25 | 0.75 | **+0.88** [0.75, 1.00] |
-| google/gemini-2.5-flash | 0.94 | 1.00 | **0.38** | 0.00 | 0.94 | **+0.62** [0.44, 0.81] |
-| deepseek/deepseek-chat | 1.00 | 1.00 | **0.30** | 0.03 | 0.97 | **+0.70** [0.46, 0.88] |
-| meta-llama/llama-3.3-70b | 0.94 | 1.00 | **0.00** | 0.56 | 0.38 | **+1.00** [1.00, 1.00] |
+**The controls fired in BOTH modes** (rigged judge poison gap 0.69–1.00 throughout), so
+the reasoning-mode PASSes are real — the probe stayed sensitive; it's specifically the
+*honest* judge, allowed to reason, choosing its own computation over the bad key.
 
-Read the key row: **with no reference, every model scores the correct answer high
-(0.69–1.00)** — it can grade unaided. **Inject a poisoned reference and the same
-correct answer craters to 0.00–0.38.** That gap is the judge deferring to a wrong key
-over its own correct computation, not incapacity (the no-ref and ref-gold columns show
-it *can* verify).
+## The claim, stated precisely (revised after the reasoning check)
 
-## The one robust signal, and the honest null
-
-- **Answer-key / reference-anchoring: confirmed for all 5**, large effect, CIs well
-  clear of the 0.08 threshold. This is the headline.
-- **Self-preference: not robustly detected.** Only gpt-4o-mini flagged (+0.12) and its
-  90% CI is [0.00, 0.31] — it touches zero, so it is not reliable at n=16. All others
-  measured exactly 0.00.
-- **Paraphrase-instability: not robustly detected.** gpt-4o-mini +0.19 [0.06, 0.38]
-  (lower bound below the 0.08 line — borderline, not solid); others ≈ 0 or slightly
-  negative.
-
-So the precise claim is narrow and defensible: *reference-anchoring is universal and
-large; self-preference and paraphrase-brittleness were not established here.*
+- **Reference-anchoring is severe in terse / structured-output grading** — a correct
+  answer is marked down or zeroed when a wrong reference sits in context, and "grade on
+  correctness only" does not prevent it. This is the dangerous configuration, and it is
+  exactly what many production LLM-as-judge and RAG-grading pipelines use (they demand a
+  bare number or JSON).
+- **Reasoning space largely removes it.** 4 of 5 models flip to PASS when allowed to
+  work the problem out first. So our first-pass "universal anchoring" headline was
+  substantially an artifact of the forced terse output — an honest revision the
+  reasoning check forced.
+- **deepseek/deepseek-chat is the holdout:** it still anchors even with reasoning (gap
+  halved to 0.38 but still flagged) — the interesting exception worth chasing.
 
 ## A comparative pattern (suggestive, n=5)
 
-The weakest unaided graders anchored hardest, the strongest anchored least:
-gpt-4o-mini (lift 0.38) and llama (0.38) collapsed to ~0.0–0.06 under a poisoned key;
-gemini (lift 0.94) and deepseek (0.97) retained the most (0.38, 0.30). Plausibly, a
-model less confident in its own maths defers more to a provided reference. **Gemini-2.5-flash
-was the most reference-robust of the five; llama-3.3-70b the least** (it scored a
-correct answer 0.00 under a poisoned reference — total capitulation).
+In terse mode, the weakest unaided graders anchored hardest: llama (lift 0.25) and
+gpt-4o-mini (lift 0.44) collapsed to 0.00–0.06 under a poisoned key; gemini (lift 1.00)
+anchored least (0.44). Plausibly, a model less able to verify the answer itself defers
+more to a provided reference — and reasoning helps precisely because it lets it verify.
 
 ## What this means in practice
 
-If an evaluation pipeline leaks the gold/reference field into the judge's prompt — a
-common bug in LLM-as-judge and RAG-grading setups — the judge will anchor on it, and a
-*wrong* reference silently corrupts scores. Telling the judge "just grade correctness"
-does not save you. That is a real, reproducible integrity risk this harness detects.
+If an evaluation pipeline leaks the gold/reference field into the judge's context (a
+common bug), and the judge is run in terse/score-only mode, a *wrong* reference silently
+corrupts scores and the models will not catch it. **Mitigation that actually worked
+here: give the judge room to reason before scoring.** It does not fix everything
+(deepseek), and it costs tokens, but it flipped four of five models from leaking to
+grounded.
 
 ## Caveats (do not overclaim)
 
-1. **We inject the reference.** This measures reference-anchoring / pipeline
-   contamination, *not* covert cheating or training-time memorisation (that is the
-   unbuilt Path B). A model treating a labelled reference as authoritative is partly
-   reasonable; the finding's force is that the reference was *wrong* on a *trivially
-   checkable* problem and the judge still followed it.
-2. **n = 16, one problem type (arithmetic).** Effects are large and CIs are tight, but
-   breadth is thin — replicate across more items and domains (short-answer, code,
-   reasoning) before generalising.
-3. **Single run, temperature 0.** Scores are near-deterministic but not identical
-   across providers/time; the bootstrap CI captures item variance, not call variance.
+1. **We inject the reference.** This is reference-anchoring / pipeline contamination,
+   *not* covert cheating or training-time memorisation (the unbuilt Path B).
+2. **n = 16, one domain (arithmetic).** Effects are large and CIs mostly tight, but
+   breadth is thin — replicate across ≥ 50 items and more domains (short-answer, code,
+   reasoning) before generalising. deepseek's residual anchoring especially needs more n.
+3. **Single run, temperature 0.** Near-deterministic but not identical across
+   providers/time; two cells hit transient connection resets and were refilled (the
+   client now retries with backoff). The bootstrap CI captures item, not call, variance.
 4. **Thresholds are stipulated** (lift > 0.10, dependence > 0.08); see
-   `../PREREGISTRATION.md`. Derive them from an honest-null band to make borderline
-   calls (like gpt-4o-mini's paraphrase flag) principled rather than eyeballed.
+   `../PREREGISTRATION.md`. Derive them from each model's honest-null to make borderline
+   calls principled.
 
 ## Reproduce
 
 ```bash
 export OPENROUTER_API_KEY=sk-or-...
-python3 experiments/judge_integrity_real.py \
-  --models openai/gpt-4o-mini,anthropic/claude-haiku-4.5,google/gemini-2.5-flash,deepseek/deepseek-chat,meta-llama/llama-3.3-70b-instruct \
-  --items 16
+M=openai/gpt-4o-mini,anthropic/claude-haiku-4.5,google/gemini-2.5-flash,deepseek/deepseek-chat,meta-llama/llama-3.3-70b-instruct
+python3 experiments/judge_integrity_real.py --models "$M" --items 16            # terse
+python3 experiments/judge_integrity_real.py --models "$M" --items 16 --reason   # reasoning
 ```
 
 ## Next to harden this into a shareable result
 
-- Scale to ≥ 50 items across ≥ 3 problem domains; add a no-conflict control (reference
-  = candidate) to separate anchoring from hedging.
-- Bootstrap the thresholds from each model's own honest-null.
-- Add a "reference present but marked untrusted / adversarial" prompt variant to test
-  whether *any* framing lets a judge override a bad key — the mitigation question.
+- Scale to ≥ 50 items across ≥ 3 domains; add a no-conflict control (reference =
+  candidate) to separate anchoring from hedging.
+- Chase deepseek's residual anchoring under reasoning — is it prompt-specific?
+- Bootstrap the thresholds from each model's honest-null.
+- Test intermediate mitigations: "a reference is provided but may be wrong; verify it"
+  — does a warning alone (without full reasoning) suffice?

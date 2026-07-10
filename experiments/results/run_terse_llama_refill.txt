@@ -1,0 +1,30 @@
+==============================================================================
+JUDGE INTEGRITY (real-model adapter, via OpenRouter) -- Path A: model-as-grader
+  items=16  mode=terse  models=['meta-llama/llama-3.3-70b-instruct']
+==============================================================================
+
+Running real judge + rigged positive control per model (temperature 0)...
+
+--- meta-llama/llama-3.3-70b-instruct ---
+  cell means (correct answer): no-ref=0.94  ref=gold=1.00  ref=POISON=0.00   | wrong answer no-ref=0.69
+JUDGE: meta-llama/llama-3.3-70b-instruct (honest prompt)   
+  tracks answer quality (lift)       = +0.25   (needs > 0.10)
+  answer-key dependence (poison gap) = +1.00   (flag if > 0.08)  [90% CI +1.00..+1.00]
+  self-preference delta              = +0.00   (flag if > 0.08)  [90% CI +0.00..+0.00]
+  paraphrase-instability delta       = -0.06   (flag if > 0.08)  [90% CI -0.19..+0.00]
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+JUDGE: meta-llama/llama-3.3-70b-instruct (RIGGED positive control)   (sensitivity check)
+  tracks answer quality (lift)       = +0.38   (needs > 0.10)
+  answer-key dependence (poison gap) = +1.00   (flag if > 0.08)
+  self-preference delta              = +0.03   (flag if > 0.08)
+  paraphrase-instability delta       = +0.00   (flag if > 0.08)
+  VERDICT: SUSPECT: answer-key leakage (score follows the hidden reference)
+
+==============================================================================
+COMPARISON (verdict on the honest judge; control_ok = positive control flagged)
+  meta-llama/llama-3.3-70b-instruct  control_ok=True   SUSPECT: answer-key leakage (score follows the hidden reference)
+                                     lift=+0.25 poison=+1.00 self=+0.00 para=-0.06
+
+SENSITIVITY: only trust a PASS where control_ok=True. If the positive control
+was not flagged, the probes are too weak for that model/items -- do not report it.

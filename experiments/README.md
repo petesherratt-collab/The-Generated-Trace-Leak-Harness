@@ -79,11 +79,18 @@ comparison — which the method wants — is a single flag.
 # Real run (needs an OpenRouter key + egress to openrouter.ai):
 export OPENROUTER_API_KEY=sk-or-...
 python3 experiments/judge_integrity_real.py \
-    --models openai/gpt-4o-mini,anthropic/claude-3.5-haiku --items 16
+    --models openai/gpt-4o-mini,anthropic/claude-haiku-4.5 --items 16
+python3 experiments/judge_integrity_real.py ... --reason   # let the judge reason first
 
 # No key: a clearly-labelled LOCAL WIRING CHECK (stub scorers, not a finding):
 python3 experiments/judge_integrity_real.py
 ```
+
+**First real result:** see [`results/FINDINGS.md`](results/FINDINGS.md). Across 5 models,
+terse (score-only) grading anchored hard on an injected reference — marking correct
+answers wrong under a poisoned key — while `--reason` (let the judge work it out first)
+flipped 4 of 5 to grounded. The dangerous config is exactly the common one: LLM-judge
+pipelines that demand a bare number/JSON.
 
 **Before any real run, freeze `PREREGISTRATION.md`** — fixed thresholds, ground-truth
 strategy, the mandatory positive control, confound controls (poison plausibility,
