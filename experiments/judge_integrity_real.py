@@ -51,6 +51,8 @@ import random
 import re
 import statistics
 import sys
+import time
+import urllib.error
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -136,7 +138,7 @@ def build_prompt(item, candidate_text, channels, rigged=False, reason=False):
 # MODEL CLIENT (OpenRouter, OpenAI-compatible, stdlib only) + score parsing.
 # --------------------------------------------------------------------------- #
 
-def call_openrouter(prompt, model, key, timeout=60, max_tokens=64):
+def call_openrouter(prompt, model, key, timeout=60, max_tokens=64, retries=5):
     body = json.dumps({
         "model": model,
         "max_tokens": max_tokens,
@@ -150,11 +152,22 @@ def call_openrouter(prompt, model, key, timeout=60, max_tokens=64):
                  # optional OpenRouter attribution headers:
                  "HTTP-Referer": "https://github.com/petesherratt-collab/the-generated-trace-leak-harness",
                  "X-Title": "judge-integrity-harness"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        data = json.load(r)
-    msg = data["choices"][0]["message"]
-    # some models return content=None and put the text in a reasoning field.
-    return msg.get("content") or msg.get("reasoning") or ""
+    last = None
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                data = json.load(r)
+            msg = data["choices"][0]["message"]
+            # some models return content=None and put the text in a reasoning field.
+            return msg.get("content") or msg.get("reasoning") or ""
+        except urllib.error.HTTPError as e:                 # retry only 429 / 5xx
+            if e.code != 429 and e.code < 500:
+                raise
+            last = e
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            last = e                                        # connection reset / timeout
+        time.sleep(2 ** attempt)                            # 1, 2, 4, 8, 16 s
+    raise last
 
 
 def parse_score(text):
