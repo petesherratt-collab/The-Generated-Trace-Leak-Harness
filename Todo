@@ -2,15 +2,16 @@
 
 > Working backlog for this repo. Status markers: `[ ]` open · `[~]` in progress · `[x]` done · `[!]` blocked.
 > Grouped by theme; within each group, upstream items first.
-> Last reviewed: 2026-06-26
+> Last reviewed: 2026-07-10
 
 ---
 
 ## 1. Repo hygiene — the repo disagrees with its own README (do first; cheap, prevents confusion)
 
-- [ ] **Canonical version mismatch.** README prose refers to `v1.5` as canonical and describes the v1.5 fixes, but the repo root holds `generated_leak_harness_v14_selfcontained.py`. Either v1.5 was never committed, or it's committed under a different name/path. Confirm which file is actually canonical and make the repo match the README (or vice versa).
-- [ ] **Artefact path mismatch.** README's closing paragraph says artefacts live in `research/leak-harness/` with `generated_leak_harness_v15_selfcontained.py` + a `versions/` dir. Repo root instead shows the v14 file and a `versions/` folder at top level. Reconcile the stated layout with the real one.
-- [ ] **HANDOFF.md is stale.** It still names v1.4 as canonical. Update to v1.5 once the version question above is settled. (README explicitly flags this.)
+- [x] **Canonical version mismatch.** Resolved: the repo root now holds `generated_leak_harness_v151_selfcontained.py` as canonical, and README + HANDOFF + CI all name it. `versions/` holds v0.6–v1.5.
+- [x] **Artefact path mismatch.** Resolved: layout is repo root (canonical file) + top-level `versions/`; README and HANDOFF describe exactly this.
+- [x] **HANDOFF.md is stale.** Resolved: HANDOFF now names v1.5.1 as canonical and carries the v1.5/v1.5.1 history.
+- [x] **v1.5.1 trust-boundary round landed.** Closed deterministic replay (entropy-domain separation, proven by the `DeterministicReplayThief` in `_replay_demo`) and the full-file pin exclusion bypass (strict pin-assignment canonicalisation, proven by `_pin_bypass_probe`); recast integrity as self-consistency + optional external anchor; scoped the isolation claim to parent-memory. Isolated verdict is now statistical; CI asserts categories.
 
 ## 2. The core open question — what is this actually proving? (decide before more iteration)
 

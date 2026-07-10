@@ -1,7 +1,11 @@
 # The harness's whole claim is "the run is the proof" — so CI runs it on every
-# push and asserts the verdict table: pins verify, the honest reader PASSes, and
-# every adversary is flagged by the gate designed to catch it. Verdicts are
-# deterministic (seeded), so exact-match assertions are safe.
+# push and asserts the verdict table: pins verify, the honest reader PASSes, theft
+# is neutralised by isolation, and every adversary is flagged. As of v1.5.1 the
+# isolated verdict is STATISTICAL (the hidden assignment is drawn from system
+# entropy — deterministic secrets are not secrets), so CI asserts verdict
+# CATEGORIES, not exact reasons: PASS/NO-LIFT are exact where they must be, the
+# flagged runs need only be SUSPECT. CI also checks the two v1.5.1 self-proofs —
+# the deterministic-replay demo and the pin-canonicalisation probe.
 name: harness
 on: [push, pull_request]
 
@@ -15,33 +19,41 @@ jobs:
         with:
           python-version: "3.11"
       - name: Run the harness
-        run: python generated_leak_harness_v15_selfcontained.py | tee report.txt
-      - name: Assert integrity pins and isolated verdicts
+        run: python generated_leak_harness_v151_selfcontained.py | tee report.txt
+      - name: Assert integrity pins, isolated verdicts, and v1.5.1 self-proofs
         run: |
           python - <<'EOF'
-          import re, sys
+          import re
           txt = open("report.txt", encoding="utf-8", errors="replace").read()
           assert "substrate integrity       : OK" in txt, "substrate pin failed"
-          assert "full-file integrity       : OK" in txt, "full-file pin failed"
-          # Isolated verdict per run, in order A..H (the ISOLATED line is THE verdict).
-          expected = [
-              ("RUN A", "NO LIFT"),
-              ("RUN B", "PASS"),
-              ("RUN C", "SUSPECT (localisation leak)"),
-              ("RUN D", "SUSPECT (confidence-sharpening)"),
-              ("RUN E", "PASS"),                       # theft neutralised by isolation
-              ("RUN F", "SUSPECT (calibration)"),
-              ("RUN G", "SUSPECT (calibration)"),
-              ("RUN H", "SUSPECT (calibration)"),      # caught only isolated
-          ]
+          assert "full-file self-consistency: OK" in txt, "full-file pin failed"
+
+          # Isolated verdict per run, order A..H (the ISOLATED line is THE verdict).
+          # Categories, not exact reasons — verdicts are statistical in v1.5.1.
+          exact = {"RUN A": "NO LIFT", "RUN B": "PASS", "RUN E": "PASS"}
+          suspect = {"RUN C", "RUN D", "RUN F", "RUN G", "RUN H"}
           blocks = re.split(r"^RUN ", txt, flags=re.M)[1:]
-          got = []
+          got = {}
           for b in blocks:
               m = re.findall(r"\[ISOLATED\s*\].*->\s*(.+)$", b, flags=re.M)
               if m:
-                  got.append(("RUN " + b[0], m[-1].strip()))
-          for (run, want), (grun, have) in zip(expected, got):
-              assert have == want, f"{run}: expected {want!r}, got {have!r}"
-          assert len(got) == len(expected), f"expected {len(expected)} runs, saw {len(got)}"
-          print("all pins verified; all isolated verdicts as designed")
+                  got["RUN " + b[0]] = m[-1].strip()
+          for run, want in exact.items():
+              assert got.get(run) == want, f"{run}: expected {want!r}, got {got.get(run)!r}"
+          for run in suspect:
+              assert got.get(run, "").startswith("SUSPECT"), f"{run}: expected SUSPECT, got {got.get(run)!r}"
+          assert len(got) >= 8, f"expected >=8 runs, saw {len(got)}"
+
+          # Deterministic-replay self-proof: the replay thief PASSES the retired
+          # single-RNG scheme (the closed hole) and is flagged under v1.5.1.
+          leg = re.search(r"\[v1\.5 one-RNG \].*->\s*(.+)$", txt, flags=re.M)
+          fix = re.search(r"\[v1\.5\.1 split \].*->\s*(.+)$", txt, flags=re.M)
+          assert leg and leg.group(1).strip() == "PASS", "replay demo: legacy should PASS (the hole)"
+          assert fix and fix.group(1).strip() != "PASS", "replay demo: v1.5.1 should flag the thief"
+
+          # Pin-canonicalisation self-proof: old prefix rule hides the payload, new does not.
+          assert "v1.5 prefix rule  : injected payload hidden from hash? True" in txt, "pin probe: old rule should bypass"
+          assert "v1.5.1 strict rule: injected payload hidden from hash? False" in txt, "pin probe: new rule should catch"
+
+          print("all pins verified; isolated verdicts as designed; replay + pin self-proofs pass")
           EOF

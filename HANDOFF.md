@@ -9,26 +9,35 @@ This document gives a fresh session everything needed to continue.
 
 ## TL;DR
 
-- **Canonical file:** `generated_leak_harness_v15_selfcontained.py` (run it; it is
+- **Canonical file:** `generated_leak_harness_v151_selfcontained.py` (run it; it is
   the current state of the art in this line). Takes ~2–3 min (it spawns isolation
   workers and fits a small model for the exchangeability probe — expected, not a hang).
-- **Run:** `python3 generated_leak_harness_v15_selfcontained.py`
+- **Run:** `python3 generated_leak_harness_v151_selfcontained.py`
   (pure Python 3.10+, no dependencies, no network, no other files needed).
   `--worker` is an internal isolation-worker mode; do not run it directly.
 - **It self-verifies:** at startup it hashes its vendored substrate block AND (since
   v1.5) the whole file, and refuses to run if either hash ≠ its pin. The substrate pin
   `043d608b1dc88ab5c70ba74c525367be9ec1cf1de7c1342efd609b45fb2ec883`
-  is **byte-identical across every version v0.6–v1.5.** The full-file check runs in
-  both the main path and the `--worker` path (the worker produces the verdict).
-- **As of v1.5, calibration, isolated-verdict, and the isolation SURFACE are CLOSED.**
+  is **byte-identical across every version v0.6–v1.5.1.** The full-file check runs in
+  both the main path and the `--worker` path (the worker produces the verdict). As of
+  v1.5.1 this is honestly scoped as **self-consistency / drift detection, not
+  authenticity** (the pin lives in the file it protects); an optional external anchor
+  `$_RTL_EXPECTED_FILE_PIN` turns it into tamper-evidence.
+- **As of v1.5.1, replay and the pin-canonicalisation bypass are also CLOSED.**
   Localisation leaks, side-channel theft, base-rate learning, selection bias,
-  in-process frame/condition theft (under isolation) and over-confidence (calibration)
-  are all handled; v1.5 additionally pins the whole file (the verdict logic was
-  previously unpinned), makes the worker self-verify, and HMAC-authenticates +
-  allowlists + time-bounds the worker I/O. The open items are now the stipulated
-  (not derived) thresholds/margin and the unified calibration sensor — a designed
-  v1.6 round (bootstrapped gates + excess-lift ceiling) that has NOT yet been
-  implemented as a runnable file. See "Where to go next".
+  in-process frame/condition theft (isolation), **deterministic replay (entropy
+  separation)** and over-confidence (calibration) are all handled. v1.5.1 fixed two
+  flaws that survived v1.5: (1) the isolated evaluator drew the cause/decoy/condition,
+  the observation noise, and the worker seed from ONE seeded PRNG, so a worker
+  generator could *recompute* the secrets from public info — now T/D/c come from
+  system entropy, with noise/seed on independent streams and a secret-permuted payload
+  order; (2) the full-file canonicaliser dropped every line merely *starting with* a
+  pin name, so a payload line beginning `_FILE_PIN …` executed yet vanished from the
+  hash — now only a strict `NAME = "hex"` assignment is excluded. Consequence: the
+  isolated verdict is now **statistical, not bit-reproducible** (deterministic secrets
+  are not secrets). The open items are the stipulated (not derived) thresholds/margin
+  and the unified calibration sensor — a designed v1.6 round (bootstrapped gates +
+  excess-lift ceiling) that has NOT yet been implemented. See "Where to go next".
 
 ---
 
@@ -99,17 +108,22 @@ DIAGNOSTIC, EXCHANGEABILITY SELF-CHECK (single + multivariate vs null), and RESI
 | v1.3 | **Omniscient Frame Thief** — steals condition label `c` + cause `T` from the call frame; RNG reversibility | **process isolation** (`--worker`); multivariate exchangeability probe; exhaustive inertness; deleted the lingering false docstring |
 | v1.4 | **calibration** — once leak/theft closed, the objective rewarded uncalibrated observation amplification (a sharpener PASSED with the biggest lift) | **signed-overconfidence CALIBRATION gate** (self-referenced to honest baseline + margin); **isolated verdict by default** (each generator shows `[in-process]` + `[ISOLATED]`, verdict from isolated) |
 | v1.5 | **the verdict logic was unpinned** — only the substrate block was hashed, so `verdict()`/`_CAL_MARGIN`/the worker could be edited with the banner still printing OK; the `--worker` entrypoint ran zero integrity check and `pickle.loads`'d raw stdin into an input-named class | **full-file hash pin** (pin lines excluded, endings normalised, checked in main AND worker paths); **self-verifying worker**; **HMAC-authenticated + allowlisted worker I/O**; **bounded worker** (timeout) |
+| v1.5.1 | **deterministic replay** — the isolated evaluator drew cause/decoy/condition, observation noise, and the worker seed from ONE seeded PRNG, so a worker generator could *recompute* the secrets from public info (no theft needed); **full-file pin exclusion bypass** — the canonicaliser dropped every line merely *starting with* a pin name, so a payload line beginning `_FILE_PIN …` executed yet vanished from the hash | **separate entropy domains** (system-entropy T/D/c; independent noise + worker-seed streams; secret-permuted payload order); **strict pin-assignment canonicalisation**; integrity recast as **self-consistency** + optional external anchor; isolation claim scoped to parent-memory (not a sandbox) |
 
 Each adversary lives in the file as a runnable `*Cheater`/`*Thief` class, so regressions
-are visible. Current **isolated** verdicts (v1.4): Clean → NO LIFT; Honest → PASS (the
-calibration reference); NaiveSide → SUSPECT(localisation); Adaptive → SUSPECT(confidence);
-FrameThief → PASS (side-theft neutralised by isolation → honest); Frequency →
-SUSPECT(calibration) (localisation neutralised but still over-confident); Anthropic →
+are visible. Current **isolated** verdicts (now statistical in v1.5.1 — categories, not
+exact numbers): Clean → NO LIFT; Honest → PASS (the calibration reference); NaiveSide →
+SUSPECT(localisation); Adaptive → SUSPECT(confidence); FrameThief → PASS (side-theft
+neutralised by isolation → honest); Frequency → SUSPECT(calibration); Anthropic →
 SUSPECT(calibration); OmniscientFrameThief → PASS in-process by theft, SUSPECT(calibration)
 isolated. The omniscient thief is the proof that **isolation + calibration are each
 necessary and only jointly sufficient**: in-process it emits a calibrated one-hot on the
 stolen cause (genuinely accurate → calibration alone can't catch it); isolated it falls
-back to blind sharpening (→ caught by calibration).
+back to blind sharpening (→ caught by calibration). v1.5.1 adds the **DeterministicReplayThief**
+(run in `_replay_demo`, not the A–H table, to avoid corrupting the in-process display): it
+PASSes the retired single-RNG scheme and collapses to SUSPECT(calibration) under separated
+entropy — proof that **entropy separation is a third, independent necessity** alongside
+isolation and calibration.
 
 ---
 
@@ -134,17 +148,19 @@ Conventions: bump the filename `vNN`, update the banner string AND the module do
 
 ---
 
-## Where to go next — the isolation surface is CLOSED (v1.5); the open front is the THRESHOLDS
+## Where to go next — the trust boundary is CLOSED (v1.5.1); the open front is the THRESHOLDS
 
-v1.5 closed the isolation/serialisation surface that this section previously named as the
-most likely next target (full-file pin verified in both paths, self-verifying worker,
-HMAC-authenticated + allowlisted + time-bounded worker I/O). The remaining weaknesses are
-about what the harness still *assumes* rather than *derives*. A v1.6 round addressing items
-1–2 below (bootstrapped gates derived from the honest null + an excess-lift ceiling, and a
-calibration sensor unified with the quantity that actually moves blame) was designed in
-review dialogue but has NOT yet been implemented as a runnable file — implementing it,
-with its adversary (a well-calibrated over-concentrator that hides influence in the trace
-channels calibration doesn't watch), is the natural next session.
+v1.5.1 closed the two trust-boundary flaws that survived v1.5 — deterministic replay
+(entropy domains now separated; the isolated verdict is genuinely secret, hence statistical)
+and the pin-canonicalisation bypass (strict pin-assignment match), and it scoped the
+integrity and isolation claims honestly (self-consistency + optional external anchor;
+parent-memory isolation, not a sandbox). The remaining weaknesses are about what the harness
+still *assumes* rather than *derives*. A v1.6 round addressing items 1–2 below (bootstrapped
+gates derived from the honest null + an excess-lift ceiling, and a calibration sensor unified
+with the quantity that actually moves blame) was designed in review dialogue but has NOT yet
+been implemented as a runnable file — implementing it, with its adversary (a well-calibrated
+over-concentrator that hides influence in the trace channels calibration doesn't watch), is
+the natural next session.
 
 1. **Stipulated thresholds (the last free parameters).** `eps = 0.02`, `trace_weight`, and
    the calibration margin `_CAL_MARGIN = 0.06` are all hand-set. The honest move is to
@@ -160,8 +176,11 @@ channels calibration doesn't watch), is the natural next session.
    draw-asymmetric suite could re-open it.
 4. **`SHARPEN`** only catches confidence gated on **side-channel agreement**; a gate on a
    different statistic is not proven to reduce to it.
-5. **The HMAC worker key passes via environment** — readable by same-user processes,
-   which already have stronger attacks available; documented limitation, not a silent gap.
+5. **Integrity is self-consistency, not authenticity** — the pin lives in the file it
+   protects; it is tamper-evidence only against an external anchor (`$_RTL_EXPECTED_FILE_PIN`
+   / signed tag / protected CI value). And the **worker is not a sandbox** — an allowlisted
+   generator runs with the worker user's fs/network/process rights; the HMAC key passes via
+   environment (readable by same-user processes, which already have stronger attacks).
 
 (The in-file RESIDUALS block prints the current version of this list on every run.)
 
@@ -169,15 +188,15 @@ channels calibration doesn't watch), is the natural next session.
 
 ## Files in this bundle
 
-- `generated_leak_harness_v15_selfcontained.py` — **canonical, run this.**
-- `versions/` — full history v0.6 → v1.4, each self-contained and runnable, for
+- `generated_leak_harness_v151_selfcontained.py` — **canonical, run this.**
+- `versions/` — full history v0.6 → v1.5, each self-contained and runnable, for
   diffing the evolution of the argument. (v0.6 is the original given starting point.)
 - All versions share the identical pinned substrate block.
 
 ## Quick start in a new session
 
 ```
-python3 generated_leak_harness_v15_selfcontained.py        # full report (~2–3 min)
+python3 generated_leak_harness_v151_selfcontained.py       # full report (~2–3 min)
 ```
 (`--worker` is the internal isolation-worker mode; the harness invokes it itself.)
 
