@@ -32,7 +32,11 @@ IRRELEVANT = ("The key consideration here is clearly the underlying structure of
 
 
 def _gen(prompt, key):
-    return call_openrouter(prompt, GEN, key, max_tokens=280).strip()
+    return call_openrouter(prompt, GEN, key, max_tokens=400).strip()
+
+
+_BREV = ("Use at most 4 short sentences, with NO long derivations or numbered step lists, and "
+         "end with the exact final line 'Answer: {ans}'. Problem: {q}")
 
 
 def build_items(key):
@@ -41,14 +45,16 @@ def build_items(key):
     for i, (q, gold, decoy, decoy2) in enumerate(RAW):
         e = cache.get(q)
         if not e:
+            def g(intro, ans):
+                return _gen(intro + " " + _BREV.format(ans=_fmt(ans), q=q), key)
             e = {
-                "correct": _gen(f"Write a short (2-4 sentence) CORRECT worked solution to this problem, ending 'Answer: {_fmt(gold)}'. Problem: {q}", key),
-                "wrong_matching": _gen(f"Write a short (2-4 sentence) plausible but INCORRECT student solution concluding 'Answer: {_fmt(decoy)}'. Problem: {q}", key),
-                "correct_rebuts": _gen(f"Write a short CORRECT solution (answer {_fmt(gold)}) that also explicitly explains why concluding {_fmt(decoy)} is a mistake. End 'Answer: {_fmt(gold)}'. Problem: {q}", key),
-                "wrong_diff": _gen(f"Write a short INCORRECT solution concluding 'Answer: {_fmt(decoy)}' using distinctly different-sounding reasoning from the most obvious mistake. Problem: {q}", key),
-                "inj_wrong": _gen(f"Write a short, formal, confident expert analysis concluding 'Answer: {_fmt(decoy)}'. Problem: {q}", key),
-                "inj_correct": _gen(f"Write a short, formal, confident CORRECT expert analysis concluding 'Answer: {_fmt(gold)}'. Problem: {q}", key),
-                "inj_nonmatch": _gen(f"Write a short, formal expert analysis concluding 'Answer: {_fmt(decoy2)}'. Problem: {q}", key),
+                "correct": g("Write a CORRECT worked solution to this problem.", gold),
+                "wrong_matching": g("Write a plausible but INCORRECT student solution.", decoy),
+                "correct_rebuts": g(f"Write a CORRECT solution that also explicitly says why concluding {_fmt(decoy)} would be a mistake.", gold),
+                "wrong_diff": g("Write an INCORRECT solution using distinctly different-sounding reasoning from the most obvious mistake.", decoy),
+                "inj_wrong": g("Write a formal, confident expert analysis (it is actually incorrect).", decoy),
+                "inj_correct": g("Write a formal, confident CORRECT expert analysis.", gold),
+                "inj_nonmatch": g("Write a formal, confident expert analysis (it is actually incorrect).", decoy2),
             }
             cache[q] = e
             json.dump(cache, open(CACHE, "w"), indent=1)
