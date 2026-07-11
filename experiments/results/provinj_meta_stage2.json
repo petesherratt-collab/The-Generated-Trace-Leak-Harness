@@ -1,0 +1,39 @@
+{
+ "git_commit": "66aa1a1b516d59eda2234994b89689afd3f1561b",
+ "parser_version": "2",
+ "n_items": 8,
+ "items_sha256": "709514b7201d1381d02aaea6e6ffcabcbe56b9f71f4fe113cf4512d6aca8424c",
+ "models": [
+  "openai/gpt-4o-mini",
+  "anthropic/claude-haiku-4.5",
+  "google/gemini-2.5-flash",
+  "deepseek/deepseek-chat",
+  "meta-llama/llama-3.3-70b-instruct"
+ ],
+ "config": {
+  "stage": 2,
+  "reps": 2,
+  "protocols": [
+   "score_only",
+   "verify_written"
+  ],
+  "conditions": [
+   "solver/full_wrong_rationale",
+   "solver/wrong_answer_only",
+   "candidate/full_wrong_rationale",
+   "candidate/wrong_answer_only",
+   "reviewer/full_wrong_rationale",
+   "reviewer/wrong_answer_only",
+   "neutral/full_wrong_rationale",
+   "neutral/wrong_answer_only",
+   "unlabelled/full_wrong_rationale",
+   "unlabelled/wrong_answer_only",
+   "no_injection",
+   "sealed_solver/full_wrong_rationale",
+   "neutral/full_wrong_rationale/verified",
+   "neutral/full_wrong_rationale/unverified",
+   "neutral/full_wrong_rationale/possibly_erroneous"
+  ]
+ },
+ "started": 1783792404.3396645
+}
