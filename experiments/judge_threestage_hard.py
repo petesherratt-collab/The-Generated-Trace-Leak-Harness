@@ -1,11 +1,15 @@
 """
 judge_threestage_hard.py -- three-stage on HARD, code-verified items with a fallible solver
 ===========================================================================================
-Follow-up after two facts the feasibility probe established:
-  * weaker models don't give a clean fallible solver (a 3B endpoint errors out; 7-8B score
-    ~100% on textbook traps);
-  * frontier models on checkable-numeric HARD items are mostly right or UNPARSEABLE -- clean
-    wrong-number errors are ~15-20%.
+Follow-up after two feasibility OBSERVATIONS (scoped to the tested endpoints/items -- NOT
+general claims; a dozen problems and a handful of endpoints do not support domain-wide claims):
+  * the tested weak endpoints did not yield a clean fallible solver HERE (one 3B endpoint
+    errored at the provider level; the 7-8B ones scored ~100% on this specific trap set) --
+    this says nothing general about weak models;
+  * on ~12 checkable-numeric hard problems the tested frontier endpoints were mostly right or
+    unparseable, with clean wrong-number errors ~15-20% -- a small-sample observation, not a
+    finding. (The decisive experiment does not need a naturally fallible solver at all -- see
+    judge_faultinject.py, which INJECTS a wrong solver under control.)
 So here we (a) use genuinely hard counting/DP items whose gold is COMPUTED in code (certain),
 (b) count an unparseable answer as ABSTAIN, tracked SEPARATELY from WRONG (the earlier harness
 conflated them), and (c) use matched, auto-generated persuasive-wrong candidates so the
