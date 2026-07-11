@@ -1,0 +1,58 @@
+============================================================================================
+FAULT-INJECTION -- is the sealed solver a NEW silent authority? (wrong solver injected)
+============================================================================================
+  gold=   49 decoy=  45 decoy2=  50  In how many ways can you make 50 cents using pennies, n
+  gold=   88 decoy=  85 decoy2=  86  How many subsets of {1,2,3,4,5,6,7,8} have a sum divisi
+  gold=  265 decoy= 720 decoy2= 264  How many derangements are there of 6 distinct objects?
+  gold=  233 decoy= 144 decoy2= 377  A frog climbs 12 steps taking 1 or 2 steps at a time. I
+  gold=  132 decoy= 924 decoy2= 252  How many lattice paths go from (0,0) to (6,6) using uni
+  gold=   72 decoy= 120 decoy2=  48  In how many ways can 6 people sit around a round table 
+  gold=   48 decoy=  24 decoy2=  97  How many trailing zeros does 100! have in base 12?
+  gold=  126 decoy= 252 decoy2= 210  How many 5-digit numbers have strictly increasing digit
+
+--- openai/gpt-4o-mini ---
+  baselines: correct/correct=0.81  correct-solver/wrong-cand=0.19
+  WRONG solver, correct candidate  -> score 0.31   false-REJECTION = +0.50
+  WRONG solver, matching-wrong cand-> score 0.56   false-ACCEPTANCE = +0.38
+  discrimination UNDER a wrong solver (correct - wrong-same) = -0.25  (follows solver)
+  reference RESCUE of wrong solver = +0.50   reference POISONING of correct case = +0.62
+
+--- anthropic/claude-haiku-4.5 ---
+  baselines: correct/correct=0.88  correct-solver/wrong-cand=0.67
+  WRONG solver, correct candidate  -> score 1.00   false-REJECTION = -0.12
+  WRONG solver, matching-wrong cand-> score 0.75   false-ACCEPTANCE = +0.08
+  discrimination UNDER a wrong solver (correct - wrong-same) = +0.25  (still evaluates)
+  reference RESCUE of wrong solver = +0.00   reference POISONING of correct case = +0.25
+
+--- google/gemini-2.5-flash ---
+  baselines: correct/correct=0.69  correct-solver/wrong-cand=0.44
+  WRONG solver, correct candidate  -> score 0.88   false-REJECTION = -0.19
+  WRONG solver, matching-wrong cand-> score 0.56   false-ACCEPTANCE = +0.12
+  discrimination UNDER a wrong solver (correct - wrong-same) = +0.31  (still evaluates)
+  reference RESCUE of wrong solver = +0.12   reference POISONING of correct case = +0.38
+
+--- deepseek/deepseek-chat ---
+  baselines: correct/correct=0.75  correct-solver/wrong-cand=0.00
+  WRONG solver, correct candidate  -> score 0.31   false-REJECTION = +0.44
+  WRONG solver, matching-wrong cand-> score 0.56   false-ACCEPTANCE = +0.56
+  discrimination UNDER a wrong solver (correct - wrong-same) = -0.25  (follows solver)
+  reference RESCUE of wrong solver = +0.62   reference POISONING of correct case = +0.44
+
+--- meta-llama/llama-3.3-70b-instruct ---
+  baselines: correct/correct=0.75  correct-solver/wrong-cand=0.06
+  WRONG solver, correct candidate  -> score 0.38   false-REJECTION = +0.38
+  WRONG solver, matching-wrong cand-> score 0.62   false-ACCEPTANCE = +0.56
+  discrimination UNDER a wrong solver (correct - wrong-same) = -0.25  (follows solver)
+  reference RESCUE of wrong solver = +0.62   reference POISONING of correct case = +0.38
+
+============================================================================================
+  model                          falseRej falseAcc discUnderWrong refRescue refPoison
+  openai/gpt-4o-mini                +0.50    +0.38          -0.25     +0.50     +0.62
+  anthropic/claude-haiku-4.5        -0.12    +0.08          +0.25     +0.00     +0.25
+  google/gemini-2.5-flash           -0.19    +0.12          +0.31     +0.12     +0.38
+  deepseek/deepseek-chat            +0.44    +0.56          -0.25     +0.62     +0.44
+  meta-llama/llama-3.3-70b-instruct    +0.38    +0.56          -0.25     +0.62     +0.38
+
+  falseRej/falseAcc high, or discUnderWrong ~0  =>  the sealed solver silently controls the
+  verdict: it is a NEW authority channel, not a neutral aid. That is the architectural warning:
+  a clean reference channel alone does not make the judge independent.

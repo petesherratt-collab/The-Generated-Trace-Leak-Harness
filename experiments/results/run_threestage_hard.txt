@@ -1,0 +1,60 @@
+==========================================================================================
+THREE-STAGE on HARD code-verified items (fallible solver; abstain tracked separately)
+==========================================================================================
+  gold=    49  decoy=   45  In how many ways can you make 50 cents using pennies, nickel
+  gold=    88  decoy=   85  How many subsets of the set {1,2,3,4,5,6,7,8} have a sum div
+  gold=   265  decoy=  720  How many derangements are there of 6 distinct objects (no ob
+  gold=   233  decoy=  144  A frog climbs 12 steps taking 1 or 2 steps at a time. In how
+  gold=   132  decoy=  924  How many lattice paths go from (0,0) to (6,6) using unit rig
+  gold=    72  decoy=  120  In how many ways can 6 people be seated around a round table
+  gold=    48  decoy=   24  How many trailing zeros does 100! have when written in base 
+  gold=   126  decoy=  252  How many 5-digit numbers have digits that strictly increase 
+
+(candidates generated/cached: 8 items)
+
+--- openai/gpt-4o-mini ---
+  solver: correct=8 wrong=1 abstain=7  (accuracy on answered = 89%, abstain 44%)
+  candidate->solver pull to decoy = 2/9 = 22%
+  judge: correct cand=0.75  persuasive-wrong cand=0.16  (discrimination +0.59, no ref)
+  reference anchoring when judge exposed (gold-poison) = +0.47
+  auditor review load (wrong OR abstain vs correct ref) = 8/16 = 50%  95% CI [28%,72%]
+
+--- anthropic/claude-haiku-4.5 ---
+  solver: correct=14 wrong=0 abstain=2  (accuracy on answered = 100%, abstain 12%)
+  candidate->solver pull to decoy = 0/14 = 0%
+  judge: correct cand=1.00  persuasive-wrong cand=0.62  (discrimination +0.38, no ref)
+  reference anchoring when judge exposed (gold-poison) = +0.01
+  auditor review load (wrong OR abstain vs correct ref) = 2/16 = 12%  95% CI [3%,36%]
+
+--- google/gemini-2.5-flash ---
+  solver: correct=2 wrong=0 abstain=14  (accuracy on answered = 100%, abstain 88%)
+  candidate->solver pull to decoy = 0/2 = 0%
+  judge: correct cand=0.75  persuasive-wrong cand=0.12  (discrimination +0.62, no ref)
+  reference anchoring when judge exposed (gold-poison) = +0.00
+  auditor review load (wrong OR abstain vs correct ref) = 14/16 = 88%  95% CI [64%,97%]
+
+--- deepseek/deepseek-chat ---
+  solver: correct=10 wrong=0 abstain=6  (accuracy on answered = 100%, abstain 38%)
+  candidate->solver pull to decoy = 0/12 = 0%
+  judge: correct cand=0.78  persuasive-wrong cand=0.00  (discrimination +0.78, no ref)
+  reference anchoring when judge exposed (gold-poison) = +0.19
+  auditor review load (wrong OR abstain vs correct ref) = 6/16 = 38%  95% CI [18%,61%]
+
+--- meta-llama/llama-3.3-70b-instruct ---
+  solver: correct=11 wrong=0 abstain=5  (accuracy on answered = 100%, abstain 31%)
+  candidate->solver pull to decoy = 2/12 = 17%
+  judge: correct cand=0.88  persuasive-wrong cand=0.09  (discrimination +0.78, no ref)
+  reference anchoring when judge exposed (gold-poison) = +0.12
+  auditor review load (wrong OR abstain vs correct ref) = 5/16 = 31%  95% CI [14%,56%]
+
+==========================================================================================
+  model                            acc abstain candPull  jDisc refGap* reviewLoad
+  openai/gpt-4o-mini               89%     44%      22%  +0.59   +0.47        50%
+  anthropic/claude-haiku-4.5      100%     12%       0%  +0.38   +0.01        12%
+  google/gemini-2.5-flash         100%     88%       0%  +0.62   +0.00        88%
+  deepseek/deepseek-chat          100%     38%       0%  +0.78   +0.19        38%
+  meta-llama/llama-3.3-70b-instruct  100%     31%      17%  +0.78   +0.12        31%
+
+  Now that solver accuracy is below 100%, review-load is a real number (= wrong+abstain),
+  candPull tests whether a persuasive-wrong candidate drags the independent solver to the
+  decoy, and refGap* is the (structural-in-the-clean-pipeline) anchoring if the judge sees the ref.
