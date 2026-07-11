@@ -1,0 +1,57 @@
+==================================================================================
+TWO-STAGE ARCHITECTURE -- reference never enters the scorer; harness routes
+  items=16  models=['openai/gpt-4o-mini', 'anthropic/claude-haiku-4.5', 'google/gemini-2.5-flash', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct']
+==================================================================================
+
+--- openai/gpt-4o-mini ---
+  VULNERABLE (reference in context): poison gap = +0.00   (gold=1.00 poison=1.00)
+  TWO-STAGE  (reference withheld):   poison gap = +0.00  by construction  [blind verdict mean=1.00, same under gold or poison]
+  blind accuracy (lift, correct vs wrong candidate) = +1.00
+  model's blind derivation correct = 100% of items
+  poison-catch rate (bad key FLAGGED for review)    = 100%
+  false-flag rate (good key flagged; review cost)   = 0%
+
+--- anthropic/claude-haiku-4.5 ---
+  VULNERABLE (reference in context): poison gap = +0.00   (gold=1.00 poison=1.00)
+  TWO-STAGE  (reference withheld):   poison gap = +0.00  by construction  [blind verdict mean=1.00, same under gold or poison]
+  blind accuracy (lift, correct vs wrong candidate) = +1.00
+  model's blind derivation correct = 100% of items
+  poison-catch rate (bad key FLAGGED for review)    = 100%
+  false-flag rate (good key flagged; review cost)   = 0%
+
+--- google/gemini-2.5-flash ---
+  VULNERABLE (reference in context): poison gap = +0.00   (gold=1.00 poison=1.00)
+  TWO-STAGE  (reference withheld):   poison gap = +0.00  by construction  [blind verdict mean=1.00, same under gold or poison]
+  blind accuracy (lift, correct vs wrong candidate) = +1.00
+  model's blind derivation correct = 100% of items
+  poison-catch rate (bad key FLAGGED for review)    = 100%
+  false-flag rate (good key flagged; review cost)   = 0%
+
+--- deepseek/deepseek-chat ---
+  VULNERABLE (reference in context): poison gap = +0.06   (gold=1.00 poison=0.94)
+  TWO-STAGE  (reference withheld):   poison gap = +0.00  by construction  [blind verdict mean=1.00, same under gold or poison]
+  blind accuracy (lift, correct vs wrong candidate) = +1.00
+  model's blind derivation correct = 100% of items
+  poison-catch rate (bad key FLAGGED for review)    = 100%
+  false-flag rate (good key flagged; review cost)   = 0%
+
+--- meta-llama/llama-3.3-70b-instruct ---
+  VULNERABLE (reference in context): poison gap = +0.34   (gold=1.00 poison=0.66)
+  TWO-STAGE  (reference withheld):   poison gap = +0.00  by construction  [blind verdict mean=1.00, same under gold or poison]
+  blind accuracy (lift, correct vs wrong candidate) = +0.94
+  model's blind derivation correct = 100% of items
+  poison-catch rate (bad key FLAGGED for review)    = 100%
+  false-flag rate (good key flagged; review cost)   = 0%
+
+==================================================================================
+SUMMARY  (silent override is 0 by construction in two-stage; the key only routes)
+  model                            vuln gap blind lift derived✓  catch falseflag
+  openai/gpt-4o-mini                  +0.00      +1.00    100%   100%        0%
+  anthropic/claude-haiku-4.5          +0.00      +1.00    100%   100%        0%
+  google/gemini-2.5-flash             +0.00      +1.00    100%   100%        0%
+  deepseek/deepseek-chat              +0.06      +1.00    100%   100%        0%
+  meta-llama/llama-3.3-70b-instruct    +0.34      +0.94    100%   100%        0%
+
+  vuln gap  = anchoring WHEN the reference is in context (what two-stage removes).
+  catch     = poisoned keys surfaced for review instead of silently overriding.
+  falseflag = correct keys flagged only because the model's own blind maths erred.
