@@ -1,0 +1,60 @@
+========================================================================================
+THREE-STAGE -- solver blind to candidate+reference; judge blind to reference; external auditor
+  hard items=10  reps=3  models=['openai/gpt-4o-mini', 'anthropic/claude-haiku-4.5', 'google/gemini-2.5-flash', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct']
+========================================================================================
+
+--- openai/gpt-4o-mini ---
+  solver accuracy (blind)                = 100%   (n=30 trials)
+  candidate->solver: pulled to decoy     = 0%   accuracy drop = +0%
+  judge score: correct cand=1.00  persuasive-wrong cand=0.10  (discrimination +0.90, no reference)
+  reference anchoring WHEN judge exposed (gold-poison) = +0.08
+  auditor: known-poison disagreement sensitivity = 100%
+  auditor: review load on CORRECT refs = 0%  95% CI [0%,11%]  (= 1 - solver acc)
+
+--- anthropic/claude-haiku-4.5 ---
+  solver accuracy (blind)                = 100%   (n=30 trials)
+  candidate->solver: pulled to decoy     = 0%   accuracy drop = +0%
+  judge score: correct cand=1.00  persuasive-wrong cand=0.01  (discrimination +0.99, no reference)
+  reference anchoring WHEN judge exposed (gold-poison) = +0.00
+  auditor: known-poison disagreement sensitivity = 100%
+  auditor: review load on CORRECT refs = 0%  95% CI [0%,11%]  (= 1 - solver acc)
+
+--- google/gemini-2.5-flash ---
+  solver accuracy (blind)                = 100%   (n=30 trials)
+  candidate->solver: pulled to decoy     = 0%   accuracy drop = +0%
+  judge score: correct cand=1.00  persuasive-wrong cand=0.00  (discrimination +1.00, no reference)
+  reference anchoring WHEN judge exposed (gold-poison) = +0.20
+  auditor: known-poison disagreement sensitivity = 100%
+  auditor: review load on CORRECT refs = 0%  95% CI [0%,11%]  (= 1 - solver acc)
+
+--- deepseek/deepseek-chat ---
+  solver accuracy (blind)                = 100%   (n=30 trials)
+  candidate->solver: pulled to decoy     = 0%   accuracy drop = +0%
+  judge score: correct cand=1.00  persuasive-wrong cand=0.03  (discrimination +0.97, no reference)
+  reference anchoring WHEN judge exposed (gold-poison) = +0.00
+  auditor: known-poison disagreement sensitivity = 100%
+  auditor: review load on CORRECT refs = 0%  95% CI [0%,11%]  (= 1 - solver acc)
+
+--- meta-llama/llama-3.3-70b-instruct ---
+  solver accuracy (blind)                = 97%   (n=30 trials)
+  candidate->solver: pulled to decoy     = 0%   accuracy drop = -3%
+  judge score: correct cand=1.00  persuasive-wrong cand=0.15  (discrimination +0.85, no reference)
+  reference anchoring WHEN judge exposed (gold-poison) = +0.07
+  auditor: known-poison disagreement sensitivity = 100%
+  auditor: review load on CORRECT refs = 3%  95% CI [1%,17%]  (= 1 - solver acc)
+
+========================================================================================
+SUMMARY
+  model                          solverAcc candPull candEff jRight jWrong refGap*  catch reviewLoad
+  openai/gpt-4o-mini                  100%       0%     +0%   1.00   0.10   +0.08   100%         0%
+  anthropic/claude-haiku-4.5          100%       0%     +0%   1.00   0.01   +0.00   100%         0%
+  google/gemini-2.5-flash             100%       0%     +0%   1.00   0.00   +0.20   100%         0%
+  deepseek/deepseek-chat              100%       0%     +0%   1.00   0.03   +0.00   100%         0%
+  meta-llama/llama-3.3-70b-instruct       97%       0%     -3%   1.00   0.15   +0.07   100%         3%
+
+  candPull/candEff = the CANDIDATE->SOLVER channel this design leaves in the solver's view
+     ONLY in the exposed condition; in the clean pipeline the solver never sees the candidate.
+  refGap* = reference anchoring MEASURED by exposing the judge; the clean pipeline's verdict
+     (judge without the reference) is reference-independent by construction, not by this number.
+  reviewLoad = correct references flagged because the SOLVER erred = 1 - solverAcc: routing
+     quality is bounded by blind accuracy, exactly as expected once the task is non-trivial.
