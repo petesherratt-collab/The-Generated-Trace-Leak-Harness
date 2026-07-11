@@ -69,15 +69,19 @@ def build_items(key):
 
 def make_judge(model, key):
     """Returns the model's RAW output (so raw_response preserves the transcript);
-    the harness parse_score parses it. One retry if the first output has no parseable
-    score. verify_written prompts get a larger token budget."""
+    the harness parse_score parses it. One retry with a much larger budget if the
+    first output has no parseable score. verify_written needs a LARGE budget: on
+    hard items models re-derive step by step and a tight cap truncates them BEFORE
+    the final JSON line -- which failed 71% of verify_written calls in the first
+    stage-2 attempt and correlated missingness with the protocol factor."""
     def j(prompt):
-        mt = 500 if "First verify the candidate solution" in prompt else 40
+        verify = "First verify the candidate solution" in prompt
+        mt = 1400 if verify else 80
         raw = call_openrouter(prompt, model, key, max_tokens=mt)
         try:
             parse_score(raw); return raw
         except Exception:
-            return call_openrouter(prompt, model, key, max_tokens=mt + 60)
+            return call_openrouter(prompt, model, key, max_tokens=(2400 if verify else 240))
     return j
 
 
