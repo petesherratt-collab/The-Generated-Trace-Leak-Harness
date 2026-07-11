@@ -60,11 +60,14 @@ noise floor of 0.12). Controls fired for both, so the probe was sensitive in thi
 ## Autopsy: WHY D3 fails — the project's thesis, demonstrated
 
 Per-item run of gpt-4o-mini D3 (poisoned reference, 3 reps + gold baseline; script
-`analyze_d3_failures.py`, log [`run_d3_autopsy.txt`](run_d3_autopsy.txt)). **4 of 16
-items anchored**, all of the same class: **correct working, wrong score.** Every item
-scored 1.0 with a correct reference; the failures are purely the poisoned key, and they
-are **intermittent at temperature 0** (e.g. poison reps [1.0, 0.0, 1.0]) — so a single
-eval pass would miss them.
+`analyze_d3_failures.py`, log [`run_d3_autopsy.txt`](run_d3_autopsy.txt)). Incidence,
+stated both ways to avoid the "sounds like 25%" trap: **item incidence 4/16** (four items
+failed on at least one of three reps); **trial incidence 6/48 poisoned generations = 12.5%,
+95% Wilson CI [5.9%, 24.7%]**. All failures are the same class — **correct working, wrong
+score.** Every item scored 1.0 with a correct reference. They are **intermittent** (e.g.
+poison reps [1.0, 0.0, 1.0]) — so a single eval pass would miss them. (Note: temperature 0
+does not guarantee determinism across a hosted API; read this as "variation occurred
+despite temp 0," not as temp 0 normally being deterministic.)
 
 In every failing transcript the model **derives the correct answer in its own working**
 and then scores the correct candidate 0.0:
@@ -77,13 +80,17 @@ and then scores the correct candidate 0.0:
   calculation of 8**. Final Score: 0.0"  ← a flat self-contradiction (8 ≠ 8): the score
   was already anchored to the poisoned key and the "reasoning" confabulated to justify it.
 
-**Mechanism.** The template's `Comparison:` field silently redirected the judgement from
-"does the candidate match *my computation*" to "does it match *the reference*." So the
-structure that looked most rigorous (forced independent calculation, then comparison,
-then score) is what let the reference seize the verdict — and in the book case the model
-even overrode its own correct calculation with an untrue statement to keep the anchored
-score. No clean item-feature pattern (failing distances were 1, 3, 5, 12); it is
-stochastic which items trip it.
+**Mechanism (interpretation, appropriately hedged).** The output is *consistent with*
+reference-controlled scoring followed by a textual justification: the `Comparison:` field
+resolves to "does the candidate match *the reference*" rather than "match *my computation*",
+and the book case states an untrue "8 does not match 8" alongside an anchored 0.0. We do
+**not** claim the score was internally decided first and the reasoning back-filled — the
+visible text emits reasoning before the score, and this project's own thesis is that visible
+reasoning does not reveal the causal order, so it would be inconsistent to infer a hidden
+sequence from it. The **causal** evidence that the reference influences the verdict comes
+from the controlled poison-vs-gold manipulation (the gap), not from the transcript; the
+transcript is the visible *symptom*. No clean item-feature pattern (failing distances were
+1, 3, 5, 12); which items trip it is stochastic.
 
 **This is the whole reason the harness exists.** A judge that shows an explicit,
 *correct* independent calculation and produces a confident score can STILL have its

@@ -1,93 +1,108 @@
-# Findings — the two-stage architecture (reference never touches the scorer)
+# Findings — two-stage prototype (reference withheld from the scorer)
 
 **Date:** 2026-07-10 · **Probe:** `experiments/judge_twostage.py` · **Log:**
 [`run_twostage.txt`](run_twostage.txt) · 16 checkable-gold arithmetic items · 5 models · temp 0
 
-## Why this design
+> **Status: proof of concept, not a capstone.** This exposes the next experiment. A prior
+> version of this file over-claimed; corrections below (see "What these numbers do and do
+> NOT establish"). The architectural principle is sound; the empirical conclusions are narrow.
 
-The sequence established, in order: score-only judging anchors hard on an injected
-reference; a "verify + show working" prompt mostly fixes it but is **wording-fragile**
-(gpt-4o-mini's template regressed); the autopsy showed the fragile failures are
-**correct-working / wrong-score** — the model derives the right answer and still lets the
-reference control the verdict, even confabulating "8 does not match 8". And crucially,
-**the model's own conflict report cannot be trusted** (same confabulation). So a mitigation
-that asks the model to flag conflicts is circular.
+## The principle (this part is genuinely strong)
 
-The fix is structural, not a prompt: **remove the override channel.**
+**Information that must not influence a decision should not enter the decision-making
+component's context.** That is stronger than any instruction ("reason independently",
+"verify carefully", "don't anchor") — the sensitivity matrix showed instructions are
+wording-fragile, and the autopsy showed the model's own conflict report is not trustworthy.
+So: withhold the reference from the scorer, and route on a comparison the *harness* computes.
 
-- **Stage 1 (blind):** the scorer sees only question + candidate + rubric. It emits its
-  independently derived answer and a score. The reference is never in its context.
-- **Stage 2 (harness, no model call):** the harness compares the blind derived answer to
-  the reference *mechanically*. Agree → accept the blind score. Disagree → **flag for
-  review.** The verdict is always the blind score; the reference only routes.
+- **Stage 1 (blind to the reference):** scorer sees question + candidate + rubric, emits an
+  independently derived answer and a score. The reference is not in its context.
+- **Stage 2 (harness, no model call):** compare the derived answer to the reference
+  mechanically. Agree → accept the blind score. Disagree → route to review. The verdict is
+  the blind score; the reference only routes.
 
-Because the scorer never sees the reference, the verdict is reference-invariant **by
-construction** — silent override is impossible, not measured-and-hoped. Every metric below
-is computed by the harness from its own observations; none is a model self-report.
+## What these numbers do and do NOT establish
 
-## Result
+- **"Two-stage gap = 0.00" is structural, not empirical.** If the verdict is assigned from
+  the blind call and never recomputed after the reference is introduced, a reference-induced
+  gap *must* be zero. Running it across five models verifies the *implementation* did what
+  the code says — it is testing that a disconnected wire carries no signal. It is **not**
+  evidence that any model or prompt is more robust. Do not read the 0.00 column as a result.
+- **The blind scorer is reference-blind but NOT candidate-blind.** It still sees the
+  candidate and is asked to "independently derive" the answer — so the candidate can steer
+  that derivation. This closes the reference→score channel and leaves the candidate→solver
+  channel open. On trivial arithmetic that may not bite; on ambiguous/adversarial inputs it
+  can. This is the main limitation, not a footnote (see next experiment).
 
-| Model | vuln gap (ref in context)¹ | two-stage gap | blind lift² | blind derivation✓ | poison-catch³ | false-flag⁴ |
-|---|---|---|---|---|---|---|
-| openai/gpt-4o-mini | +0.00 | **+0.00** | +1.00 | 100% | 100% | 0% |
-| anthropic/claude-haiku-4.5 | +0.00 | **+0.00** | +1.00 | 100% | 100% | 0% |
-| google/gemini-2.5-flash | +0.00 | **+0.00** | +1.00 | 100% | 100% | 0% |
-| deepseek/deepseek-chat | +0.06 | **+0.00** | +1.00 | 100% | 100% | 0% |
-| meta-llama/llama-3.3-70b | **+0.34** | **+0.00** | +0.94 | 100% | 100% | 0% |
+## Result (read as a prototype demonstration, with corrected metric names)
+
+| Model | vuln gap¹ (ref in context) | blind lift² | blind derivation ✓ | known-poison disagreement sensitivity³ | review-routing rate on correct refs⁴ |
+|---|---|---|---|---|---|
+| openai/gpt-4o-mini | +0.00 | +1.00 | 100% | 100% | 0% |
+| anthropic/claude-haiku-4.5 | +0.00 | +1.00 | 100% | 100% | 0% |
+| google/gemini-2.5-flash | +0.00 | +1.00 | 100% | 100% | 0% |
+| deepseek/deepseek-chat | +0.06 | +1.00 | 100% | 100% | 0% |
+| meta-llama/llama-3.3-70b | **+0.34** | +0.94 | 100% | 100% | 0% |
 
 ¹ poison gap using the *same strong (verify+explain) prompt* but with the reference in
-context — the best single-turn baseline. It still leaks for llama (+0.34) and deepseek
-(+0.06). ² blind score(correct candidate) − blind score(wrong candidate); scoring accuracy
-is fully retained without the reference. ³ fraction of poisoned keys flagged for review.
-⁴ fraction of correct keys wrongly flagged.
+context — the best single-turn baseline. Still leaks for llama (+0.34) and deepseek (+0.06):
+**this is the real empirical content** — reference influence persists even under a verify
+prompt. ² blind score(correct candidate) − blind score(wrong candidate). ³ fraction of
+poisoned refs that DISAGREED with the blind derivation (renamed: the harness detects
+*disagreement*, not that the reference is the wrong side — the experimenter supplies the
+poison label). ⁴ fraction of correct refs that triggered review.
 
-## What it shows
+The routing metrics are **best-case**: 100/0 only because blind derivation was 100% correct
+on trivial arithmetic. The harness cannot say "bad key caught"; it can only say "independent
+solution and supplied reference disagree." Which side is wrong is decided by the label we
+already hold, not by the system.
 
-1. **Silent override is eliminated unconditionally.** Two-stage poison gap is 0.00 for
-   every model — the verdict cannot move with the reference because the scorer never sees
-   it. Contrast the vulnerable baseline, where even the strongest single-turn prompt still
-   let llama's score swing 0.34. The architecture *dominates* the best prompt, and it does
-   so structurally rather than by persuasion.
-2. **Withholding the reference does not hurt scoring.** Blind lift +0.94–1.00: the judges
-   still cleanly separate correct from wrong candidates.
-3. **Bad keys are surfaced, not absorbed.** 100% poison-catch: every poisoned reference
-   disagreed with the model's blind derivation and was routed to review. 0% false-flag:
-   no correct key was flagged. The reference becomes an audit/routing signal, never a
-   control input.
+## Claims supported by this work
 
-## Honest scope — the one real dependency
+- A model can produce correct visible working while issuing a verdict inconsistent with it
+  (autopsy).
+- Supplying a reference can influence a model judge even when the prompt requests independent
+  verification (vuln gap +0.34 for llama here; the sensitivity matrix for gpt-4o-mini).
+- Model-generated explanations and conflict declarations are not reliable measurements of
+  reference influence (the "8 ≠ 8" transcript).
+- Preventing the scoring component from receiving the reference structurally removes the
+  direct reference→score pathway (by construction).
 
-The two properties are not equally strong, and the distinction matters:
+## Claims NOT yet supported (previously overstated here)
 
-- **Override elimination is structural and unconditional** — 0 regardless of task
-  difficulty, model, or wording, because of *where the reference sits*, not how well the
-  model reasons.
-- **Routing quality (catch / false-flag) is bounded by BLIND ACCURACY.** Here blind
-  derivation was 100% correct because the task is trivial arithmetic, so catch was perfect
-  and false-flags zero. On harder tasks the model's blind computation will sometimes err:
-  a blind error that happens to match the poisoned key would be a *missed* catch, and a
-  blind error that diverges from a correct key would be a *false* flag. So on hard tasks,
-  catch degrades toward the model's blind accuracy and the review queue grows.
-
-But even in that worst case the safety property holds: the pipeline **never silently lets
-the key rewrite the verdict** — it either scores blind (reference-independent) or flags for
-review. It converts a silent-corruption failure into a visible-workload cost, which is the
-correct trade for an evaluation system.
+- That the architecture "dominates the strongest prompt" *generally* — shown only on trivial
+  arithmetic.
+- That bad keys are reliably *identified* — the system detects disagreement, not fault.
+- That withholding the reference has no accuracy cost beyond arithmetic — untested on hard/
+  open-ended tasks.
+- That "the only thing controlling the verdict is the submitted work" — the verdict is also
+  shaped by the question, rubric, candidate presentation, model, decoding, and the candidate
+  can still contaminate the "independent" derivation.
 
 ## Caveats
 
-- n = 16, one domain (arithmetic where blind accuracy is ~perfect), single run, temp 0.
-  The routing numbers (100/0) are best-case; re-run on harder items to see catch/false-flag
-  track blind accuracy.
-- Assumes the reference is comparable to the model's derived answer (here, a number). For
-  free-form references the Stage-2 comparison itself needs care (and must not be delegated
-  back to an anchoring model).
+- n = 16, one domain (exact arithmetic: canonical answer, deterministic comparison, no
+  partial credit, no semantic-equivalence problem). Most real judging tasks (essays, code,
+  forecasts) lack these, and there the Stage-2 comparison becomes a judge of its own.
+- Temperature 0 does **not** guarantee reproducibility across hosted APIs (provider routing,
+  model revisions, batching). Read the intermittent failures as "variation occurred despite
+  temp 0," not "temp 0 is otherwise deterministic."
 
-## The whole arc, in one line
+## The next decisive experiment: separate the solver from BOTH channels
 
-Score-only judges anchor on a leaked key → "show your working" mostly helps but is
-wording-fragile → the fragile failures are correct-working/wrong-score and the model's
-self-report of them is confabulated → so the only reliable fix is architectural: keep the
-reference out of the scorer and route on a harness-computed comparison. Which is exactly
-the leak-harness thesis — *what information actually controlled the verdict?* — answered by
-building a pipeline where the answer can only ever be "the submitted work."
+Three-stage design, manipulating candidate and reference **independently** while holding the
+problem fixed:
+
+- **Solver** — question + rubric only. Sees neither candidate nor reference. Produces a sealed solution.
+- **Judge** — candidate + rubric + the solver's sealed solution. Never sees the reference.
+- **Auditor/router** — compares the sealed solution to the reference outside the judge; disagreement routes to review, cannot change the score.
+
+Four conditions (solver sees candidate? × judge sees reference?): clean / candidate-contaminated
+/ reference-contaminated / fully-exposed. Report: blind-solver accuracy; judge accuracy vs
+human-verified labels; reference causal effect on scores; **candidate causal effect on the
+solver's output**; review-routing rate; attribution of routed cases (bad ref vs bad solver vs
+ambiguity); and per-trial failure rates with uncertainty intervals — on genuinely hard and a
+few open-ended tasks, not just arithmetic.
+
+Until the solver is separated from the candidate too, this prototype is **reference-blind but
+not genuinely independent.**
