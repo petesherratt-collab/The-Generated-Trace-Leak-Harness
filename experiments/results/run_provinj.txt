@@ -1,0 +1,109 @@
+built 8 items (texts cached)
+
+============================================================================================
+PHASE 1 -- leakage audit: injected wrong 'solver' vs the matching wrong candidate
+  (does false acceptance ride on LEXICAL agreement, or only CONCLUSION agreement?)
+  mean word-4gram Jaccard (question-excluded) = 0.083  (low => little shared wording; agreement is at the CONCLUSION level)
+  final-answer agreement = 8/8 (by construction, both conclude the decoy)
+
+running phase 2: 8 items x 5 models x 12 conditions x 2 candidates x 1 rep(s)...
+
+============================================================================================
+MODEL: openai/gpt-4o-mini   (discrimination = score(correct) - score(wrong-matching), 0-100)
+  paired within-item contrasts, item-clustered bootstrap 95% CI:
+    authority[high_authority - unlabelled] | full_wrong_rationale n=8   mean=  +0.62  95% CI [  +0.00,   +1.88]
+    authority[neutral - unlabelled] | full_wrong_rationale     n=8   mean=  -7.50  95% CI [ -20.00,   +0.00]
+    authority[low_authority - unlabelled] | full_wrong_rationale n=8   mean= -20.00  95% CI [ -47.50,   +3.75]
+    authority[high_authority - unlabelled] | wrong_answer_only n=8   mean=  -5.00  95% CI [ -12.50,   +0.00]
+    authority[neutral - unlabelled] | wrong_answer_only        n=8   mean=  -7.50  95% CI [ -15.00,   +0.00]
+    authority[low_authority - unlabelled] | wrong_answer_only  n=8   mean= +31.88  95% CI [  +7.50,  +59.38]
+    rationale[full - answer_only] | high_authority             n=8   mean= +15.62  95% CI [ -11.88,  +45.62]
+    rationale[full - answer_only] | neutral                    n=8   mean= +10.00  95% CI [ -12.50,  +30.00]
+    rationale[full - answer_only] | low_authority              n=8   mean= -41.88  95% CI [ -73.75,  -11.25]
+    rationale[full - answer_only] | unlabelled                 n=8   mean= +10.00  95% CI [ -20.00,  +43.12]
+    interaction[(full-ans)|high_auth - (full-ans)|unlabelled]  n=8   mean=  +5.62  95% CI [  +0.00,  +12.50]
+    injection[unlabelled full - no_injection]                  n=8   mean= -75.00  95% CI [-111.25,  -40.00]
+  reliability-claim experiment (label fixed neutral):
+    reliability[verified - no_claim] | neutral                 n=8   mean=  +1.88  95% CI [  +0.00,   +5.62]
+    reliability[unverified - no_claim] | neutral               n=8   mean=  +5.62  95% CI [  +1.25,  +11.25]
+    reliability[possibly_erroneous - no_claim] | neutral       n=8   mean= +14.38  95% CI [  +5.00,  +25.00]
+
+============================================================================================
+MODEL: anthropic/claude-haiku-4.5   (discrimination = score(correct) - score(wrong-matching), 0-100)
+  paired within-item contrasts, item-clustered bootstrap 95% CI:
+    authority[high_authority - unlabelled] | full_wrong_rationale n=8   mean=  -0.38  95% CI [  -5.75,   +5.00]
+    authority[neutral - unlabelled] | full_wrong_rationale     n=8   mean=  -5.38  95% CI [ -10.88,   -0.75]
+    authority[low_authority - unlabelled] | full_wrong_rationale n=8   mean= -16.25  95% CI [ -48.88,   +8.25]
+    authority[high_authority - unlabelled] | wrong_answer_only n=8   mean=  +3.50  95% CI [  -4.62,  +15.62]
+    authority[neutral - unlabelled] | wrong_answer_only        n=8   mean=  +7.75  95% CI [  -3.75,  +27.75]
+    authority[low_authority - unlabelled] | wrong_answer_only  n=8   mean= +69.88  95% CI [  -0.38, +136.38]
+    rationale[full - answer_only] | high_authority             n=8   mean= +49.12  95% CI [  -1.50,  +92.88]
+    rationale[full - answer_only] | neutral                    n=8   mean= +39.88  95% CI [ -12.50,  +86.75]
+    rationale[full - answer_only] | low_authority              n=8   mean= -33.12  95% CI [ -71.88,  +13.88]
+    rationale[full - answer_only] | unlabelled                 n=8   mean= +53.00  95% CI [  -2.50, +101.88]
+    interaction[(full-ans)|high_auth - (full-ans)|unlabelled]  n=8   mean=  -3.88  95% CI [ -20.75,   +8.62]
+    injection[unlabelled full - no_injection]                  n=8   mean= -54.25  95% CI [-103.75,   -9.88]
+  reliability-claim experiment (label fixed neutral):
+    reliability[verified - no_claim] | neutral                 n=8   mean= -15.12  95% CI [ -47.25,  +11.12]
+    reliability[unverified - no_claim] | neutral               n=8   mean= +17.00  95% CI [  +2.88,  +41.25]
+    reliability[possibly_erroneous - no_claim] | neutral       n=8   mean= +19.25  95% CI [  +1.62,  +43.75]
+
+============================================================================================
+MODEL: google/gemini-2.5-flash   (discrimination = score(correct) - score(wrong-matching), 0-100)
+  paired within-item contrasts, item-clustered bootstrap 95% CI:
+    authority[high_authority - unlabelled] | full_wrong_rationale n=8   mean=  +6.25  95% CI [  -5.00,  +21.25]
+    authority[neutral - unlabelled] | full_wrong_rationale     n=8   mean=  -3.75  95% CI [ -30.00,  +18.75]
+    authority[low_authority - unlabelled] | full_wrong_rationale n=8   mean= +25.00  95% CI [  -5.00,  +65.00]
+    authority[high_authority - unlabelled] | wrong_answer_only n=8   mean= +48.75  95% CI [ +17.50,  +80.00]
+    authority[neutral - unlabelled] | wrong_answer_only        n=8   mean= +32.50  95% CI [  +8.75,  +60.00]
+    authority[low_authority - unlabelled] | wrong_answer_only  n=8   mean= +63.75  95% CI [ +23.75, +101.25]
+    rationale[full - answer_only] | high_authority             n=8   mean=  +6.25  95% CI [ -18.75,  +35.00]
+    rationale[full - answer_only] | neutral                    n=8   mean= +12.50  95% CI [ -12.50,  +43.75]
+    rationale[full - answer_only] | low_authority              n=8   mean= +10.00  95% CI [  -7.50,  +37.50]
+    rationale[full - answer_only] | unlabelled                 n=8   mean= +48.75  95% CI [ +18.75,  +77.50]
+    interaction[(full-ans)|high_auth - (full-ans)|unlabelled]  n=8   mean= -42.50  95% CI [ -78.75,   -6.25]
+    injection[unlabelled full - no_injection]                  n=8   mean= -38.75  95% CI [ -80.00,   +0.00]
+  reliability-claim experiment (label fixed neutral):
+    reliability[verified - no_claim] | neutral                 n=8   mean= -31.25  95% CI [ -62.50,   +0.00]
+    reliability[unverified - no_claim] | neutral               n=8   mean= +12.50  95% CI [ -18.75,  +50.00]
+    reliability[possibly_erroneous - no_claim] | neutral       n=8   mean= +21.25  95% CI [ -13.75,  +77.50]
+
+============================================================================================
+MODEL: deepseek/deepseek-chat   (discrimination = score(correct) - score(wrong-matching), 0-100)
+  paired within-item contrasts, item-clustered bootstrap 95% CI:
+    authority[high_authority - unlabelled] | full_wrong_rationale n=8   mean= -28.75  95% CI [ -53.75,   -6.25]
+    authority[neutral - unlabelled] | full_wrong_rationale     n=8   mean= -12.50  95% CI [ -30.00,   +0.00]
+    authority[low_authority - unlabelled] | full_wrong_rationale n=8   mean= +12.25  95% CI [ -17.50,  +50.50]
+    authority[high_authority - unlabelled] | wrong_answer_only n=8   mean=  -6.25  95% CI [ -43.75,  +31.25]
+    authority[neutral - unlabelled] | wrong_answer_only        n=8   mean= +27.50  95% CI [ -27.50,  +85.00]
+    authority[low_authority - unlabelled] | wrong_answer_only  n=8   mean= +71.25  95% CI [ +37.50, +105.00]
+    rationale[full - answer_only] | high_authority             n=8   mean= +27.50  95% CI [  +5.00,  +51.25]
+    rationale[full - answer_only] | neutral                    n=8   mean= +10.00  95% CI [ -28.75,  +57.50]
+    rationale[full - answer_only] | low_authority              n=8   mean=  -9.00  95% CI [ -45.00,  +29.50]
+    rationale[full - answer_only] | unlabelled                 n=8   mean= +50.00  95% CI [  +8.75,  +95.00]
+    interaction[(full-ans)|high_auth - (full-ans)|unlabelled]  n=8   mean= -22.50  95% CI [ -68.75,  +17.50]
+    injection[unlabelled full - no_injection]                  n=8   mean= -15.00  95% CI [ -55.00,  +20.00]
+  reliability-claim experiment (label fixed neutral):
+    reliability[verified - no_claim] | neutral                 n=8   mean= -28.75  95% CI [ -56.25,   -3.75]
+    reliability[unverified - no_claim] | neutral               n=8   mean= -22.50  95% CI [ -51.25,   +6.25]
+    reliability[possibly_erroneous - no_claim] | neutral       n=8   mean= +10.00  95% CI [ -12.50,  +38.75]
+
+============================================================================================
+MODEL: meta-llama/llama-3.3-70b-instruct   (discrimination = score(correct) - score(wrong-matching), 0-100)
+  paired within-item contrasts, item-clustered bootstrap 95% CI:
+    authority[high_authority - unlabelled] | full_wrong_rationale n=8   mean=  +0.00  95% CI [  +0.00,   +0.00]
+    authority[neutral - unlabelled] | full_wrong_rationale     n=8   mean=  +0.00  95% CI [  +0.00,   +0.00]
+    authority[low_authority - unlabelled] | full_wrong_rationale n=8   mean= +50.00  95% CI [ +12.50,  +87.50]
+    authority[high_authority - unlabelled] | wrong_answer_only n=8   mean= +12.50  95% CI [  +0.00,  +37.50]
+    authority[neutral - unlabelled] | wrong_answer_only        n=8   mean=  +0.00  95% CI [  +0.00,   +0.00]
+    authority[low_authority - unlabelled] | wrong_answer_only  n=8   mean= +50.00  95% CI [ +12.50,  +87.50]
+    rationale[full - answer_only] | high_authority             n=8   mean= +12.50  95% CI [ -25.00,  +50.00]
+    rationale[full - answer_only] | neutral                    n=8   mean= +25.00  95% CI [  +0.00,  +62.50]
+    rationale[full - answer_only] | low_authority              n=8   mean= +25.00  95% CI [ -25.00,  +62.50]
+    rationale[full - answer_only] | unlabelled                 n=8   mean= +25.00  95% CI [  +0.00,  +62.50]
+    interaction[(full-ans)|high_auth - (full-ans)|unlabelled]  n=8   mean= -12.50  95% CI [ -37.50,   +0.00]
+    injection[unlabelled full - no_injection]                  n=8   mean= -87.50  95% CI [-137.50,  -25.00]
+  reliability-claim experiment (label fixed neutral):
+    reliability[verified - no_claim] | neutral                 n=8   mean=  +0.00  95% CI [  +0.00,   +0.00]
+    reliability[unverified - no_claim] | neutral               n=8   mean= +37.50  95% CI [ +12.50,  +75.00]
+    reliability[possibly_erroneous - no_claim] | neutral       n=8   mean= +50.00  95% CI [ +12.50,  +87.50]
