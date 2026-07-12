@@ -18,8 +18,10 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from provenance_injection_harness import (
-    Item, CANDIDATE_TYPES, factorial_conditions, reliability_conditions,
+    Item, CANDIDATE_TYPES, Condition, Observation, PARSER_VERSION,
+    factorial_conditions, reliability_conditions,
     solver_status_conditions, control_conditions, build_schedule, run_phase2,
+    build_judge_prompt, write_observation,
     analyse, analyse_reliability, analyse_solver_status, analyse_controls,
     analyse_protocol_interaction, missingness_report, run_metadata, parse_score, audit_pair)
 from judge_integrity_real import call_openrouter, _fmt
@@ -101,6 +103,64 @@ def stage_conditions(stage):
     return uniq, ctypes
 
 
+def _load_observations(path, items):
+    """Rebuild Observation records (with real Condition objects) from streamed JSONL."""
+    out = []
+    if not os.path.exists(path):
+        return out
+    for line in open(path):
+        d = json.loads(line)
+        c = d["condition"]
+        d["condition"] = Condition(c["label_key"], c["content_key"], c.get("reliability_key", "none"))
+        out.append(Observation(**d))
+    return out
+
+
+def _spec_key(item_id, model, cond, ctype, rep, proto):
+    return (item_id, model, cond.name, ctype, rep, proto)
+
+
+def resume_run(items, judges, conditions, ctypes, reps, obs_path, pr_path, schedule_seed=42):
+    """Re-run ONLY the schedule cells not already answered successfully in obs_path;
+    append new rows (evidence keeps streaming). A previously FAILED cell is retried.
+    order_index restarts per resume segment (recorded, documented)."""
+    import hashlib, time as _t
+    prior = _load_observations(obs_path, items)
+    done = {_spec_key(o.item_id, o.model, o.condition, o.candidate_type, o.repetition, o.protocol)
+            for o in prior if o.score is not None}
+    schedule = build_schedule(items, list(judges), conditions, ctypes, reps, PROTOCOLS, schedule_seed)
+    todo = [s for s in schedule
+            if _spec_key(s.item_id, s.model, s.condition, s.candidate_type, s.repetition, s.protocol) not in done]
+    print(f"[resume] {len(done)} cells already succeeded; {len(todo)} remaining of {len(schedule)}")
+    item_by_id = {i.item_id: i for i in items}
+    new = []
+    with open(obs_path, "a") as osink, open(pr_path, "a") as psink:
+        seen = set()
+        for idx, spec in enumerate(todo):
+            prompt = build_judge_prompt(item_by_id[spec.item_id], spec.condition,
+                                        spec.candidate_type, spec.protocol)
+            phash = hashlib.sha256(prompt.encode()).hexdigest()
+            if phash not in seen:
+                psink.write(json.dumps({"sha256": phash, "prompt": prompt}, ensure_ascii=False) + "\n")
+                psink.flush(); seen.add(phash)
+            raw, score, error = "", None, None
+            try:
+                r = judges[spec.model](prompt)
+                if not isinstance(r, str):
+                    raise TypeError(f"judge returned {type(r).__name__}")
+                raw = r; score = parse_score(raw)
+            except Exception as e:
+                error = f"{type(e).__name__}: {e}"
+            o = Observation(item_id=spec.item_id, model=spec.model, condition=spec.condition,
+                            candidate_type=spec.candidate_type, repetition=spec.repetition,
+                            protocol=spec.protocol, order_index=idx, prompt_sha256=phash,
+                            raw_response=raw, timestamp=_t.time(),
+                            parser_version=PARSER_VERSION, score=score, error=error)
+            write_observation(osink, o)
+            new.append(o)
+    return prior + new
+
+
 def phase1_leakage(items):
     w4 = [audit_pair(it.question, it.candidates["wrong_matching"],
                      it.injected["full_wrong_rationale"], "wrong_matching",
@@ -119,6 +179,10 @@ def main():
     ap.add_argument("--reps", type=int, default=2)
     ap.add_argument("--items", type=int, default=len(RAW))
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--resume", action="store_true",
+                    help="skip cells already answered successfully in the stage's JSONL; append the rest")
+    ap.add_argument("--analyse-only", action="store_true",
+                    help="no API calls; analyse whatever the stage's JSONL already holds")
     args = ap.parse_args()
     models = [x.strip() for x in args.models.split(",") if x.strip()]
     key = os.environ.get("OPENROUTER_API_KEY")
@@ -141,17 +205,24 @@ def main():
 
     items = build_items(key)[:args.items]
     phase1_leakage(items)
-    meta = run_metadata(items, models, {"stage": args.stage, "reps": args.reps,
-                                        "protocols": list(PROTOCOLS), "conditions": [c.name for c in conds]})
-    json.dump(meta, open(os.path.join(RES, f"provinj_meta_stage{args.stage}.json"), "w"), indent=1)
-    judges = {m: make_judge(m, key) for m in models}
     obs_path = os.path.join(RES, f"provinj_obs_stage{args.stage}.jsonl")
     pr_path = os.path.join(RES, f"provinj_prompts_stage{args.stage}.jsonl")
-    print(f"running stage {args.stage}: streaming to {os.path.basename(obs_path)} ...")
-    with open(obs_path, "w") as osink, open(pr_path, "w") as psink:
-        obs = run_phase2(items, judges, conds, candidate_types=ctypes,
-                         repetitions=args.reps, protocols=PROTOCOLS,
-                         schedule_seed=42, observation_sink=osink, prompt_sink=psink)
+    if args.analyse_only:
+        obs = _load_observations(obs_path, items)
+        print(f"[analyse-only] loaded {len(obs)} observations from {os.path.basename(obs_path)}")
+    elif args.resume:
+        judges = {m: make_judge(m, key) for m in models}
+        obs = resume_run(items, judges, conds, ctypes, args.reps, obs_path, pr_path)
+    else:
+        meta = run_metadata(items, models, {"stage": args.stage, "reps": args.reps,
+                                            "protocols": list(PROTOCOLS), "conditions": [c.name for c in conds]})
+        json.dump(meta, open(os.path.join(RES, f"provinj_meta_stage{args.stage}.json"), "w"), indent=1)
+        judges = {m: make_judge(m, key) for m in models}
+        print(f"running stage {args.stage}: streaming to {os.path.basename(obs_path)} ...")
+        with open(obs_path, "w") as osink, open(pr_path, "w") as psink:
+            obs = run_phase2(items, judges, conds, candidate_types=ctypes,
+                             repetitions=args.reps, protocols=PROTOCOLS,
+                             schedule_seed=42, observation_sink=osink, prompt_sink=psink)
 
     miss = missingness_report(obs)
     print(f"\n[completeness] total={miss['total']} failed={miss['failed']} rate={miss['rate']:.3f}")
