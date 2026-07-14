@@ -116,6 +116,13 @@ An explicitly post-hoc paired-choice view expresses capture as the probability t
 correct candidate loses at the conflict fork; see
 [`results/confirmatory_choice_probability.md`](results/confirmatory_choice_probability.md).
 
+The follow-up causal architecture test is frozen in
+[`PREREG_contextual_capture_architecture.md`](PREREG_contextual_capture_architecture.md).
+For continuation in a fresh context, start with
+[`HANDOFF_contextual_conclusion_capture.md`](HANDOFF_contextual_conclusion_capture.md).
+The proposed integrity-first benchmark is specified in
+[`BENCHMARK_BLUEPRINT_judge_integrity.md`](BENCHMARK_BLUEPRINT_judge_integrity.md).
+
 Free schedule check (no key and no API calls):
 
 ```bash

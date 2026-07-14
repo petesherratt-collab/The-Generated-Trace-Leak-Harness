@@ -1,0 +1,36 @@
+{
+ "experiment": "contextual_capture_architecture",
+ "started": 1784018378.4379032,
+ "models": [
+  "openai/gpt-4o-mini",
+  "anthropic/claude-haiku-4.5",
+  "google/gemini-2.5-flash",
+  "deepseek/deepseek-chat",
+  "meta-llama/llama-3.3-70b-instruct"
+ ],
+ "items": 16,
+ "architectures": [
+  "contaminated_score_only",
+  "contaminated_verify_written",
+  "context_isolated_score_only",
+  "conflict_router"
+ ],
+ "references": [
+  "correct_reference",
+  "wrong_reference"
+ ],
+ "candidates": [
+  "correct",
+  "wrong_matching"
+ ],
+ "repetitions": 3,
+ "schedule_seed": 984217603,
+ "judge_calls": 3840,
+ "solver_calls": 240,
+ "item_definitions_sha256": "f9c756a17c5460a56ad9194e5c6d999919a6c85a4c68f82f57aa727ac269aa7c",
+ "effective_stimuli_sha256": "16d7975e2e2b27c69520668904a6aa5051370727ec9918d218545b37721a5fe6",
+ "prereg_sha256": "701ef28bdd9cf24c09dc9f07f1d968d2ba0cc6e460a2b87eecd92491cab97851",
+ "runner_sha256": "fe55cc676ec3672d2e2b365ee7a43be94c0c953e63fc646b4ee42fbaa686f3c0",
+ "analysis_sha256": "5a0872ed448935450daf28c8fece581bcbbe560a8cda41f6d5d5a04a91051ff4",
+ "routing_policy": "agree=>exposed score-only; disagree/unparseable=>quarantine + fresh written verification"
+}
