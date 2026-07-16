@@ -280,7 +280,10 @@ For anyone building or running an LLM-judged evaluation:
 
 The [judge-integrity benchmark blueprint](experiments/BENCHMARK_BLUEPRINT_judge_integrity.md)
 sketches an evaluation that makes these properties a **release gate**, not a hidden
-assumption.
+assumption. For a visual summary of the two pipelines — the contaminated single-prompt
+setup vs. the isolate/compare/route architecture — see
+[`docs/PIPELINE_DIAGRAMS.md`](docs/PIPELINE_DIAGRAMS.md) (GitHub renders the diagrams
+natively).
 
 ---
 
