@@ -1,4 +1,15 @@
-# Findings — stage-2 preregistered provenance-injection run
+# Findings — stage-2 preregistered run: Contextual Conclusion Capture
+
+> **Central concept (renamed after this run).** The earlier "relocated authority channel"
+> hypothesis is falsified in its mechanism. What the data support is **Contextual
+> Conclusion Capture**: *a failure mode in which an AI judge's ability to distinguish
+> correct from incorrect candidates deteriorates merely because a conflicting conclusion
+> is present in its evaluation context, independent of that conclusion's stated authority
+> or supporting rationale.* The judge does not need to believe the foreign source is
+> authoritative; it may simply be unable to maintain an independent verdict once another
+> plausible final answer is present. Retired: "the sealed solver becomes the new answer
+> key." Replacement: "the solver's conclusion becomes a competing answer signal, whether
+> or not the solver is treated as authoritative."
 
 **Date:** 2026-07-12 · **Harness:** `provenance_injection_harness.py` (rev3) · **Prereg:**
 [`../PREREG_provenance.md`](../PREREG_provenance.md) · **Analysis log:**
@@ -20,10 +31,29 @@ restarts; streaming lost nothing). Missingness is **factor-correlated and disclo
   recovery budget); its contrasts run at n=6–8, fail-closed.
 - The other three models: ~0–1% failures.
 
-**Claude's refusal is itself a finding:** one model spontaneously will not produce a bare
-score without visible verification. Given score-only judging is the vulnerable configuration
-throughout this work, that non-compliance is arguably protective behavior — but it makes the
-model unbenchmarkable in the vulnerable mode rather than safe in it.
+**Claude's non-compliance is itself a finding, stated without attributing motive:** Claude
+Haiku was largely non-compliant with the vulnerable score-only protocol, preventing reliable
+measurement in that condition. Instructed to return a bare JSON score, it instead begins a
+written verification and truncates. We do not infer intent from this — the honest description
+is non-compliance that makes the model *unbenchmarkable in the vulnerable mode*, not
+demonstrably *safe* in it. Its verify_written side is complete and is interpreted normally.
+
+### Row accounting and deduplication
+
+The evidence file `provinj_obs_stage2.jsonl` holds **5,313 stored observations**, which is
+larger than the 4,800 intended cells because it records retry and cross-restart recovery
+attempts, not just final results. The reconciliation is:
+
+- **4,800** unique intended cells (8 items × 5 models × 2 protocols × conditions × candidates × 2 reps, per the schedule).
+- **4,575** cells with a successful final observation (the analysed set).
+- **738** failed attempts (truncations, retries, recovery passes) also streamed to the log.
+- **0** cells with more than one successful row.
+
+Deduplication key: `(item, model, condition, candidate, rep, protocol)`. **Only the final
+successful attempt per cell enters analysis**; failed attempts are retained in the log for
+audit but excluded from every estimate. (5,313 stored − 738 failed attempts = 4,575 analysed
+successes; the 225-cell gap to 4,800 is the fail-closed missingness catalogued above, almost
+all claude × score_only and gemini × verify_written.)
 
 ## Prereg scorecard (95% item-clustered CI excluding 0 in the predicted direction = supported)
 
@@ -90,8 +120,12 @@ abolished: partial mitigation, architectural residue.
 1. **The capture phenomenon is real and preregistration-robust** (contrast 1), and the
    verify protocol **attenuates but does not abolish it** (contrast 4 + gpt/llama's
    still-significant verify-mode harm). The architectural conclusion stands on firmer
-   ground: protocol-level mitigation is partial, so conflict-routing + independent
-   verification remains the only complete fix.
+   ground, stated within what was actually tested: written verification reduced capture in
+   every measurable model and significantly so for gemini, but gpt-4o-mini and llama
+   remained captured. So **the results support conflict routing and context separation as
+   stronger safeguards than prompt-level warnings or written-verification instructions
+   alone.** They do *not* prove no other architecture could solve it — only that the
+   prompt-level and verification mitigations we tested are incomplete.
 2. **Provenance identity is exonerated** (contrast 2). Labels don't carry the effect;
    the conflicting content does. Prompt-level "don't trust the solver" interventions were
    already shown weak; now we know even the *label itself* isn't the mechanism.
