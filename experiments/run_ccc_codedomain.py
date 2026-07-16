@@ -31,7 +31,7 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _load_env import load_env
 from ccc_code_items import ITEMS
-from ccc_code_runner import self_verify as sandbox_self_verify, sha256_of
+from ccc_code_runner import self_verify as sandbox_self_verify, ACCEPTED_PYTHON
 from provenance_injection_harness import parse_score
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +41,7 @@ RES = os.path.join(HERE, "results")
 # Frozen file hashes are computed on LINE-ENDING-NORMALISED bytes (CRLF/CR -> LF)
 # so a Windows checkout (git may convert to CRLF) matches the canonical LF hash.
 ITEMS_SHA = "f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28"
-RUNNER_SHA = "082bab50cf1bd42701977831e0cb088a560a7ed0cfb37354ccd287b52219342b"
+RUNNER_SHA = "69cc9ec0d8a51aacdb498461120cb951a0bca16acd876a20a0e8ca7619aa82c6"
 SEED_STAGE1 = 517293846
 REPS = 3
 MODELS = [
@@ -85,8 +85,10 @@ def release_gate() -> None:
     got_runner = _norm_sha256(os.path.join(HERE, "ccc_code_runner.py"))
     assert got_items == ITEMS_SHA, f"ccc_code_items.py hash drift: {got_items}"
     assert got_runner == RUNNER_SHA, f"ccc_code_runner.py hash drift: {got_runner}"
-    if sys.version_info[:2] != (3, 11):
-        raise RuntimeError(f"prereg pins CPython 3.11; found {sys.version_info[:2]}")
+    if sys.version_info[:2] not in ACCEPTED_PYTHON:
+        acc = ", ".join(f"{a}.{b}" for a, b in ACCEPTED_PYTHON)
+        raise RuntimeError(f"prereg accepts CPython {{{acc}}} (gold verified equal on each); "
+                           f"found {sys.version_info[0]}.{sys.version_info[1]}")
     sandbox_self_verify()  # references gold-correct, buggy variants decoys, deterministic
     print(f"release gate OK: hashes match (LF-normalised), interpreter "
           f"{sys.version.split()[0]}, sandbox self-verify passed")

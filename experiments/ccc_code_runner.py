@@ -36,7 +36,9 @@ import subprocess
 import sys
 
 # --- Frozen sandbox parameters (part of the preregistered contract) -------------
-PYTHON_REQUIRED = (3, 11)      # CPython major.minor; child and parent must match
+# CPython (major, minor) versions whose gold labels were verified byte-identical
+# (gold signature 634302aa... across 3.10-3.13). Frozen accepted range for a run:
+ACCEPTED_PYTHON = ((3, 11), (3, 12), (3, 13))
 CPU_SECONDS = 2                # RLIMIT_CPU soft (hard = soft + 1) in the child
 WALL_TIMEOUT_S = 5             # parent-side wall-clock backstop (SIGKILL)
 ADDRESS_SPACE_BYTES = 512 * 1024 * 1024   # RLIMIT_AS (512 MiB)
@@ -122,11 +124,12 @@ print(json.dumps({{"passed": passed, "total": len(tests), "detail": detail}}))
 
 
 def _require_python() -> None:
-    if sys.version_info[:2] != PYTHON_REQUIRED:
+    if sys.version_info[:2] not in ACCEPTED_PYTHON:
+        accepted = ", ".join(f"{a}.{b}" for a, b in ACCEPTED_PYTHON)
         raise RuntimeError(
-            f"CCC runner requires CPython {PYTHON_REQUIRED[0]}.{PYTHON_REQUIRED[1]}; "
-            f"found {sys.version_info[0]}.{sys.version_info[1]}. Gold is only valid on "
-            "the frozen interpreter.")
+            f"CCC runner requires CPython in {{{accepted}}}; found "
+            f"{sys.version_info[0]}.{sys.version_info[1]}. Gold was verified only on "
+            "those interpreters.")
 
 
 def _preexec():  # pragma: no cover - runs only in the forked child before exec

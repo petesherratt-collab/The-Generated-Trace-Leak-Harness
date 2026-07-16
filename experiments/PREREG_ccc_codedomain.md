@@ -17,21 +17,28 @@ LF hash.
 | Artifact | Role | SHA-256 (LF-normalised) |
 |---|---|---|
 | [`ccc_code_items.py`](ccc_code_items.py) | frozen items + unit-test gold | `f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28` |
-| [`ccc_code_runner.py`](ccc_code_runner.py) | sandboxed deterministic grader (authoritative gold) | `082bab50cf1bd42701977831e0cb088a560a7ed0cfb37354ccd287b52219342b` |
+| [`ccc_code_runner.py`](ccc_code_runner.py) | sandboxed deterministic grader (authoritative gold) | `69cc9ec0d8a51aacdb498461120cb951a0bca16acd876a20a0e8ca7619aa82c6` |
 
-**Interpreter pin:** CPython **3.11** (developed and self-verified on 3.11.15). Both file hashes
-are re-checked, and `ccc_code_runner.self_verify()` re-run, at the start of every stage; a
-mismatch or a self-verify failure aborts the run.
+**Interpreter pin:** CPython **3.11–3.13** (frozen accepted set `{3.11, 3.12, 3.13}`). The gold
+signature — the full `(item, reference pass/total, buggy pass/total)` vector — was verified
+**byte-identical (`634302aa…`) across CPython 3.10, 3.11, 3.12 and 3.13**, and the sandboxed
+`self_verify()` passes under 3.11/3.12/3.13; the accepted set is frozen at 3.11–3.13. Both file
+hashes are re-checked, and `ccc_code_runner.self_verify()` re-run, at the start of every stage;
+a version outside the set, a hash mismatch, or a self-verify failure aborts the run.
 
-**Pre-data revision (transparent).** The runner was revised **before any Stage-1 API call or
-data collection** to be cross-platform: the POSIX-only resource limits and `preexec_fn` are now
-guarded so the grader also runs on native Windows (where the wall-clock timeout is the runtime
-bound; network/write blocks, fixed hash seed, and fail-closed grading remain in force, so gold
-labels are identical on every OS). This changed the runner's hash from the initial
-`4570b2d9…62d5e` to `082bab50…9342b` above. No experimental data existed under the prior hash;
-the design freeze (items, conditions, contrasts, thresholds, seeds) is unchanged. The `.py`
-files are held to LF via `.gitattributes`; the LF-normalised hashing makes the check robust even
-for a checkout that predates it.
+**Pre-data revisions (transparent; no experimental data existed under any prior hash; the design
+freeze — items, conditions, contrasts, thresholds, seeds — is unchanged):**
+
+1. Made the runner **cross-platform**: the POSIX-only resource limits and `preexec_fn` are
+   guarded so the grader also runs on native Windows (where the wall-clock timeout is the runtime
+   bound; network/write blocks, fixed hash seed, and fail-closed grading remain in force, so gold
+   labels are identical on every OS).
+2. **Widened the interpreter pin** from a single 3.11 to the verified set 3.11–3.13, after
+   confirming the gold signature is identical across 3.10–3.13.
+
+These changed the runner hash `4570b2d9…62d5e` → `082bab50…9342b` → `69cc9ec0…82c6` (current).
+The `.py` files are held to LF via `.gitattributes`; the LF-normalised hashing makes the check
+robust even for a checkout that predates it.
 
 This is the **independent-domain replication**, not a larger run of the numeric study. The
 question is whether Contextual Conclusion Capture (CCC) — loss of correct-vs-incorrect judge
@@ -330,7 +337,7 @@ missingness report and primary contrast are computed, and is not revisited.
 
 The run **counts** (is analysable and reportable) only if all integrity gates hold:
 
-1. At run start on CPython 3.11: both frozen file hashes (`ccc_code_items.py`,
+1. At run start on CPython 3.11–3.13: both frozen file hashes (`ccc_code_items.py`,
    `ccc_code_runner.py`) match the § "Frozen artifacts" table, and
    `ccc_code_runner.self_verify()` passes (references gold-correct, buggy variants decoys,
    grading deterministic across repeats). Gold is computed only via `grade_sandboxed`.
