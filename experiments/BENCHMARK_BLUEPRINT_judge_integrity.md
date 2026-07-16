@@ -91,6 +91,8 @@ Key metrics:
 - conflict detection sensitivity and false-conflict rate;
 - position, identity and wording sensitivity;
 - judge calibration against machine-verifiable truth;
+- **judge stability**: per-cell repetition SD (k >= 3), published per judge — an unstable
+  judge fails the gate regardless of its mean accuracy;
 - missingness and retry rates by every experimental factor.
 
 Evaluator-integrity thresholds are frozen before a release. If the evaluator fails, the model
@@ -119,6 +121,37 @@ Publish three separate outputs:
 Do not collapse these into one opaque number. A task score is publishable only when the
 evaluator-integrity gate passes. Report confidence intervals clustered over task families, not
 individual repeated calls.
+
+### Uncertainty is a first-class output
+
+A leaderboard that prints `71.3` vs `70.8` with no interval is claiming a distinction it never
+measured. Every published score carries an uncertainty estimate, and the variance is reported
+**decomposed**, because a single pooled standard deviation conflates sources with different
+meanings:
+
+1. **Item variance** (which questions were asked). The dominant component. Reported as an
+   item-clustered bootstrap interval — not a plain SD, because scores saturate at the scale
+   ends and repetitions within an item are correlated, so an SD would look precise while
+   being wrong.
+2. **Repetition variance** (judge stability). The same cell run k >= 3 times measures the
+   judge's run-to-run instability, even at temperature 0. This is a property of the
+   *evaluator*, published per judge as a reliability statistic. A judge that scores the same
+   item [100, 0, 100] across reps is not a usable instrument, and a single-pass benchmark
+   cannot detect this at all — the intermittent poison failures in the sensitivity autopsy
+   (rep patterns like [1.0, 0.0, 1.0]) were invisible to any one pass.
+3. **Wording variance** (prompt sensitivity). Measured by the mirrored paraphrase probes;
+   published as the between-variant spread against the within-variant noise floor. This
+   component can exceed the model differences being ranked and is almost never measured.
+
+Condition/model variance is the effect under study and stays out of the error bar.
+
+**Ranking rule:** two models whose intervals overlap are reported as *statistically
+indistinguishable at this benchmark's resolution* — the leaderboard shows the tie rather than
+an unearned ordering. Ranks are claims; intervals are the evidence for them.
+
+Repetitions are what make any of this measurable: a benchmark that evaluates each item once
+has no repetition variance to report and no way to detect an unstable judge. k >= 3 is the
+floor, priced into the cost budget from the start.
 
 ## Dataset governance
 
