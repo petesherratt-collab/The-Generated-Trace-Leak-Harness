@@ -10,20 +10,23 @@ and architecture test ([`PREREG_contextual_capture_architecture.md`](PREREG_cont
 
 ### Frozen artifacts (exact-commit freeze)
 
-The design is frozen at a single git commit, tagged **`prereg-ccc-codedomain-v1`**. The three
-frozen artifacts and their SHA-256 file hashes:
+The design is frozen at git commit **`9625815d77bb60fddc135d9ec2eb8faf02ad1724`** (on
+`origin/claude/amazing-faraday-gvs9fy`). The three frozen artifacts and their SHA-256 file
+hashes:
 
 | Artifact | Role | SHA-256 |
 |---|---|---|
 | [`ccc_code_items.py`](ccc_code_items.py) | frozen items + unit-test gold | `f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28` |
 | [`ccc_code_runner.py`](ccc_code_runner.py) | sandboxed deterministic grader (authoritative gold) | `4570b2d98675fae19ce6aa95174502f8c9ab09f9dba07b9c5cbcbf4622262d5e` |
-| `PREREG_ccc_codedomain.md` | this preregistration | *(this file, frozen at tag `prereg-ccc-codedomain-v1`)* |
+| `PREREG_ccc_codedomain.md` | this preregistration | *(frozen at commit `9625815`; this note added in the immediate follow-up commit)* |
 
-**Interpreter pin:** CPython **3.11** (developed and self-verified on 3.11.15). Both hashes are
-re-checked, and `ccc_code_runner.self_verify()` re-run, at the start of every stage; a mismatch
-or a self-verify failure aborts the run. The tagged commit hash is the authoritative freeze
-reference (a file cannot contain its own commit's hash); the file hashes above pin content
-independently of git.
+**Interpreter pin:** CPython **3.11** (developed and self-verified on 3.11.15). Both file hashes
+are re-checked, and `ccc_code_runner.self_verify()` re-run, at the start of every stage; a
+mismatch or a self-verify failure aborts the run. **The two file hashes are the primary,
+content-addressed freeze** — they pin the items and the authoritative grader independently of
+git. The commit SHA above is the git-level freeze reference. (A local tag
+`prereg-ccc-codedomain-v1` also marks commit `9625815`, but the managed remote does not accept
+pushes to `refs/tags/*`, so cite the commit SHA and the file hashes as authoritative.)
 
 This is the **independent-domain replication**, not a larger run of the numeric study. The
 question is whether Contextual Conclusion Capture (CCC) — loss of correct-vs-incorrect judge
