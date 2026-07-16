@@ -86,6 +86,26 @@ python3 experiments/run_ccc_codedomain.py --resume
 python3 experiments/run_ccc_codedomain.py --analyse-only
 ```
 
+### Progress reporting (for long runs — this can take many hours)
+
+The run prints a **heartbeat every 10 minutes** by default (change with `--progress-secs N`),
+and appends the same line to `results/ccc_code_progress_stage1.txt`, e.g.:
+
+```
+[progress]  73.2 min | 1180/3840 cells (30.7%) | +1180 ok / 41 fail this run | 16.1 calls/min | ETA ~2.7 h | gpt-4o-min:250/768 ...
+```
+
+From a **second terminal** you can check status any time without touching the run (read-only):
+
+```bash
+python3 experiments/monitor_ccc_stage1.py            # one snapshot: %done, ok/fail, ETA, per-model
+python3 experiments/monitor_ccc_stage1.py --watch 600  # refresh every 10 minutes
+```
+
+The monitor de-duplicates to one final state per cell and flags any model with a high failure
+rate (expect this for Claude score_only). Give the user periodic updates from either source
+(the user specifically wants ~10-minute progress reports on long runs).
+
 The release gate (step 1/3 start) re-checks both frozen hashes (LF-normalised), the interpreter,
 and re-runs the sandbox `self_verify()`. If it aborts, **stop and report the message** — do not
 edit frozen files.

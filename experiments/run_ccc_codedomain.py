@@ -67,7 +67,9 @@ OBS_PATH = os.path.join(RES, "ccc_code_obs_stage1.jsonl")
 PROMPTS_PATH = os.path.join(RES, "ccc_code_prompts_stage1.jsonl")
 STIM_PATH = os.path.join(RES, "ccc_code_stimuli_stage1.json")
 META_PATH = os.path.join(RES, "ccc_code_meta_stage1.json")
-ITEM_IDS = [it["name"] for it in ITEMS]
+PROGRESS_PATH = os.path.join(RES, "ccc_code_progress_stage1.txt")
+TOTAL_CELLS = len(ITEM_IDS := [it["name"] for it in ITEMS]) * len(MODELS) * len(CONDITIONS) * len(CANDIDATES) * len(PROTOCOLS) * REPS
+PER_MODEL_TOTAL = TOTAL_CELLS // len(MODELS)   # 768
 _ITEM = {it["name"]: it for it in ITEMS}
 
 
@@ -214,16 +216,49 @@ def judge_once(prompt, model, protocol, key, call_fn):
 
 
 # --- Run (real or stubbed) ------------------------------------------------------
-def run(stim, key, call_fn, resume=False):
+def _progress_line(elapsed, done_ct, total, n_new, n_fail, per_model):
+    """Human-readable heartbeat: elapsed, completion, throughput, ETA, per model."""
+    rate = (n_new + n_fail) / elapsed * 60 if elapsed > 0 else 0.0          # calls/min this run
+    remaining = total - done_ct
+    eta_h = (remaining / (n_new + n_fail) * elapsed / 3600) if (n_new + n_fail) else float("nan")
+    pm = " ".join(f"{m.split('/')[-1][:10]}:{c}/{PER_MODEL_TOTAL}" for m, c in sorted(per_model.items()))
+    return (f"[progress] {elapsed/60:6.1f} min | {done_ct}/{total} cells "
+            f"({100*done_ct/total:4.1f}%) | +{n_new} ok / {n_fail} fail this run | "
+            f"{rate:4.1f} calls/min | ETA ~{eta_h:4.1f} h | {pm}")
+
+
+def run(stim, key, call_fn, resume=False, progress_secs=600):
     os.makedirs(RES, exist_ok=True)
     schedule = build_schedule()
+    total = len(schedule)
     done = load_successful(OBS_PATH) if resume else {}
     seen_prompt = set()
     if resume and os.path.exists(PROMPTS_PATH):
         seen_prompt = {json.loads(l)["sha256"] for l in open(PROMPTS_PATH) if l.strip()}
     mode = "a" if resume else "w"
     n_new = n_skip = n_fail = 0
+    from collections import Counter
+    per_model = Counter({m: 0 for m in MODELS})
+    for k in done:                                   # count resumed successes per model
+        per_model[k[1]] += 1
+    start = last_report = time.time()
+
+    def heartbeat(force=False):
+        now = time.time()
+        if force or (now - last_report[0]) >= progress_secs:
+            done_ct = len(done) + n_new + n_fail          # already-done + attempted this run
+            line = _progress_line(now - start, done_ct, total, n_new, n_fail, per_model)
+            print(line, flush=True)
+            try:
+                with open(PROGRESS_PATH, "a") as pf:
+                    pf.write(time.strftime("%Y-%m-%d %H:%M:%S ") + line + "\n")
+            except OSError:
+                pass
+            last_report[0] = now
+
+    last_report = [last_report]                      # boxed so the closure can mutate it
     with open(OBS_PATH, mode) as osink, open(PROMPTS_PATH, mode) as psink:
+        heartbeat(force=True)                        # one line at the start
         for order_index, (item_id, model, label, content, cand, proto, rep) in enumerate(schedule):
             row_key = (item_id, model, label, content, cand, rep, proto)
             if row_key in done:
@@ -248,6 +283,9 @@ def run(stim, key, call_fn, resume=False):
                 n_fail += 1
             else:
                 n_new += 1
+                per_model[model] += 1
+            heartbeat()
+    heartbeat(force=True)                            # final line
     print(f"run complete: {n_new} new successes, {n_skip} skipped (resume), {n_fail} failed")
 
 
@@ -404,6 +442,9 @@ def main():
     ap.add_argument("--run", action="store_true")
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--analyse-only", action="store_true")
+    ap.add_argument("--progress-secs", type=int, default=600,
+                    help="heartbeat interval in seconds (default 600 = every 10 min); "
+                         "also appended to results/ccc_code_progress_stage1.txt")
     args = ap.parse_args()
 
     if args.analyse_only:
@@ -434,12 +475,13 @@ def main():
 
     if args.wiring_check:
         # write metadata + run the full pipeline with the stub judge into throwaway paths
-        global OBS_PATH, PROMPTS_PATH
+        global OBS_PATH, PROMPTS_PATH, PROGRESS_PATH
         OBS_PATH = os.path.join(RES, "ccc_code_obs_wiring.jsonl")
         PROMPTS_PATH = os.path.join(RES, "ccc_code_prompts_wiring.jsonl")
-        run(stim, key="STUB", call_fn=_stub_call, resume=False)
+        PROGRESS_PATH = os.path.join(RES, "ccc_code_progress_wiring.txt")
+        run(stim, key="STUB", call_fn=_stub_call, resume=False, progress_secs=args.progress_secs)
         analyse()
-        for p in (OBS_PATH, PROMPTS_PATH):
+        for p in (OBS_PATH, PROMPTS_PATH, PROGRESS_PATH):
             try:
                 os.remove(p)
             except OSError:
@@ -464,7 +506,7 @@ def main():
             "effective_stimulus_sha256": stim_sha, "python": sys.version.split()[0],
         }
         json.dump(meta, open(META_PATH, "w"), indent=1)
-        run(stim, key, call_openrouter, resume=args.resume)
+        run(stim, key, call_openrouter, resume=args.resume, progress_secs=args.progress_secs)
         analyse()
         return
 
