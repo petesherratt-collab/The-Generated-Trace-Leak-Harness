@@ -10,23 +10,28 @@ and architecture test ([`PREREG_contextual_capture_architecture.md`](PREREG_cont
 
 ### Frozen artifacts (exact-commit freeze)
 
-The design is frozen at git commit **`9625815d77bb60fddc135d9ec2eb8faf02ad1724`** (on
-`origin/claude/amazing-faraday-gvs9fy`). The three frozen artifacts and their SHA-256 file
-hashes:
+The two content-addressed file hashes are the primary freeze. They are computed on
+**line-ending-normalised bytes (CRLF/CR → LF)** so a Windows checkout matches the canonical
+LF hash.
 
-| Artifact | Role | SHA-256 |
+| Artifact | Role | SHA-256 (LF-normalised) |
 |---|---|---|
 | [`ccc_code_items.py`](ccc_code_items.py) | frozen items + unit-test gold | `f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28` |
-| [`ccc_code_runner.py`](ccc_code_runner.py) | sandboxed deterministic grader (authoritative gold) | `4570b2d98675fae19ce6aa95174502f8c9ab09f9dba07b9c5cbcbf4622262d5e` |
-| `PREREG_ccc_codedomain.md` | this preregistration | *(frozen at commit `9625815`; this note added in the immediate follow-up commit)* |
+| [`ccc_code_runner.py`](ccc_code_runner.py) | sandboxed deterministic grader (authoritative gold) | `082bab50cf1bd42701977831e0cb088a560a7ed0cfb37354ccd287b52219342b` |
 
 **Interpreter pin:** CPython **3.11** (developed and self-verified on 3.11.15). Both file hashes
 are re-checked, and `ccc_code_runner.self_verify()` re-run, at the start of every stage; a
-mismatch or a self-verify failure aborts the run. **The two file hashes are the primary,
-content-addressed freeze** — they pin the items and the authoritative grader independently of
-git. The commit SHA above is the git-level freeze reference. (A local tag
-`prereg-ccc-codedomain-v1` also marks commit `9625815`, but the managed remote does not accept
-pushes to `refs/tags/*`, so cite the commit SHA and the file hashes as authoritative.)
+mismatch or a self-verify failure aborts the run.
+
+**Pre-data revision (transparent).** The runner was revised **before any Stage-1 API call or
+data collection** to be cross-platform: the POSIX-only resource limits and `preexec_fn` are now
+guarded so the grader also runs on native Windows (where the wall-clock timeout is the runtime
+bound; network/write blocks, fixed hash seed, and fail-closed grading remain in force, so gold
+labels are identical on every OS). This changed the runner's hash from the initial
+`4570b2d9…62d5e` to `082bab50…9342b` above. No experimental data existed under the prior hash;
+the design freeze (items, conditions, contrasts, thresholds, seeds) is unchanged. The `.py`
+files are held to LF via `.gitattributes`; the LF-normalised hashing makes the check robust even
+for a checkout that predates it.
 
 This is the **independent-domain replication**, not a larger run of the numeric study. The
 question is whether Contextual Conclusion Capture (CCC) — loss of correct-vs-incorrect judge
@@ -93,10 +98,14 @@ authoring grader and never by a model. The runner's frozen contract:
   randomness, clock, or I/O, so outputs are a pure function of inputs. `self_verify()` grades
   every item twice and **requires identical results across repeats** — any non-determinism voids
   the item.
-- **Resource limits** (set in the child before the candidate is exec'd): `RLIMIT_CPU` = 2 s
-  (soft; hard = 3 s), `RLIMIT_AS` = 512 MiB, `RLIMIT_NPROC` = 64, `RLIMIT_NOFILE` = 64,
-  `RLIMIT_FSIZE` = 0. A **wall-clock timeout** of 5 s (parent-side, SIGKILL) backstops any soft
-  CPU-limit evasion (e.g. sleeping).
+- **Resource limits** (set in the child before the candidate is exec'd; **POSIX-only**):
+  `RLIMIT_CPU` = 2 s (soft; hard = 3 s), `RLIMIT_AS` = 512 MiB, `RLIMIT_NPROC` = 64,
+  `RLIMIT_NOFILE` = 64, `RLIMIT_FSIZE` = 0. On native Windows these are skipped (no `resource`
+  module / `preexec_fn`) and the wall-clock timeout is the runtime bound; the net/write blocks,
+  fixed hash seed, and fail-closed grading are cross-platform, so gold labels are identical on
+  every OS. A **wall-clock timeout** of 5 s (parent-side, SIGKILL) backstops any soft CPU-limit
+  evasion (e.g. sleeping). **For the full limit set, run on POSIX** (Linux/macOS/WSL); the frozen
+  items never approach the limits, so the labels do not depend on them.
 - **No network:** `socket.socket` / `create_connection` / `create_server` are neutralised before
   the candidate runs.
 - **No filesystem writes:** write-mode `open` and `os.open` create/write flags are blocked (in

@@ -1,0 +1,10 @@
+# Normalise line endings to LF in the repository and on checkout for text files,
+# so content hashes of frozen artifacts are stable across Linux / macOS / Windows.
+* text=auto eol=lf
+*.py   text eol=lf
+*.md   text eol=lf
+*.json text eol=lf
+*.jsonl text eol=lf
+*.txt  text eol=lf
+*.yml  text eol=lf
+*.sha256 text eol=lf

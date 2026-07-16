@@ -11,7 +11,12 @@ Isolation / determinism guarantees (see the preregistration for the contract):
     ambient environment, user site-packages, or parent state leaks in.
   - **Deterministic hashing:** child runs with `PYTHONHASHSEED=0`.
   - **CPU + memory + process + fd limits** applied via `resource.setrlimit` in the
-    child *before* the candidate code is exec'd.
+    child *before* the candidate code is exec'd. These are **POSIX-only**; on native
+    Windows (no `resource` module, no `preexec_fn`) they are skipped and the wall-clock
+    timeout is the runtime bound. The network/write blocks, fixed hash seed, and
+    fail-closed grading are cross-platform, so gold labels are identical on every OS.
+    (Run on POSIX for the full limit set; the frozen items never approach the limits,
+    so the labels do not depend on them.)
   - **Wall-clock timeout** enforced by the parent (SIGKILL backstop) in case a soft
     CPU limit is evaded (e.g. sleeping).
   - **No network:** `socket` is neutralised in the child before the candidate runs.
@@ -41,7 +46,11 @@ MAX_PROCESSES = 64             # RLIMIT_NPROC (per-uid; modest, blocks fork bomb
 # The child harness. Run via `python3 -I -S -c <this>`; reads {"source","tests"}
 # as JSON on stdin, applies limits, neutralises the network, then grades.
 _CHILD = r'''
-import sys, json, resource, socket, builtins
+import sys, json, socket, builtins
+try:
+    import resource            # POSIX only; absent on native Windows
+except Exception:
+    resource = None
 # 1) read the job BEFORE tightening limits (json import must succeed)
 job = json.loads(sys.stdin.read())
 source, tests = job["source"], job["tests"]
@@ -67,22 +76,28 @@ def _guard_osopen(path, flags, *a, **k):
         _no_write()
     return _real_osopen(path, flags, *a, **k)
 _os.open = _guard_osopen
-# 3) resource limits (soft, hard)
-CPU = {cpu}
-resource.setrlimit(resource.RLIMIT_CPU, (CPU, CPU + 1))
-AS = {addr}
-try:
-    resource.setrlimit(resource.RLIMIT_AS, (AS, AS))
-except (ValueError, OSError):
-    pass
-try:
-    resource.setrlimit(resource.RLIMIT_FSIZE, (0, 0))   # no candidate file writes
-except (ValueError, OSError):
-    pass
-try:
-    resource.setrlimit(resource.RLIMIT_NOFILE, ({nofile}, {nofile}))
-except (ValueError, OSError):
-    pass
+# 3) resource limits (soft, hard) -- POSIX only; on Windows the wall-clock
+#    timeout in the parent is the runtime bound, and net/write blocks + the
+#    fixed hash seed still apply, so grading stays deterministic and contained.
+if resource is not None:
+    CPU = {cpu}
+    try:
+        resource.setrlimit(resource.RLIMIT_CPU, (CPU, CPU + 1))
+    except (ValueError, OSError):
+        pass
+    AS = {addr}
+    try:
+        resource.setrlimit(resource.RLIMIT_AS, (AS, AS))
+    except (ValueError, OSError):
+        pass
+    try:
+        resource.setrlimit(resource.RLIMIT_FSIZE, (0, 0))   # no candidate file writes
+    except (ValueError, OSError):
+        pass
+    try:
+        resource.setrlimit(resource.RLIMIT_NOFILE, ({nofile}, {nofile}))
+    except (ValueError, OSError):
+        pass
 # 4) exec the candidate, then run each frozen test
 ns = {{}}
 passed = 0
@@ -135,11 +150,13 @@ def grade_sandboxed(source: str, tests, wall_timeout_s: int = WALL_TIMEOUT_S):
         "tests": [[list(args), expected] for args, expected in tests],
     })
     env = {"PYTHONHASHSEED": "0", "PATH": os.environ.get("PATH", "/usr/bin:/bin")}
+    # preexec_fn (RLIMIT_NPROC) is POSIX-only; omit it off POSIX.
+    preexec = _preexec if os.name == "posix" else None
     try:
         proc = subprocess.run(
             [sys.executable, "-I", "-S", "-c", _CHILD],
             input=payload, capture_output=True, text=True,
-            timeout=wall_timeout_s, env=env, preexec_fn=_preexec, check=False,
+            timeout=wall_timeout_s, env=env, preexec_fn=preexec, check=False,
         )
     except subprocess.TimeoutExpired:
         return 0, len(tests), {"error": "wall_timeout"}

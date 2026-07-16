@@ -38,8 +38,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.join(HERE, "results")
 
 # --- Frozen design constants (must match PREREG_ccc_codedomain.md) --------------
+# Frozen file hashes are computed on LINE-ENDING-NORMALISED bytes (CRLF/CR -> LF)
+# so a Windows checkout (git may convert to CRLF) matches the canonical LF hash.
 ITEMS_SHA = "f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28"
-RUNNER_SHA = "4570b2d98675fae19ce6aa95174502f8c9ab09f9dba07b9c5cbcbf4622262d5e"
+RUNNER_SHA = "082bab50cf1bd42701977831e0cb088a560a7ed0cfb37354ccd287b52219342b"
 SEED_STAGE1 = 517293846
 REPS = 3
 MODELS = [
@@ -70,15 +72,24 @@ _ITEM = {it["name"]: it for it in ITEMS}
 
 
 # --- Release gate ---------------------------------------------------------------
+def _norm_sha256(path: str) -> str:
+    """SHA-256 over line-ending-normalised bytes (CRLF/CR -> LF), so the frozen
+    hash is stable whether git checked the file out with LF or CRLF."""
+    with open(path, "rb") as fh:
+        data = fh.read().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 def release_gate() -> None:
-    got_items = sha256_of(os.path.join(HERE, "ccc_code_items.py"))
-    got_runner = sha256_of(os.path.join(HERE, "ccc_code_runner.py"))
+    got_items = _norm_sha256(os.path.join(HERE, "ccc_code_items.py"))
+    got_runner = _norm_sha256(os.path.join(HERE, "ccc_code_runner.py"))
     assert got_items == ITEMS_SHA, f"ccc_code_items.py hash drift: {got_items}"
     assert got_runner == RUNNER_SHA, f"ccc_code_runner.py hash drift: {got_runner}"
     if sys.version_info[:2] != (3, 11):
         raise RuntimeError(f"prereg pins CPython 3.11; found {sys.version_info[:2]}")
     sandbox_self_verify()  # references gold-correct, buggy variants decoys, deterministic
-    print("release gate OK: hashes match, interpreter 3.11, sandbox self-verify passed")
+    print(f"release gate OK: hashes match (LF-normalised), interpreter "
+          f"{sys.version.split()[0]}, sandbox self-verify passed")
 
 
 # --- Effective stimuli (deterministic, frozen, hashed) --------------------------
