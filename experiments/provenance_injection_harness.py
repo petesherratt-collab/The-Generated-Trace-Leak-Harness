@@ -727,6 +727,7 @@ def run_phase2(
     schedule_seed: int = 0,
     observation_sink=None,   # optional writable file: each Observation streamed + flushed
     prompt_sink=None,        # optional writable file: {sha256, prompt} manifest, deduped
+    progress_every: Optional[int] = None,  # operational logging only; never affects schedule
 ) -> list[Observation]:
     """Evidence is streamed as it is produced. observation_sink receives one JSONL
     row per call (flushed immediately); prompt_sink receives a deduplicated
@@ -764,6 +765,10 @@ def run_phase2(
         if observation_sink is not None:
             write_observation(observation_sink, o)
         obs.append(o)
+        if progress_every and (idx + 1) % progress_every == 0:
+            failures = sum(x.score is None for x in obs)
+            print(f"[progress] {idx + 1}/{len(schedule)} attempts; failures={failures}",
+                  flush=True)
     return obs
 
 
@@ -909,7 +914,8 @@ def cluster_bootstrap(
 
 
 def analyse(obs: Sequence[Observation], model: str, protocol: str = "score_only",
-            n_boot: int = 2000, seed: int = 0) -> list[EffectEstimate]:
+            n_boot: int = 2000, seed: int = 0,
+            require_reps: Optional[int] = None) -> list[EffectEstimate]:
     """Primary paired contrasts (positive = more capture):
       - provenance harm: each identity label vs the NEUTRAL label, per content
       - header harm: neutral label vs unlabelled (presentation effect, separate)
@@ -924,32 +930,38 @@ def analyse(obs: Sequence[Observation], model: str, protocol: str = "score_only"
     for content in contents:
         neutral = Condition("neutral", content)
         for label in ("solver", "reviewer", "candidate"):
-            pi = per_item_harm(obs, model, neutral, Condition(label, content), protocol)
+            pi = per_item_harm(obs, model, neutral, Condition(label, content), protocol,
+                               require_reps=require_reps)
             effects.append(cluster_bootstrap(
                 pi, f"provenance harm[{label} vs neutral] | {content} {tag}", n_boot, seed))
-        pi = per_item_harm(obs, model, Condition("unlabelled", content), neutral, protocol)
+        pi = per_item_harm(obs, model, Condition("unlabelled", content), neutral, protocol,
+                           require_reps=require_reps)
         effects.append(cluster_bootstrap(
             pi, f"header harm[neutral vs unlabelled] | {content} {tag}", n_boot, seed))
 
     for label in PROVENANCE_LABELS:
         pi = per_item_harm(obs, model,
                            Condition(label, "wrong_answer_only"),
-                           Condition(label, "full_wrong_rationale"), protocol)
+                           Condition(label, "full_wrong_rationale"), protocol,
+                           require_reps=require_reps)
         effects.append(cluster_bootstrap(
             pi, f"rationale harm[full vs answer_only] | {label} {tag}", n_boot, seed))
 
     solver_r = per_item_harm(obs, model,
                              Condition("solver", "wrong_answer_only"),
-                             Condition("solver", "full_wrong_rationale"), protocol)
+                             Condition("solver", "full_wrong_rationale"), protocol,
+                             require_reps=require_reps)
     neutral_r = per_item_harm(obs, model,
                               Condition("neutral", "wrong_answer_only"),
-                              Condition("neutral", "full_wrong_rationale"), protocol)
+                              Condition("neutral", "full_wrong_rationale"), protocol,
+                              require_reps=require_reps)
     inter = {i: solver_r[i] - neutral_r[i] for i in solver_r.keys() & neutral_r.keys()}
     effects.append(cluster_bootstrap(
         inter, f"interaction[rationale harm: solver - neutral] {tag}", n_boot, seed))
 
     pi = per_item_harm(obs, model, NO_INJECTION,
-                       Condition("neutral", "full_wrong_rationale"), protocol)
+                       Condition("neutral", "full_wrong_rationale"), protocol,
+                       require_reps=require_reps)
     effects.append(cluster_bootstrap(
         pi, f"injection harm[neutral full vs no_injection] {tag}", n_boot, seed))
     return effects
@@ -1050,7 +1062,8 @@ def per_item_protocol_mitigation(
 def analyse_protocol_interaction(obs: Sequence[Observation], model: str,
                                  protocol_a: str = "score_only",
                                  protocol_b: str = "verify_written",
-                                 n_boot: int = 2000, seed: int = 0) -> list[EffectEstimate]:
+                                 n_boot: int = 2000, seed: int = 0,
+                                 require_reps: Optional[int] = None) -> list[EffectEstimate]:
     """Diff-in-diff mitigation (positive = protocol_b reduces capture) for the
     four headline harms: provenance, rationale, injection-at-all, sealed status."""
     n = Condition("neutral", "full_wrong_rationale")
@@ -1065,7 +1078,8 @@ def analyse_protocol_interaction(obs: Sequence[Observation], model: str,
     ]
     out = []
     for label, base, cond in contrasts:
-        pi = per_item_protocol_mitigation(obs, model, base, cond, protocol_a, protocol_b)
+        pi = per_item_protocol_mitigation(obs, model, base, cond, protocol_a, protocol_b,
+                                          require_reps=require_reps)
         out.append(cluster_bootstrap(
             pi, f"protocol mitigation[{protocol_a} - {protocol_b}] on {label}", n_boot, seed))
     return out

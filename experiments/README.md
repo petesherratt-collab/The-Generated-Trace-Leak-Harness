@@ -103,3 +103,31 @@ confounded, model-specific Path B, not built yet).
 
 Dependency-free (stdlib `urllib` only). No third-party packages, no API traffic
 unless a key is set.
+
+## Confirmatory: Contextual Conclusion Capture
+
+The corrected provenance-injection experiment found that a conflicting conclusion can reduce
+judge discrimination without a general solver-label premium or an added persuasive-rationale
+effect. The frozen 16-item confirmation is specified in
+[`PREREG_contextual_conclusion_capture_confirmatory.md`](PREREG_contextual_conclusion_capture_confirmatory.md).
+The completed run and fail-closed scorecard are reported in
+[`results/FINDINGS_contextual_conclusion_capture_confirmatory.md`](results/FINDINGS_contextual_conclusion_capture_confirmatory.md).
+An explicitly post-hoc paired-choice view expresses capture as the probability that the
+correct candidate loses at the conflict fork; see
+[`results/confirmatory_choice_probability.md`](results/confirmatory_choice_probability.md).
+
+The follow-up causal architecture test is frozen in
+[`PREREG_contextual_capture_architecture.md`](PREREG_contextual_capture_architecture.md).
+For continuation in a fresh context, start with
+[`HANDOFF_contextual_conclusion_capture.md`](HANDOFF_contextual_conclusion_capture.md).
+The proposed integrity-first benchmark is specified in
+[`BENCHMARK_BLUEPRINT_judge_integrity.md`](BENCHMARK_BLUEPRINT_judge_integrity.md).
+
+Free schedule check (no key and no API calls):
+
+```bash
+python3 experiments/run_provenance_injection.py --confirmatory --dry-run
+```
+
+The real run is deliberately two-step: prepare and freeze the eight new text sets first, then
+run the judge schedule. Confirmatory outputs use separate filenames and cannot overwrite Stage 2.

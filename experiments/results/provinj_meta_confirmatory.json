@@ -1,0 +1,37 @@
+{
+ "git_commit": "484313cf82921512d83b8ee1580a77cea0969442",
+ "parser_version": "2",
+ "n_items": 16,
+ "items_sha256": "e7390a3d4af4ef1c9e6b58ad52a62900e3659874a9425b764db6a2f496654018",
+ "models": [
+  "openai/gpt-4o-mini",
+  "anthropic/claude-haiku-4.5",
+  "google/gemini-2.5-flash",
+  "deepseek/deepseek-chat",
+  "meta-llama/llama-3.3-70b-instruct"
+ ],
+ "config": {
+  "experiment": "confirmatory",
+  "stage": null,
+  "reps": 3,
+  "schedule_seed": 731942587,
+  "item_definitions_sha256": "f9c756a17c5460a56ad9194e5c6d999919a6c85a4c68f82f57aa727ac269aa7c",
+  "text_cache": "provinj_texts_confirmatory.json",
+  "text_cache_sha256": "1987414b7f1a8cd7df1ce7ef04d363bfeeaea7b01c375f925db491e8238e6a98",
+  "text_overrides": "provinj_texts_confirmatory_overrides.json",
+  "text_overrides_sha256": "4541bac68d5734014bd754a8bc734a65c4be1e7702fb40670323cfd42c425fd7",
+  "effective_stimuli_sha256": "16d7975e2e2b27c69520668904a6aa5051370727ec9918d218545b37721a5fe6",
+  "protocols": [
+   "score_only",
+   "verify_written"
+  ],
+  "conditions": [
+   "no_injection",
+   "neutral/full_wrong_rationale",
+   "solver/full_wrong_rationale",
+   "neutral/wrong_answer_only"
+  ],
+  "attempt_policy": "all attempts retained; at most one successful row per cell; failed cells retried on resume; analysis uses successful rows only"
+ },
+ "started": 1783954957.4439886
+}
