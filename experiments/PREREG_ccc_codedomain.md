@@ -6,9 +6,24 @@ this file is reviewed and committed, and the operator has rotated the API key.
 **Parent work:** the numeric-domain confirmation
 ([`PREREG_contextual_conclusion_capture_confirmatory.md`](PREREG_contextual_conclusion_capture_confirmatory.md))
 and architecture test ([`PREREG_contextual_capture_architecture.md`](PREREG_contextual_capture_architecture.md)).
-**Frozen items:** [`ccc_code_items.py`](ccc_code_items.py)
-**Item-definition SHA-256:** `f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28`
 **Master schedule seed:** `517293846` (Stage 1 uses `517293846`; Stage 2 uses `517293847`).
+
+### Frozen artifacts (exact-commit freeze)
+
+The design is frozen at a single git commit, tagged **`prereg-ccc-codedomain-v1`**. The three
+frozen artifacts and their SHA-256 file hashes:
+
+| Artifact | Role | SHA-256 |
+|---|---|---|
+| [`ccc_code_items.py`](ccc_code_items.py) | frozen items + unit-test gold | `f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28` |
+| [`ccc_code_runner.py`](ccc_code_runner.py) | sandboxed deterministic grader (authoritative gold) | `4570b2d98675fae19ce6aa95174502f8c9ab09f9dba07b9c5cbcbf4622262d5e` |
+| `PREREG_ccc_codedomain.md` | this preregistration | *(this file, frozen at tag `prereg-ccc-codedomain-v1`)* |
+
+**Interpreter pin:** CPython **3.11** (developed and self-verified on 3.11.15). Both hashes are
+re-checked, and `ccc_code_runner.self_verify()` re-run, at the start of every stage; a mismatch
+or a self-verify failure aborts the run. The tagged commit hash is the authoritative freeze
+reference (a file cannot contain its own commit's hash); the file hashes above pin content
+independently of git.
 
 This is the **independent-domain replication**, not a larger run of the numeric study. The
 question is whether Contextual Conclusion Capture (CCC) — loss of correct-vs-incorrect judge
@@ -61,6 +76,41 @@ The eight-language-feature spread and hand-authored single-fault decoys are inte
 the numeric confirmation, hand-authored decoys avoid the generation-time gold-leakage that
 forced override files there. The faults are described in `bug_desc` and are all
 behaviour-visible on at least one frozen test.
+
+### Deterministic, sandboxed gold ([`ccc_code_runner.py`](ccc_code_runner.py))
+
+Gold is assigned **only** through `ccc_code_runner.grade_sandboxed`, never by the in-process
+authoring grader and never by a model. The runner's frozen contract:
+
+- **Fixed interpreter:** CPython 3.11 required; the run aborts on any other version, because the
+  gold is only defined on the frozen interpreter.
+- **Fresh isolated subprocess per candidate** (`python3 -I -S -c …`): no ambient environment, no
+  user site-packages, no parent state.
+- **Deterministic execution:** child runs with `PYTHONHASHSEED=0`; the frozen items use no
+  randomness, clock, or I/O, so outputs are a pure function of inputs. `self_verify()` grades
+  every item twice and **requires identical results across repeats** — any non-determinism voids
+  the item.
+- **Resource limits** (set in the child before the candidate is exec'd): `RLIMIT_CPU` = 2 s
+  (soft; hard = 3 s), `RLIMIT_AS` = 512 MiB, `RLIMIT_NPROC` = 64, `RLIMIT_NOFILE` = 64,
+  `RLIMIT_FSIZE` = 0. A **wall-clock timeout** of 5 s (parent-side, SIGKILL) backstops any soft
+  CPU-limit evasion (e.g. sleeping).
+- **No network:** `socket.socket` / `create_connection` / `create_server` are neutralised before
+  the candidate runs.
+- **No filesystem writes:** write-mode `open` and `os.open` create/write flags are blocked (in
+  addition to `RLIMIT_FSIZE` = 0); reads are permitted.
+- **Fail-closed grading:** a compile error, runtime crash, timeout, or limit kill counts as a
+  **failed** test — it can only lower a candidate's pass count, never raise it. A candidate is
+  gold-correct iff it passes every test.
+
+These behaviours were verified against adversarial probes (infinite loop → CPU-killed; network
+attempt → blocked; 1 GiB allocation → memory-killed; file-write attempts → blocked with no file
+created; honest code → passes). **Scope, stated honestly:** in this experiment the runner only
+ever executes the *frozen* reference and buggy sources from `ccc_code_items.py` — the models act
+as **judges, not code authors**, so no model-generated code is ever executed. The sandbox's role
+is therefore **deterministic, hygienic reproducibility and defense-in-depth**, not a hardened
+security boundary against adversarial code. If a future variant executes model-authored code
+(e.g. a deterministic test-oracle router, § 6), a stronger boundary (namespaces/containers) must
+be added and re-frozen before that run.
 
 ---
 
@@ -176,10 +226,29 @@ substituted.
   candidates × 3 = **3,840 judge cells** + **240 spec-only router solves** (16 × 5 × 3, reused
   across reference variants and candidates). Seed `517293847`.
 - **Staging & stop rule:** run Stage 1 once; it contains the primary bare-conclusion contrast.
-  Run Stage 2 only for models that showed capture in Stage 1 (as in the numeric arc). Each stage
-  runs **once**; resume is permitted **only** to recover unsuccessful cells and may not change
-  items, models, conditions/architectures, protocols, repetitions, or seed. Do not add conditions,
-  change hypotheses, or nudge thresholds after inspecting outcomes.
+  Each stage runs **once**; resume is permitted **only** to recover unsuccessful cells and may not
+  change items, models, conditions/architectures, protocols, repetitions, or seed. Do not add
+  conditions, change hypotheses, or nudge thresholds after inspecting outcomes.
+
+### Stage 1 capture threshold → conditional Stage 2
+
+**Stage 2 is a conditional safeguard test on the captured subset, not an unconditional
+all-model comparison.** A model is admitted to Stage 2 iff, in Stage 1, its **bare-conclusion
+injection harm under `score_only`** is:
+
+1. **supported** — 95% item-clustered bootstrap CI excludes 0 in the predicted (positive)
+   direction **and** ≥ 12 / 16 items complete; **and**
+2. **materially large** — point estimate **≥ +10** discrimination points (a conservative floor;
+   numeric-domain effects ran +39 to +88, so +10 excludes only trivially small effects).
+
+Both conditions are fixed here, before any data. A model **below the completeness floor**
+(e.g. a model that will not comply with `score_only`, as Claude was numerically) is **unmeasurable
+in Stage 1 and is not admitted to Stage 2** — recorded as unmeasurable, never as "safe." A model
+that is measurable but **not captured** (CI includes 0, or estimate < +10) is **excluded from
+Stage 2** and reported as a Stage-1 non-capture result. Stage 2's model set is therefore whatever
+subset satisfies (1)+(2); it may be empty, in which case Stage 2 is not run and the code-domain
+result is the Stage-1 (non-)replication alone. The admitted subset is frozen the moment Stage 1's
+missingness report and primary contrast are computed, and is not revisited.
 
 ---
 
@@ -249,7 +318,10 @@ substituted.
 
 The run **counts** (is analysable and reportable) only if all integrity gates hold:
 
-1. `self_verify()` passes at run start; the committed `items_sha256` matches this file.
+1. At run start on CPython 3.11: both frozen file hashes (`ccc_code_items.py`,
+   `ccc_code_runner.py`) match the § "Frozen artifacts" table, and
+   `ccc_code_runner.self_verify()` passes (references gold-correct, buggy variants decoys,
+   grading deterministic across repeats). Gold is computed only via `grade_sandboxed`.
 2. Exactly one writer per stage; no malformed or duplicate-success rows.
 3. The isolation byte-level invariant holds (Stage 2) before any isolation contrast is reported.
 4. The missingness report is emitted before any estimate and any factor-correlated missingness is
