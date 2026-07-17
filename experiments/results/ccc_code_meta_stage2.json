@@ -1,0 +1,29 @@
+{
+ "stage": 2,
+ "seed": 517293847,
+ "reps": 3,
+ "models": [
+  "openai/gpt-4o-mini",
+  "anthropic/claude-haiku-4.5",
+  "google/gemini-2.5-flash",
+  "meta-llama/llama-3.3-70b-instruct"
+ ],
+ "excluded": {
+  "deepseek/deepseek-chat": "Stage-1 primary not supported (CI included 0)"
+ },
+ "architectures": [
+  "contaminated_score_only",
+  "contaminated_verify_written",
+  "context_isolated_score_only",
+  "conflict_router"
+ ],
+ "ref_variants": [
+  "correct_reference",
+  "wrong_reference"
+ ],
+ "items_sha256": "f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28",
+ "runner_sha256": "69cc9ec0d8a51aacdb498461120cb951a0bca16acd876a20a0e8ca7619aa82c6",
+ "stimuli_sha256": "f9fb12b71c56ce3ed34f0cd7fac249b58aeb24e0e6544ae095238ff8c10252ea",
+ "execution": "sequential",
+ "python": "3.13.14"
+}
