@@ -1,5 +1,13 @@
 # Handoff — run Stage 1 of the code-domain CCC replication
 
+> **STATUS: COMPLETE — DO NOT RERUN.** Both stages executed 2026-07-16/17; evidence is
+> committed on `claude/amazing-faraday-gvs9fy` (Stage 1 at `1309d78`, Stage 2 at
+> `c850083`) and audited offline ([`results/ccc_code_offline_audit.txt`](results/ccc_code_offline_audit.txt)).
+> That branch is the **immutable evidence source of record**: successful cells are never
+> rerun, and any follow-up is a separately preregistered study. Unified report:
+> [`results/FINDINGS_ccc_codedomain.md`](results/FINDINGS_ccc_codedomain.md).
+> The instructions below are preserved for methodological reference only.
+
 **Prepared:** 2026-07-16 · for a fresh agent (e.g. ChatGPT/Codex) to execute the frozen
 Stage-1 run and return the evidence. This is a cold-start doc: everything needed is below.
 

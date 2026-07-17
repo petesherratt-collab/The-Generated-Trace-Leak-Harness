@@ -10,6 +10,19 @@ This handoff is for continuing the judge-integrity investigation in a fresh cont
 not replace the repository-root `HANDOFF.md`, which documents the original generated-trace
 leak harness.
 
+> **UPDATE 2026-07-17 — code-domain replication complete.** The bounded independent-domain
+> replication (Python function judging, unit-test gold) ran as two frozen stages under
+> [`PREREG_ccc_codedomain.md`](PREREG_ccc_codedomain.md) and is written up in
+> [`results/FINDINGS_ccc_codedomain.md`](results/FINDINGS_ccc_codedomain.md), audited in
+> [`results/ccc_code_offline_audit.txt`](results/ccc_code_offline_audit.txt). Result:
+> **model-dependent CCC replication with strong but non-universal protection from context
+> isolation — not a universally validated product safeguard.** Primary capture supported
+> 4/5 (Stage 1); isolation and mechanical routing each supported 3/4, written verification
+> 0/4 (Stage 2); Claude Haiku's numeric score-only non-compliance reversed (0/384 failures
+> in code — captured +40 once measurable); gemini × verify-written accounted for 74/75 of
+> all failures (fail-closed). Evidence commits: `1309d78` (S1), `c850083` (S2); do not
+> rerun successful cells.
+
 ## Core finding so far
 
 The confirmed phenomenon is **Contextual Conclusion Capture**: exposing an LLM judge to a

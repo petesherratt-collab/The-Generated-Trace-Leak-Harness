@@ -18,7 +18,10 @@ other languages, not larger programs, not open-ended evaluation, and **no named 
 (HumanEval/MBPP/SWE-bench would each require reproducing their real prompt, reference
 visibility, ordering, and routing).
 
-## The replication in one paragraph
+## Central conclusion
+
+> **Model-dependent CCC replication, with strong but non-universal protection from context
+> isolation — not a universally validated product safeguard.**
 
 A bare, neutrally-labelled wrong conclusion placed in a code judge's context degraded its
 ability to distinguish correct from buggy implementations in **4 of 5 models** (Stage 1,
@@ -27,9 +30,13 @@ four captured models, mirrored correct/wrong references confirmed the effect cau
 3 of 4 (Stage 2), and the safeguard ordering found numerically **replicated**: **context
 isolation** (reference provably absent from the judge prompt — byte-audited, 384/384
 identical) and **mechanical conflict routing** (detection +94 to +100pp) each recovered
-discrimination for 3 of 4 models, while **written verification cleared the support rule
-for none**. CCC is a cross-substrate phenomenon, and the structural remedies — not the
-prompt-level ones — are what survive contact with a second domain.
+discrimination for **3 of 4** models, while **written verification cleared the support rule
+for none**. Both the failure and its remedies are **model-dependent**: llama's safeguard
+intervals all include zero, deepseek was never admitted, and gemini's mitigation contrast
+is unmeasurable — so isolation is the strongest *tested* safeguard on the models where
+capture was measured, not a guarantee that transfers to an untested judge or prompt shape.
+CCC is a cross-substrate phenomenon, and the structural remedies — not the prompt-level
+ones — are what survive contact with a second domain.
 
 ## Design (both stages under one freeze)
 
@@ -117,3 +124,26 @@ solve) is declared future work and untested.
 **Effect sizes are format- and domain-dependent** (Stage-1 code effects ≈ half the numeric
 ones; llama's +44 → +13 across formats). Directions and the preregistered support calls
 are the result; magnitudes are indicative.
+
+## Release-gate status (formal; audit log: [`ccc_code_offline_audit.txt`](ccc_code_offline_audit.txt))
+
+All gates from the preregistration's §11, verified offline against the committed evidence:
+
+| Gate | Stage 1 | Stage 2 |
+|---|---|---|
+| Frozen hashes match at run start (items, runner, stimuli; LF-normalised); interpreter in accepted set; sandbox self-verify passed | ✅ (3.13.14) | ✅ (3.13.14) |
+| One row per intended cell; max 1 attempt; 0 duplicate successes; full {0,1,2} repetition coverage | ✅ 3,840/3,840 | ✅ 3,072/3,072 |
+| Router solves complete and unique | n/a | ✅ 192/192, all parseable |
+| Isolation byte-invariant (and contaminated arms differing, both directions) | n/a | ✅ 384/384 identical; 384/384 differ |
+| Missingness reported before estimates; factor-correlated missingness disclosed, fail-closed | ✅ | ✅ |
+| Prompt manifests resolve every observation | ✅ 256 prompts, 0 unresolvable | ✅ 192 prompts, 0 unresolvable |
+| No key material in tracked files | ✅ | ✅ |
+
+**Evidence provenance (immutable reference points):** Stage-1 observations entered at
+commit `1309d78`; Stage-2 at `c850083`; audit ran at `3929f03`. The branch
+`claude/amazing-faraday-gvs9fy` is the evidence source of record — **successful cells are
+never rerun**; any future work is a new preregistered study, not a mutation of this one.
+
+Per the frozen headline rule, the licensed claim stands: primary contrast supported in a
+majority of measurable models → CCC replicates in code, with the model-dependence stated
+above as part of the result, not a footnote.

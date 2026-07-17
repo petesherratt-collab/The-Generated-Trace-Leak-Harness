@@ -1,0 +1,48 @@
+OFFLINE AUDIT - code-domain CCC replication (Stages 1+2). No API calls; evidence read-only.
+audited at commit: 3929f03cc1c7937def3ca692f1e3a7ee803367d3
+
+[1] FROZEN ARTIFACT HASHES (LF-normalised)
+  PASS  ccc_code_items.py  f44279390d8faf55...
+  PASS  ccc_code_runner.py  69cc9ec0d8a51aac...
+  PASS  ccc_code_stimuli_stage1.json  f9fb12b71c56ce3e...
+
+[2.1] STAGE 1 CELLS / DEDUP
+  rows=3840 unique_cells=3840 (intended 3840: PASS)
+  max_attempts_per_cell=1 (PASS)
+  cells_with_multiple_successes=0 (PASS)
+  successes=3794 failures=46
+  repetition coverage: 1280 cell-groups, all with reps {0,1,2}: PASS
+
+[2.2] STAGE 2 CELLS / DEDUP
+  rows=3072 unique_cells=3072 (intended 3072: PASS)
+  max_attempts_per_cell=1 (PASS)
+  cells_with_multiple_successes=0 (PASS)
+  successes=3043 failures=29
+  repetition coverage: 1024 cell-groups, all with reps {0,1,2}: PASS
+
+[3] ROUTER COMPLETENESS (stage 2)
+  solves=192 unique=192 (intended 192: PASS) max_attempts=1 parseable=192/192
+
+[4] MISSINGNESS BY FACTOR (fail-closed record)
+  S1  45  ('google/gemini-2.5-flash', 'verify_written')
+  S1   1  ('meta-llama/llama-3.3-70b-instruct', 'score_only')
+  S2  22  ('google/gemini-2.5-flash', 'contaminated_verify_written')
+  S2   7  ('google/gemini-2.5-flash', 'conflict_router')
+  total failures both stages: 75; gemini share: 74/75
+
+[5] ISOLATION INVARIANCE (stage 2, byte-level from prompt hashes)
+  isolated pairs=384 mismatches=0 (PASS)
+  contaminated pairs differing by reference: 384/384 (PASS)
+
+[6] PROMPT MANIFEST RESOLUTION
+  S1: 256 prompts; unresolvable rows=0 (PASS)
+  S2: 192 prompts; unresolvable rows=0 (PASS)
+
+[7] KEY-MATERIAL SCAN (no secrets in tracked files)
+  tracked files containing OpenRouter key material: 0 (PASS)
+
+[8] EVIDENCE-BEARING COMMITS (immutable reference points)
+  ccc_code_obs_stage1.jsonl: 1309d78 Stage 1 code-domain CCC evidence (frozen run, seed 517293846)
+  ccc_code_obs_stage2.jsonl: c850083 Stage 2 code-domain architecture evidence (seed 517293847)
+
+AUDIT COMPLETE

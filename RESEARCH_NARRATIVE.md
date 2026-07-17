@@ -311,6 +311,11 @@ unit-test gold** (a sandboxed, hash-frozen grader — no model ever decides grou
   isolation ≥ router ≫ prompt-level verification — with the router strengthened in code,
   where comparing solved output values is exactly what a mechanical comparator does best.
 
+The bounded conclusion, stated with its limits: **model-dependent CCC replication with
+strong but non-universal protection from context isolation — not a universally validated
+product safeguard.** Llama's safeguard intervals all include zero, deepseek was never
+admitted to Stage 2, and gemini's mitigation contrast is unmeasurable; isolation is the
+strongest *tested* safeguard on the models where capture was measured, nothing more.
 What remains open is narrower and honestly stated in the findings: other languages and
 larger programs, open-ended domains (where mechanical comparison itself becomes a
 judgement), and the declared-but-untested deterministic test-oracle router.
