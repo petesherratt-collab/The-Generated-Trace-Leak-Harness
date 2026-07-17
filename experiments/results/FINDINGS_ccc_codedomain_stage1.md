@@ -1,5 +1,9 @@
 # Findings — code-domain CCC replication, Stage 1 (preregistered)
 
+> Detailed stage record. For the unified write-up of the whole code-domain replication
+> (Stages 1 + 2 as one bounded study), see
+> [`FINDINGS_ccc_codedomain.md`](FINDINGS_ccc_codedomain.md).
+
 **Run:** 2026-07-16/17, executed on the operator's machine (CPython 3.13.14 — within the
 frozen accepted set 3.11–3.13) · **Prereg:** [`../PREREG_ccc_codedomain.md`](../PREREG_ccc_codedomain.md)
 · **Adapter:** `run_ccc_codedomain.py` · **Seed:** `517293846` · 16 frozen code items ·

@@ -1,5 +1,9 @@
 # Findings — code-domain CCC replication, Stage 2: architectures (preregistered)
 
+> Detailed stage record. For the unified write-up of the whole code-domain replication
+> (Stages 1 + 2 as one bounded study), see
+> [`FINDINGS_ccc_codedomain.md`](FINDINGS_ccc_codedomain.md).
+
 **Run:** 2026-07-17, operator's machine (CPython 3.13.14, sequential; ~5.5 h) ·
 **Prereg:** [`../PREREG_ccc_codedomain.md`](../PREREG_ccc_codedomain.md) §6–8 ·
 **Adapter:** `run_ccc_codedomain_stage2.py` · **Seed:** `517293847` ·

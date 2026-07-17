@@ -293,6 +293,8 @@ The open question was whether CCC survives a materially different problem type. 
 preregistered code-domain replication ([`PREREG_ccc_codedomain.md`](experiments/PREREG_ccc_codedomain.md))
 answered it: judges score Python implementations against a specification, with **mechanical
 unit-test gold** (a sandboxed, hash-frozen grader — no model ever decides ground truth).
+**Unified write-up (both stages as one bounded study):**
+[`FINDINGS_ccc_codedomain.md`](experiments/results/FINDINGS_ccc_codedomain.md).
 
 - **Stage 1** ([`FINDINGS_ccc_codedomain_stage1.md`](experiments/results/FINDINGS_ccc_codedomain_stage1.md)):
   the bare-conclusion primary contrast **supported in 4 of 5 models** (+36 to +44 points;
