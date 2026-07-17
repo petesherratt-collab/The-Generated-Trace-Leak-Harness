@@ -287,13 +287,31 @@ natively).
 
 ---
 
-## 9. The open question and next step
+## 9. Domain generalization — answered
 
-The one genuinely unanswered scientific question is **domain generalization**: does CCC hold
-on a materially different problem type (short-answer, code, or open-ended reasoning), where
-the Stage-2 mechanical comparison itself becomes a judgement? That, not statistical power, is
-the remaining frontier. The preregistered path is an independent-domain replication with a
-fresh item set and the same frozen-design discipline.
+The open question was whether CCC survives a materially different problem type. The
+preregistered code-domain replication ([`PREREG_ccc_codedomain.md`](experiments/PREREG_ccc_codedomain.md))
+answered it: judges score Python implementations against a specification, with **mechanical
+unit-test gold** (a sandboxed, hash-frozen grader — no model ever decides ground truth).
+
+- **Stage 1** ([`FINDINGS_ccc_codedomain_stage1.md`](experiments/results/FINDINGS_ccc_codedomain_stage1.md)):
+  the bare-conclusion primary contrast **supported in 4 of 5 models** (+36 to +44 points;
+  deepseek's CI included zero by 0.21 points → not supported, per the frozen rule). **CCC is
+  cross-substrate.** Notably, Claude Haiku — unmeasurable numerically due to score-only
+  non-compliance — complied perfectly in code (0/384 failures) and, once measurable, was
+  captured (+40): its earlier non-compliance was format-specific, not protective.
+- **Stage 2** ([`FINDINGS_ccc_codedomain_stage2.md`](experiments/results/FINDINGS_ccc_codedomain_stage2.md)),
+  conditional on the frozen capture threshold (4 admitted models): mirrored-reference
+  susceptibility causal for 3/4; **context isolation and the conflict router both supported
+  3/4** (isolation byte-audited again, 384/384 identical prompts); the router's mechanical
+  detection near-perfect (+94 to +100pp) and its gain *exceeding* isolation's for gpt;
+  **written verification supported for no model**. The safeguard ordering replicates —
+  isolation ≥ router ≫ prompt-level verification — with the router strengthened in code,
+  where comparing solved output values is exactly what a mechanical comparator does best.
+
+What remains open is narrower and honestly stated in the findings: other languages and
+larger programs, open-ended domains (where mechanical comparison itself becomes a
+judgement), and the declared-but-untested deterministic test-oracle router.
 
 ---
 
@@ -327,6 +345,8 @@ The results are meant to be auditable end-to-end:
 | 6 | Stage-2 preregistered — CCC reframing | [`FINDINGS_provinj_stage2.md`](experiments/results/FINDINGS_provinj_stage2.md) |
 | 7 | Confirmatory (16 items, 3 reps, fresh seed) | [`FINDINGS_contextual_conclusion_capture_confirmatory.md`](experiments/results/FINDINGS_contextual_conclusion_capture_confirmatory.md) |
 | 8 | Architecture / causal safeguard test | [`FINDINGS_contextual_capture_architecture.md`](experiments/results/FINDINGS_contextual_capture_architecture.md) |
+| 9 | Code-domain replication, Stage 1 (injection) | [`FINDINGS_ccc_codedomain_stage1.md`](experiments/results/FINDINGS_ccc_codedomain_stage1.md) |
+| 10 | Code-domain replication, Stage 2 (architectures) | [`FINDINGS_ccc_codedomain_stage2.md`](experiments/results/FINDINGS_ccc_codedomain_stage2.md) |
 
 *Investigation ordering reflects how understanding developed, including a hypothesis
 (authority deference) that the clean experiments falsified. The falsification is part of the

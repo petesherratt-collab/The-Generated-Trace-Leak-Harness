@@ -116,7 +116,8 @@ right or wrong, so the reference *provably* never reaches the judge. See
 If the gold or the routing were model-side, you would be grading a judge with a judge —
 the circularity the design exists to avoid.
 
-**Scope:** validated on 16 numeric items across five models (preregistered, item-clustered
-CIs); a code-domain replication is frozen and pending. No claim is made about any named
-benchmark — that requires reproducing its real prompt, reference visibility, and routing.
+**Scope:** validated on 16 numeric items across five models AND replicated in a 16-item
+code-judging domain with unit-test gold (both preregistered, item-clustered CIs; isolation
+byte-audited in both). No claim is made about any named benchmark — that requires
+reproducing its real prompt, reference visibility, and routing.
 Full arc: [`../RESEARCH_NARRATIVE.md`](../RESEARCH_NARRATIVE.md).
