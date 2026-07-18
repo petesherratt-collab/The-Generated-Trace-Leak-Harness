@@ -1,0 +1,29 @@
+{
+ "stage": 2,
+ "seed": 838271906,
+ "reps": 3,
+ "models": [
+  "openai/gpt-4o-mini",
+  "anthropic/claude-haiku-4.5",
+  "google/gemini-2.5-flash",
+  "deepseek/deepseek-chat",
+  "meta-llama/llama-3.3-70b-instruct"
+ ],
+ "architectures": [
+  "contaminated_score_only",
+  "contaminated_verify_written",
+  "context_isolated_score_only",
+  "conflict_router"
+ ],
+ "ref_variants": [
+  "correct_reference",
+  "wrong_reference"
+ ],
+ "items_sha256": "72ce9e7dccbbc844261f53820c3f7c5ac7b09e5764a1a5858d207b292f56629c",
+ "gold_signature": "427ea26bb3bce201bf753397e309ef3e417257737abea8fa5975688b6b1d2beb",
+ "sqlite_version": "3.50.4",
+ "workers": 6,
+ "execution": "concurrent_fixed_pool_single_writer",
+ "stub": false,
+ "python": "3.13.14"
+}
