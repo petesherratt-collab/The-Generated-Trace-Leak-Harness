@@ -1,5 +1,8 @@
 # Findings — relational (SQL) CCC replication, Stage 2: architectures (preregistered)
 
+> Detailed stage record. For the unified write-up of the whole relational replication
+> (Stages 1 + 2 as one bounded study), see [`FINDINGS_ccc_sql.md`](FINDINGS_ccc_sql.md).
+
 **Run:** 2026-07-17, operator's machine (CPython 3.13.14, SQLite 3.50.4, concurrent 6-worker
 single writer; ~55 min) · **Prereg:** [`../PREREG_ccc_sql.md`](../PREREG_ccc_sql.md) ·
 **Adapter:** `run_ccc_sql_stage2.py` · **Seed:** `838271906` · all 5 models admitted (Stage-1

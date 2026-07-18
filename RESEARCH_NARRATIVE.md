@@ -14,15 +14,18 @@ the through-line; read the linked files for the numbers, caveats, and audit trai
 
 We set out to detect leaked information in generated traces. Repurposing the method as a
 probe of **LLM-as-judge integrity**, we found that an evaluator can be made to mark a
-*correct* answer wrong by placing a plausible wrong answer in its context. Across nine
-experiments of increasing rigor — ending in a preregistered confirmation (16 items, 3
-repetitions, fresh seed, five models) and a causal architecture test — the mechanism
-narrowed to a single active ingredient. It is **not** the wrong answer's source label,
-and **not** its supporting argument. It is the mere presence of a **conflicting
-conclusion**. We name this failure mode **Contextual Conclusion Capture (CCC)**. Written
-"verify first" instructions reduce it but do not abolish it for every model; the one
-intervention that removes the pathway by construction is **keeping the foreign conclusion
-out of the judge's context** (context isolation), verified here at the byte level.
+*correct* answer wrong by placing a plausible wrong answer in its context. Across a dozen
+preregistered experiments of increasing rigor — a confirmation and causal architecture test
+in arithmetic, then bounded replications in **two further computational-reasoning
+paradigms, Python code and relational SQL** — the mechanism narrowed to a single active
+ingredient. It is **not** the wrong answer's source label, and **not** its supporting
+argument. It is the mere presence of a **conflicting conclusion**. We name this failure mode
+**Contextual Conclusion Capture (CCC)**. The effect and its severity are **model- and
+domain-dependent** (a judge robust in one domain is among the most captured in another);
+written "verify first" instructions reduce it but never abolish it; and the one intervention
+that removes the pathway by construction — **keeping the foreign conclusion out of the
+judge's context** (context isolation) — holds structurally, byte-audited, in every domain
+tested.
 
 ---
 
@@ -287,14 +290,17 @@ natively).
 
 ---
 
-## 9. Domain generalization — answered
+## 9. Domain generalization — three computational paradigms
 
-The open question was whether CCC survives a materially different problem type. The
-preregistered code-domain replication ([`PREREG_ccc_codedomain.md`](experiments/PREREG_ccc_codedomain.md))
-answered it: judges score Python implementations against a specification, with **mechanical
-unit-test gold** (a sandboxed, hash-frozen grader — no model ever decides ground truth).
-**Unified write-up (both stages as one bounded study):**
-[`FINDINGS_ccc_codedomain.md`](experiments/results/FINDINGS_ccc_codedomain.md).
+The open question was whether CCC survives materially different problem types. It was tested
+by two bounded, preregistered replications in domains that keep gold **mechanical and
+non-circular** — the property that lets the study measure judge integrity without an
+evaluator-for-the-evaluator.
+
+### 9a. Code (imperative) — [`PREREG_ccc_codedomain.md`](experiments/PREREG_ccc_codedomain.md), unified [`FINDINGS_ccc_codedomain.md`](experiments/results/FINDINGS_ccc_codedomain.md)
+
+Judges score Python implementations against a specification, with **unit-test gold** (a
+sandboxed, hash-frozen grader — no model decides ground truth).
 
 - **Stage 1** ([`FINDINGS_ccc_codedomain_stage1.md`](experiments/results/FINDINGS_ccc_codedomain_stage1.md)):
   the bare-conclusion primary contrast **supported in 4 of 5 models** (+36 to +44 points;
@@ -311,14 +317,48 @@ unit-test gold** (a sandboxed, hash-frozen grader — no model ever decides grou
   isolation ≥ router ≫ prompt-level verification — with the router strengthened in code,
   where comparing solved output values is exactly what a mechanical comparator does best.
 
-The bounded conclusion, stated with its limits: **model-dependent CCC replication with
-strong but non-universal protection from context isolation — not a universally validated
-product safeguard.** Llama's safeguard intervals all include zero, deepseek was never
-admitted to Stage 2, and gemini's mitigation contrast is unmeasurable; isolation is the
-strongest *tested* safeguard on the models where capture was measured, nothing more.
-What remains open is narrower and honestly stated in the findings: other languages and
-larger programs, open-ended domains (where mechanical comparison itself becomes a
-judgement), and the declared-but-untested deterministic test-oracle router.
+Bounded conclusion for code: **model-dependent CCC replication with strong but non-universal
+protection from context isolation.** Primary capture supported 4/5 (deepseek's CI included
+zero by 0.21 points → not supported); isolation and router each supported 3/4 (isolation
+byte-audited, 384/384); written verification supported for no model. Llama's safeguard
+intervals all include zero; isolation is the strongest *tested* safeguard on the models where
+capture was measured.
+
+### 9b. Relational (declarative SQL) — [`PREREG_ccc_sql.md`](experiments/PREREG_ccc_sql.md), unified [`FINDINGS_ccc_sql.md`](experiments/results/FINDINGS_ccc_sql.md)
+
+Judges score claimed query results against frozen SQLite fixtures, with the **SQLite oracle as
+gold** (a fail-closed gold-signature gate aborts if the local SQLite would produce different
+results — which caught nothing, correctly, when the run machine's SQLite 3.50.4 differed from
+the 3.45.1 of development). This is the **strongest and most uniform** capture of the three
+domains: the bare-conclusion primary is supported in **all five models at +106 to +153**
+(≈2× the code magnitude), a genuine *reversal* (the judge scores the wrong result above the
+correct one). All five entered Stage 2; **isolation restores reference-neutrality for all five
+(byte-audited, correct-vs-wrong gap ≈ 0) and the router fully recovers discrimination for all
+five** — its strongest showing, since comparing a canonical query result is exactly what a
+mechanical comparator does best. Written verification's mitigation *delta* is large only
+because the baseline is extreme; the **residual capture under verification remains supported
+for 4/5 models** (deepseek +51, llama +56 large) — partial, as everywhere.
+
+### 9c. What the three domains establish together
+
+- **CCC generalizes across three computational-reasoning paradigms** — arithmetic, imperative
+  code, declarative SQL — all with mechanical, non-circular gold.
+- **Capture and its severity are model- and domain-dependent, decisively.** DeepSeek is *not
+  captured* in code (+10, CI includes 0) yet **the most captured** in SQL (+153). A judge cannot
+  be certified once and trusted elsewhere — the empirical backbone for a *per-release* integrity
+  gate rather than a one-time certification.
+- **Safeguard efficacy is domain-dependent too, with one invariant.** Written verification is
+  partial in every domain and never a complete fix; the router recovers where mechanical
+  comparison is clean (partial in code, total in SQL); **only context isolation carries a
+  structural, byte-level guarantee that holds in every domain** — the reference provably cannot
+  reach the judge, so its neutrality is construction, not behaviour.
+
+Not a universally validated product safeguard: these are frozen micro-domains with coarse
+0/100 judges and no named-benchmark claim. What remains open is narrower — other languages and
+larger programs, and **open-ended domains where mechanical comparison itself becomes a
+judgement** (deliberately excluded, because rigor there would require the very
+evaluator-for-the-evaluator this method avoids) — plus the declared-but-untested deterministic
+oracle router.
 
 ---
 
@@ -354,6 +394,8 @@ The results are meant to be auditable end-to-end:
 | 8 | Architecture / causal safeguard test | [`FINDINGS_contextual_capture_architecture.md`](experiments/results/FINDINGS_contextual_capture_architecture.md) |
 | 9 | Code-domain replication, Stage 1 (injection) | [`FINDINGS_ccc_codedomain_stage1.md`](experiments/results/FINDINGS_ccc_codedomain_stage1.md) |
 | 10 | Code-domain replication, Stage 2 (architectures) | [`FINDINGS_ccc_codedomain_stage2.md`](experiments/results/FINDINGS_ccc_codedomain_stage2.md) |
+| 11 | Relational (SQL) replication, Stage 1 (injection) | [`FINDINGS_ccc_sql_stage1.md`](experiments/results/FINDINGS_ccc_sql_stage1.md) |
+| 12 | Relational (SQL) replication, Stage 2 (architectures) | [`FINDINGS_ccc_sql_stage2.md`](experiments/results/FINDINGS_ccc_sql_stage2.md) |
 
 *Investigation ordering reflects how understanding developed, including a hypothesis
 (authority deference) that the clean experiments falsified. The falsification is part of the
