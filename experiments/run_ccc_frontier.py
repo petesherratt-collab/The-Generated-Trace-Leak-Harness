@@ -1,0 +1,377 @@
+"""run_ccc_frontier.py -- frontier-model extension of the CCC study across all three domains.
+
+Tests whether more capable ("frontier latest") judges are susceptible to Contextual
+Conclusion Capture, using the SAME FROZEN ITEMS as the small-tier runs so the small-vs-
+frontier comparison is paired within item (the models are judges, not task-takers, and gold
+is oracle-computed, so item reuse is a paired-design feature, not a leakage risk).
+
+Design (Phase 1, cost-bounded): 3 domains (arithmetic / code / SQL) x N frontier models x
+4 conditions x 2 candidate types x {score_only} x 3 reps, per domain. score_only is the
+vulnerable, cheap protocol; verify_written is a separate Phase 2. Fresh seed. Each domain
+reuses its own frozen prompt construction (no re-implementation):
+  - arithmetic: confirmatory 16-item set (frozen cache + overrides) + build_judge_prompt;
+  - code: ccc_code_items + run_ccc_codedomain.build_prompt (unit-test gold);
+  - SQL: ccc_sql_items + run_ccc_sql.build_prompt (SQLite oracle, gold-signature gate).
+
+Models are supplied at run time (--models a,b,c,d); aliases are NOT hardcoded because
+"latest" drifts. `--check-models` validates each alias against the live API (one cheap call)
+and reports resolve/pricing BEFORE any real run. Concurrency: fixed pool + single writer,
+same invariants as the SQL adapters.
+
+Modes: --check-models | --dry-run | --wiring-check | --run | --resume | --analyse-only
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import random
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _load_env import load_env
+from provenance_injection_harness import parse_score
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+RES = os.path.join(HERE, "results")
+
+SEED = 619273400                     # fresh frontier seed
+REPS = 3
+DEFAULT_WORKERS = 4                  # conservative (frontier endpoints, tighter rate limits)
+COND_IDS = ["no_injection", "answer_only", "full_rationale", "solver_rationale"]
+CANDIDATES = ["correct", "wrong_matching"]
+MAX_TOK = {"score_only": 60, "verify_written": 1400}
+RETRY_TOK = {"score_only": 240, "verify_written": 2600}
+
+
+# --- Domain registry: each maps the 4 canonical conditions to its own frozen builder ------
+def _sql_domain():
+    import ccc_sql_items as it
+    import run_ccc_sql as a
+    stim = a.build_stimuli()
+    cmap = {"no_injection": ("none", "no_injection"), "answer_only": ("neutral", "answer_only"),
+            "full_rationale": ("neutral", "full_wrong_rationale"),
+            "solver_rationale": ("solver", "full_wrong_rationale")}
+    items = list(it.ITEMS)
+    def build(item, cond_id, cand, proto):
+        la, co = cmap[cond_id]
+        return a.build_prompt(item, a.candidate_readable(item, cand), la, co, proto, stim)
+    def gate():
+        a.release_gate()
+    return dict(items=items, id=lambda x: x["name"], build=build, gate=gate)
+
+
+def _code_domain():
+    import ccc_code_items as it
+    import run_ccc_codedomain as a
+    stim = a.build_stimuli()
+    cmap = {"no_injection": ("none", "no_injection"), "answer_only": ("neutral", "answer_only"),
+            "full_rationale": ("neutral", "full_wrong_rationale"),
+            "solver_rationale": ("solver", "full_wrong_rationale")}
+    items = list(it.ITEMS)
+    def build(item, cond_id, cand, proto):
+        la, co = cmap[cond_id]
+        return a.build_prompt(item, a.cand_source(item, cand), la, co, proto, stim)
+    def gate():
+        a.release_gate()
+    return dict(items=items, id=lambda x: x["name"], build=build, gate=gate)
+
+
+def _arith_domain():
+    import run_provenance_injection as rp
+    from provenance_injection_harness import build_judge_prompt, Condition
+    items = rp.build_items(None, rp.CONFIRMATORY_RAW, rp.CONFIRMATORY_CACHE)
+    conds, _ = rp.confirmatory_conditions()
+    by = {(c.label_key, c.content_key): c for c in conds}
+    cmap = {"no_injection": (None, None), "answer_only": ("neutral", "wrong_answer_only"),
+            "full_rationale": ("neutral", "full_wrong_rationale"),
+            "solver_rationale": ("solver", "full_wrong_rationale")}
+    def build(item, cond_id, cand, proto):
+        return build_judge_prompt(item, by[cmap[cond_id]], cand, proto)
+    def gate():
+        if not rp.confirmatory_cache_frozen():
+            raise RuntimeError("arithmetic confirmatory text cache is not frozen/verified")
+        print("arith gate OK: confirmatory 16-item cache frozen and verified")
+    return dict(items=items, id=lambda x: x.item_id, build=build, gate=gate)
+
+
+DOMAINS = {"arith": _arith_domain, "code": _code_domain, "sql": _sql_domain}
+
+
+def _sha(s):
+    return hashlib.sha256(s.encode()).hexdigest()
+
+
+# --- OpenRouter model preflight (validates aliases + reports pricing) --------------------
+def check_models(models, key):
+    from judge_integrity_real import call_openrouter
+    print("preflight: validating model aliases (one trivial call each)")
+    ok = []
+    for m in models:
+        try:
+            r = call_openrouter('Reply with only: {"score": 100}', m, key, max_tokens=20)
+            parse_ok = True
+            try:
+                parse_score(r)
+            except Exception:
+                parse_ok = False
+            print(f"  OK   {m}  (responded; score-parse={'yes' if parse_ok else 'no'})")
+            ok.append(m)
+        except Exception as e:
+            print(f"  FAIL {m}  -> {type(e).__name__}: {str(e)[:140]}")
+    print(f"resolved {len(ok)}/{len(models)} aliases")
+    return ok
+
+
+# --- Schedule (per domain, rep-block deconflicted) --------------------------------------
+def build_schedule(domain, items_ids, models, protocols, seed=SEED):
+    base = [(iid, m, c, cand, p) for iid in items_ids for m in models
+            for c in COND_IDS for cand in CANDIDATES for p in protocols]
+    sched = []
+    for rep in range(REPS):
+        block = list(base)
+        random.Random(seed + rep + hash(domain) % 1000).shuffle(block)
+        sched += [cell + (rep,) for cell in block]
+    return sched
+
+
+def cell_key(r):
+    return (r["domain"], r["item_id"], r["model"], r["condition"], r["candidate_type"],
+            r["repetition"], r["protocol"])
+
+
+def load_successful(path):
+    done = {}
+    if os.path.exists(path):
+        for line in open(path):
+            line = line.strip()
+            if line:
+                r = json.loads(line)
+                if r.get("score") is not None and r.get("error") is None:
+                    done[cell_key(r)] = r["score"]
+    return done
+
+
+def judge_once(prompt, model, protocol, key, call_fn):
+    raw = call_fn(prompt, model, key, max_tokens=MAX_TOK[protocol])
+    try:
+        return parse_score(raw), raw, None
+    except Exception:
+        raw2 = call_fn(prompt, model, key, max_tokens=RETRY_TOK[protocol])
+        try:
+            return parse_score(raw2), raw2, None
+        except Exception as e:
+            return None, raw2, f"{type(e).__name__}: {e}"
+
+
+def worker(cell, domain, dom, order_index, key, call_fn):
+    iid, model, cond, cand, proto, rep = cell
+    try:
+        item = dom["_byid"][iid]
+        prompt = dom["build"](item, cond, cand, proto)
+        sha = _sha(prompt)
+        score, raw, err = judge_once(prompt, model, proto, key, call_fn)
+        return ({"domain": domain, "item_id": iid, "model": model, "condition": cond,
+                 "candidate_type": cand, "protocol": proto, "repetition": rep,
+                 "order_index": order_index, "prompt_sha256": sha, "raw_response": raw,
+                 "score": score, "error": err, "timestamp": time.time()}, prompt, sha)
+    except Exception as e:
+        return ({"domain": domain, "item_id": iid, "model": model, "condition": cond,
+                 "candidate_type": cand, "protocol": proto, "repetition": rep,
+                 "order_index": order_index, "prompt_sha256": None, "raw_response": "",
+                 "score": None, "error": f"worker:{type(e).__name__}: {e}",
+                 "timestamp": time.time()}, None, None)
+
+
+def obs_path(domain):
+    return os.path.join(RES, f"ccc_frontier_{domain}_obs.jsonl")
+
+
+def prompts_path(domain):
+    return os.path.join(RES, f"ccc_frontier_{domain}_prompts.jsonl")
+
+
+def run_domain(domain, dom, models, protocols, key, call_fn, workers, resume, progress_secs):
+    dom["_byid"] = {dom["id"](x): x for x in dom["items"]}
+    ids = [dom["id"](x) for x in dom["items"]]
+    schedule = list(enumerate(build_schedule(domain, ids, models, protocols)))
+    op, pp = obs_path(domain), prompts_path(domain)
+    done = load_successful(op) if resume else {}
+    seen = set()
+    if resume and os.path.exists(pp):
+        seen = {json.loads(l)["sha256"] for l in open(pp) if l.strip()}
+    pending = [(oi, c) for oi, c in schedule
+               if (domain, c[0], c[1], c[2], c[3], c[5], c[4]) not in done]
+    mode = "a" if resume else "w"
+    total = len(schedule)
+    n_new = n_fail = 0
+    start = last = time.time()
+    print(f"[{domain}] {len(pending)} cells to do ({len(done)} done) of {total}, {workers} workers")
+    with open(op, mode) as osink, open(pp, mode) as psink:
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            futs = [ex.submit(worker, c, domain, dom, oi, key, call_fn) for oi, c in pending]
+            for fut in as_completed(futs):
+                row, prompt, sha = fut.result()
+                if sha is not None and sha not in seen:
+                    psink.write(json.dumps({"sha256": sha, "prompt": prompt}) + "\n"); psink.flush()
+                    seen.add(sha)
+                osink.write(json.dumps(row) + "\n"); osink.flush()
+                n_fail += row["score"] is None
+                n_new += row["score"] is not None
+                now = time.time()
+                if now - last >= progress_secs:
+                    dc = len(done) + n_new + n_fail
+                    rate = (n_new + n_fail) / (now - start) * 60
+                    print(f"[{domain}] {(now-start)/60:5.1f}m | {dc}/{total} | +{n_new}/{n_fail}f "
+                          f"| {rate:4.1f}/min | ETA ~{(total-dc)/max(rate,1e-9)/60:4.1f}h", flush=True)
+                    last = now
+    print(f"[{domain}] done: +{n_new} ok, {n_fail} failed this pass")
+
+
+# --- Analysis (fail-closed; paired bare-conclusion harm + mechanism increments) ---------
+def _disc(obs, domain, model, cond, ids, proto="score_only"):
+    import statistics
+    out = {}
+    for iid in ids:
+        cor = [obs.get((domain, iid, model, cond, "correct", rp, proto)) for rp in range(REPS)]
+        wro = [obs.get((domain, iid, model, cond, "wrong_matching", rp, proto)) for rp in range(REPS)]
+        if all(x is not None for x in cor) and all(x is not None for x in wro):
+            out[iid] = statistics.mean(cor) - statistics.mean(wro)
+    return out
+
+
+def _ci(per, n=6000, seed=0):
+    import statistics
+    it = list(per)
+    if not it:
+        return float("nan"), float("nan"), float("nan"), 0
+    r = random.Random(seed)
+    ms = sorted(sum(per[r.choice(it)] for _ in it) / len(it) for _ in range(n))
+    return statistics.mean(per.values()), ms[int(.025 * n)], ms[int(.975 * n)], len(it)
+
+
+def analyse(domains, floor_frac=0.75):
+    for domain in domains:
+        op = obs_path(domain)
+        if not os.path.exists(op):
+            print(f"[{domain}] no evidence"); continue
+        rows = [json.loads(l) for l in open(op) if l.strip()]
+        obs = {}
+        for r in rows:
+            if r.get("score") is not None and r.get("error") is None:
+                obs[cell_key(r)] = r["score"]
+        ids = sorted({r["item_id"] for r in rows})
+        models = sorted({r["model"] for r in rows})
+        floor = int(len(ids) * floor_frac)
+        import collections
+        fail = collections.Counter((r["model"]) for r in rows if r.get("score") is None or r.get("error"))
+        print(f"\n=== {domain} ({len(ids)} items, floor {floor}) ===  missingness by model: {dict(fail)}")
+        print(f"  {'model':32s} {'bare-harm [95% CI]':>26s}  {'prov+':>8s} {'rat+':>8s}")
+        for m in models:
+            base = _disc(obs, domain, m, "no_injection", ids)
+            bare = _disc(obs, domain, m, "answer_only", ids)
+            full = _disc(obs, domain, m, "full_rationale", ids)
+            solv = _disc(obs, domain, m, "solver_rationale", ids)
+            harm = {i: base[i] - bare[i] for i in set(base) & set(bare)}
+            mn, lo, hi, n = _ci(harm)
+            prov = {i: (base[i]-solv[i]) - (base[i]-full[i]) for i in set(solv) & set(full) & set(base)}
+            rat = {i: (base[i]-full[i]) - (base[i]-bare[i]) for i in set(full) & set(bare) & set(base)}
+            tag = "SUPPORTED" if (n >= floor and lo > 0) else ("unmeasurable" if n < floor else "ns")
+            pm = _ci(prov)[0] if prov else float("nan")
+            rm = _ci(rat)[0] if rat else float("nan")
+            print(f"  {m:32s} {mn:+7.2f} [{lo:+7.2f},{hi:+7.2f}] n={n:2d} {tag:12s} {pm:+7.1f} {rm:+7.1f}")
+
+
+def _stub(prompt, model, key, max_tokens=64):
+    h = int(hashlib.sha256((prompt + model).encode()).hexdigest(), 16)
+    injected = any(s in prompt for s in ("Reference note:", "External", "Additional analysis:",
+                                         "Solver", "reference answer", "Reference answer"))
+    base = 80 if h % 2 else 70
+    return json.dumps({"score": max(0, min(100, base - (25 if injected else 0) + h % 12))})
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--models", default="", help="comma-separated OpenRouter aliases")
+    ap.add_argument("--domains", default="arith,code,sql")
+    ap.add_argument("--protocols", default="score_only")
+    ap.add_argument("--check-models", action="store_true")
+    ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--wiring-check", action="store_true")
+    ap.add_argument("--run", action="store_true")
+    ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--analyse-only", action="store_true")
+    ap.add_argument("--stub", action="store_true")
+    ap.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
+    ap.add_argument("--progress-secs", type=int, default=600)
+    a = ap.parse_args()
+    models = [m.strip() for m in a.models.split(",") if m.strip()]
+    domains = [d.strip() for d in a.domains.split(",") if d.strip()]
+    protocols = [p.strip() for p in a.protocols.split(",") if p.strip()]
+
+    if a.analyse_only:
+        analyse(domains); return
+
+    doms = {d: DOMAINS[d]() for d in domains}     # builds + validates each domain offline
+    for d in domains:
+        doms[d]["gate"]()
+    total = sum(len(doms[d]["items"]) * len(models) * len(COND_IDS) * len(CANDIDATES) * len(protocols) * REPS
+                for d in domains)
+    print(f"frontier plan: domains={domains} models={len(models)} protocols={protocols} "
+          f"seed={SEED} -> {total} judge cells")
+
+    if a.check_models:
+        loaded = load_env(); key = os.environ.get("OPENROUTER_API_KEY")
+        if not key:
+            print("ERROR: OPENROUTER_API_KEY not found (needed to validate aliases)."); sys.exit(2)
+        check_models(models, key); return
+
+    if a.dry_run:
+        for d in domains:
+            dom = doms[d]; it0 = dom["items"][0]
+            print(f"\n--- {d} sample bare-conclusion score_only prompt ---")
+            print(dom["build"](it0, "answer_only", "wrong_matching", "score_only")[:700])
+        return
+
+    if a.wiring_check:
+        for d in domains:
+            run_domain(d, doms[d], models or ["stub/a", "stub/b"], protocols, "STUB", _stub,
+                       a.workers, resume=False, progress_secs=a.progress_secs)
+        analyse(domains)
+        for d in domains:
+            for p in (obs_path(d), prompts_path(d)):
+                try: os.remove(p)
+                except OSError: pass
+        print("\nwiring-check complete (stub; throwaway evidence removed)")
+        return
+
+    if a.run or a.resume:
+        call_fn = _stub; key = "STUB"
+        if not a.stub:
+            loaded = load_env(); key = os.environ.get("OPENROUTER_API_KEY")
+            if loaded: print("loaded from .env:", ", ".join(loaded))
+            if not key:
+                print("ERROR: OPENROUTER_API_KEY not found. No API call made."); sys.exit(2)
+            if not models:
+                print("ERROR: --models required for a real run."); sys.exit(2)
+            from judge_integrity_real import call_openrouter
+            call_fn = call_openrouter
+        json.dump({"study": "frontier", "seed": SEED, "reps": REPS, "models": models,
+                   "domains": domains, "protocols": protocols, "conditions": COND_IDS,
+                   "frozen_items": True, "workers": a.workers, "stub": bool(a.stub),
+                   "run_date": time.strftime("%Y-%m-%d"), "python": sys.version.split()[0]},
+                  open(os.path.join(RES, "ccc_frontier_meta.json"), "w"), indent=1)
+        for d in domains:
+            run_domain(d, doms[d], models, protocols, key, call_fn, a.workers,
+                       resume=a.resume, progress_secs=a.progress_secs)
+        analyse(domains)
+        return
+
+    ap.print_help()
+
+
+if __name__ == "__main__":
+    main()
