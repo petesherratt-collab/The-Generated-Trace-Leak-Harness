@@ -1,0 +1,242 @@
+{
+ "above_own_dept_avg": {
+  "correct_result": "2",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 3.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 3; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 3. Additional analysis: Evaluating the query against the data, the result is 3; the other candidate does not match this."
+  },
+  "wrong_result": "3"
+ },
+ "all_us_have_paid": {
+  "correct_result": "0",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 1.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 1; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 1. Additional analysis: Evaluating the query against the data, the result is 1; the other candidate does not match this."
+  },
+  "wrong_result": "1"
+ },
+ "avg_di_orders_null": {
+  "correct_result": "NULL",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 0.0.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 0.0; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 0.0. Additional analysis: Evaluating the query against the data, the result is 0.0; the other candidate does not match this."
+  },
+  "wrong_result": "0.0"
+ },
+ "avg_salary_null": {
+  "correct_result": "5000.0",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 4375.0.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 4375.0; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 4375.0. Additional analysis: Evaluating the query against the data, the result is 4375.0; the other candidate does not match this."
+  },
+  "wrong_result": "4375.0"
+ },
+ "avg_stationery_price": {
+  "correct_result": "5.67",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 9.0.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 9.0; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 9.0. Additional analysis: Evaluating the query against the data, the result is 9.0; the other candidate does not match this."
+  },
+  "wrong_result": "9.0"
+ },
+ "categories_with_sales": {
+  "correct_result": "3",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 4.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 4; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 4. Additional analysis: Evaluating the query against the data, the result is 4; the other candidate does not match this."
+  },
+  "wrong_result": "4"
+ },
+ "count_distinct_dept": {
+  "correct_result": "4",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 7.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 7; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 7. Additional analysis: Evaluating the query against the data, the result is 7; the other candidate does not match this."
+  },
+  "wrong_result": "7"
+ },
+ "count_nonnull_salary": {
+  "correct_result": "7",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 8.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 8; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 8. Additional analysis: Evaluating the query against the data, the result is 8; the other candidate does not match this."
+  },
+  "wrong_result": "8"
+ },
+ "count_paid_status": {
+  "correct_result": "5",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 6.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 6; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 6. Additional analysis: Evaluating the query against the data, the result is 6; the other candidate does not match this."
+  },
+  "wrong_result": "6"
+ },
+ "customers_total_over_250": {
+  "correct_result": "2",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 1.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 1; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 1. Additional analysis: Evaluating the query against the data, the result is 1; the other candidate does not match this."
+  },
+  "wrong_result": "1"
+ },
+ "dept_no_employees": {
+  "correct_result": "1",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 3.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 3; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 3. Additional analysis: Evaluating the query against the data, the result is 3; the other candidate does not match this."
+  },
+  "wrong_result": "3"
+ },
+ "depts_more_than_two": {
+  "correct_result": "1",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 2.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 2; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 2. Additional analysis: Evaluating the query against the data, the result is 2; the other candidate does not match this."
+  },
+  "wrong_result": "2"
+ },
+ "distinct_countries": {
+  "correct_result": "2",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 4.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 4; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 4. Additional analysis: Evaluating the query against the data, the result is 4; the other candidate does not match this."
+  },
+  "wrong_result": "4"
+ },
+ "highest_paid_name": {
+  "correct_result": "Bob",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is Eve.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is Eve; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: Eve. Additional analysis: Evaluating the query against the data, the result is Eve; the other candidate does not match this."
+  },
+  "wrong_result": "Eve"
+ },
+ "join_inner_vs_left": {
+  "correct_result": "6",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 8.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 8; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 8. Additional analysis: Evaluating the query against the data, the result is 8; the other candidate does not match this."
+  },
+  "wrong_result": "8"
+ },
+ "max_order_customer1": {
+  "correct_result": "200",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 400.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 400; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 400. Additional analysis: Evaluating the query against the data, the result is 400; the other candidate does not match this."
+  },
+  "wrong_result": "400"
+ },
+ "never_sold_products": {
+  "correct_result": "1",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 4.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 4; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 4. Additional analysis: Evaluating the query against the data, the result is 4; the other candidate does not match this."
+  },
+  "wrong_result": "4"
+ },
+ "null_equality": {
+  "correct_result": "1",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 0.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 0; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 0. Additional analysis: Evaluating the query against the data, the result is 0; the other candidate does not match this."
+  },
+  "wrong_result": "0"
+ },
+ "salary_between_inclusive": {
+  "correct_result": "5",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 3.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 3; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 3. Additional analysis: Evaluating the query against the data, the result is 3; the other candidate does not match this."
+  },
+  "wrong_result": "3"
+ },
+ "stationery_product_count": {
+  "correct_result": "3",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 5.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 5; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 5. Additional analysis: Evaluating the query against the data, the result is 5; the other candidate does not match this."
+  },
+  "wrong_result": "5"
+ },
+ "sum_paid_amount": {
+  "correct_result": "700",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 900.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 900; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 900. Additional analysis: Evaluating the query against the data, the result is 900; the other candidate does not match this."
+  },
+  "wrong_result": "900"
+ },
+ "total_qty_product1": {
+  "correct_result": "15",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 3.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 3; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 3. Additional analysis: Evaluating the query against the data, the result is 3; the other candidate does not match this."
+  },
+  "wrong_result": "3"
+ },
+ "two_most_expensive": {
+  "correct_result": "[(Lamp), (Book)]",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is [(Pen), (Pad)].",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is [(Pen), (Pad)]; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: [(Pen), (Pad)]. Additional analysis: Evaluating the query against the data, the result is [(Pen), (Pad)]; the other candidate does not match this."
+  },
+  "wrong_result": "[(Pen), (Pad)]"
+ },
+ "us_order_rows": {
+  "correct_result": "4",
+  "text": {
+   "neutral/answer_only": "Reference note: the result of the query is 2.",
+   "neutral/full_wrong_rationale": "Additional analysis: Evaluating the query against the data, the result is 2; the other candidate does not match this.",
+   "none/no_injection": "",
+   "solver/full_wrong_rationale": "Solver (verified) result: 2. Additional analysis: Evaluating the query against the data, the result is 2; the other candidate does not match this."
+  },
+  "wrong_result": "2"
+ }
+}
