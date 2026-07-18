@@ -1,0 +1,59 @@
+OFFLINE AUDIT - relational (SQL) CCC replication (Stages 1+2). No API calls; evidence read-only.
+audited at commit: 51961eab025c50948226b4ebba3698098c5bb06b
+
+[1] FROZEN ARTIFACT + ORACLE
+  ccc_sql_items.py sha256 (LF): 72ce9e7dccbbc844261f53820c3f7c5ac7b09e5764a1a5858d207b292f56629c  PASS
+  gold signature (this runtime, sqlite 3.45.1): 427ea26bb3bce201bf753397e309ef3e417257737abea8fa5975688b6b1d2beb  PASS
+
+[2.1] STAGE 1 CELLS / DEDUP
+  rows=5760 unique_cells=5760 (intended 5760: PASS) max_attempts=1 dup_successes=0 out_of_range=0
+  repetition coverage all {0,1,2}: PASS  successes=5737 failures=23
+
+[2.2] STAGE 2 CELLS / DEDUP
+  rows=5760 unique_cells=5760 (intended 5760: PASS) max_attempts=1 dup_successes=0 out_of_range=0
+  repetition coverage all {0,1,2}: PASS  successes=5747 failures=13
+
+[3] ROUTER COMPLETENESS (stage 2)
+  solves=360 unique_successful=334/360 parseable=334/360 dup=0
+
+[4] MISSINGNESS BY FACTOR
+  S1  18  ('google/gemini-2.5-flash', 'verify_written')
+  S1   4  ('meta-llama/llama-3.3-70b-instruct', 'verify_written')
+  S1   1  ('meta-llama/llama-3.3-70b-instruct', 'score_only')
+  S2   5  ('google/gemini-2.5-flash', 'contaminated_verify_written')
+  S2   4  ('meta-llama/llama-3.3-70b-instruct', 'contaminated_verify_written')
+  S2   2  ('meta-llama/llama-3.3-70b-instruct', 'conflict_router')
+  S2   1  ('meta-llama/llama-3.3-70b-instruct', 'context_isolated_score_only')
+  S2   1  ('meta-llama/llama-3.3-70b-instruct', 'contaminated_score_only')
+
+[5] ISOLATION INVARIANCE (stage 2)
+  isolated pairs=720 mismatches=0 (PASS)
+  contaminated pairs differing by reference: 720/720 (expect all differ)
+
+[6] PROMPT MANIFEST RESOLUTION
+  S1: 384 prompts, unresolvable rows=0
+  S2: 288 prompts, unresolvable rows=0
+
+[7] KEY-MATERIAL SCAN
+  tracked files with key material: 0 (PASS)
+
+[8] EVIDENCE-BEARING COMMITS
+  ccc_sql_obs_stage1.jsonl: 26354f8 SQL Stage 1 evidence (frozen concurrent run, seed 838271905)
+  ccc_sql_obs_stage2.jsonl: 4581589 SQL Stage 2 evidence (frozen concurrent run, seed 838271906)
+
+AUDIT COMPLETE (analysis independently implemented from raw rows; no external reviewer implied)
+
+[9] INDEPENDENT CONTRAST RECOMPUTATION (separate implementation, from raw rows)
+  Stage 1 PRIMARY bare-conclusion harm (score_only), independent recompute:
+    gpt-4o-mini                +112.15 [ +95.49,+130.21] n=24
+    claude-haiku-4.5           +112.50 [ +87.50,+137.50] n=24
+    gemini-2.5-flash           +124.58 [ +95.83,+151.04] n=24
+    deepseek-chat              +153.25 [+134.03,+171.56] n=24
+    llama-3.3-70b-instruct     +106.59 [ +86.30,+125.87] n=23
+  Stage 2 susceptibility | isolation gain | router gain (wrong ref), independent recompute:
+    gpt-4o-mini                susc +169.44[+149,+188] | iso +106.60[+91,+124] | router +167.50[+149,+184]
+    claude-haiku-4.5           susc +150.00[+129,+171] | iso +104.17[+88,+125] | router +150.00[+129,+171]
+    gemini-2.5-flash           susc +183.33[+167,+196] | iso +123.89[+95,+151] | router +183.33[+167,+196]
+    deepseek-chat              susc +170.83[+149,+189] | iso +137.50[+115,+158] | router +165.42[+144,+184]
+    llama-3.3-70b-instruct     susc +159.42[+139,+178] | iso +110.14[+90,+131] | router +152.58[+134,+171]
+  (matches the adapter output in FINDINGS_ccc_sql_stage1.md / _stage2.md)

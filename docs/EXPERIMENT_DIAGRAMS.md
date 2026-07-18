@@ -84,8 +84,8 @@ flowchart TD
     AO -- "rationale increment (full - bare)" --> NR["neutral / full_wrong_rationale"]
     NR -- "provenance increment (solver - neutral)" --> SR["solver / full_wrong_rationale"]
     AO --> R1{"bare answer already captures?<br/>YES => conclusion is sufficient"}
-    NR --> R2{"rationale adds capture?<br/>NO => not persuasion"}
-    SR --> R3{"authority label adds capture?<br/>NO => not deference"}
+    NR --> R2{"rationale adds detectable capture?<br/>NO => persuasion not necessary"}
+    SR --> R3{"authority label adds detectable capture?<br/>NO => authority not necessary"}
     R1 --> CONC{{"CCC: the conflicting conclusion itself"}}
     R2 --> CONC
     R3 --> CONC
