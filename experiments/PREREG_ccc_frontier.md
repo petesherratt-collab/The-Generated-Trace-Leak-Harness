@@ -37,7 +37,7 @@ Four frontier flagships, one per provider, supplied as exact OpenRouter aliases 
 | OpenAI | `openai/gpt-5.6-sol` | gpt-4o-mini |
 | Anthropic | `~anthropic/claude-fable-latest` | claude-haiku-4.5 |
 | Google | `google/gemini-3.1-pro-preview` | gemini-2.5-flash |
-| xAI | `x-ai/grok-latest` | — (no small-tier sibling tested) |
+| xAI | `x-ai/grok-4.5` | — (no small-tier sibling tested) |
 
 The aliases above are the intended panel; each is **validated before any real run** by
 `--check-models` (one trivial call each, reporting resolve + score-parse) and the exact resolved
