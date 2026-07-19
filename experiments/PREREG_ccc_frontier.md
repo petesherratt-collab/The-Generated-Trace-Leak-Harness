@@ -32,16 +32,17 @@ frozen.
 Four frontier flagships, one per provider, supplied as exact OpenRouter aliases at run time
 (`--models`) because "latest" aliases drift:
 
-| Provider | Frontier judge (identity) | Small-tier sibling (paired baseline) |
+| Provider | Frontier judge — alias (as of freeze) | Small-tier sibling (paired baseline) |
 |---|---|---|
-| OpenAI | latest GPT flagship | gpt-4o-mini |
-| Anthropic | latest Claude Opus | claude-haiku-4.5 |
-| Google | latest Gemini Pro | gemini-2.5-flash |
-| xAI | Grok 4.x (latest) | — (no small-tier sibling tested) |
+| OpenAI | `openai/gpt-5.6-sol` | gpt-4o-mini |
+| Anthropic | `~anthropic/claude-fable-latest` | claude-haiku-4.5 |
+| Google | `google/gemini-3.1-pro-preview` | gemini-2.5-flash |
+| xAI | `x-ai/grok-latest` | — (no small-tier sibling tested) |
 
-The **exact alias strings are validated before any real run** by `--check-models` (one trivial
-call each, reporting resolve + score-parse) and recorded verbatim in `ccc_frontier_meta.json` with
-the run date. Within-provider capability comparisons are available for OpenAI, Anthropic, and
+The aliases above are the intended panel; each is **validated before any real run** by
+`--check-models` (one trivial call each, reporting resolve + score-parse) and the exact resolved
+alias is recorded verbatim in `ccc_frontier_meta.json` with the run date. Two are moving aliases
+(`*-latest`), so the metadata is authoritative for what actually ran. Within-provider capability comparisons are available for OpenAI, Anthropic, and
 Google; xAI/Grok is frontier-only (no paired small-tier baseline).
 
 ## Design (Phase 1)
