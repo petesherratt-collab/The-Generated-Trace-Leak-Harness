@@ -153,7 +153,7 @@ _COND_LABEL = {"A": "score-only", "B": "verify + score-only",
 # MODEL CLIENT (OpenRouter, OpenAI-compatible, stdlib only) + score parsing.
 # --------------------------------------------------------------------------- #
 
-def call_openrouter(prompt, model, key, timeout=60, max_tokens=64, retries=5):
+def call_openrouter(prompt, model, key, timeout=60, max_tokens=64, retries=5, return_finish=False):
     body = json.dumps({
         "model": model,
         "max_tokens": max_tokens,
@@ -174,7 +174,10 @@ def call_openrouter(prompt, model, key, timeout=60, max_tokens=64, retries=5):
                 data = json.load(r)
             msg = data["choices"][0]["message"]
             # some models return content=None and put the text in a reasoning field.
-            return msg.get("content") or msg.get("reasoning") or ""
+            text = msg.get("content") or msg.get("reasoning") or ""
+            if return_finish:                       # 'length' => truncated before the verdict
+                return text, data["choices"][0].get("finish_reason")
+            return text
         except urllib.error.HTTPError as e:                 # retry only 429 / 5xx
             if e.code != 429 and e.code < 500:
                 raise

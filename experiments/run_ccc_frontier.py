@@ -43,8 +43,13 @@ REPS = 3
 DEFAULT_WORKERS = 4                  # conservative (frontier endpoints, tighter rate limits)
 COND_IDS = ["no_injection", "answer_only", "full_rationale", "solver_rationale"]
 CANDIDATES = ["correct", "wrong_matching"]
-MAX_TOK = {"score_only": 60, "verify_written": 1400}
-RETRY_TOK = {"score_only": 240, "verify_written": 2600}
+# Budgets sized for REASONING judges: a frontier model spends reasoning tokens (counted
+# against the completion budget) before emitting the verdict. The original 60/240 was tuned
+# for terse small-tier judges and truncated reasoning models before they scored (amendment
+# 2026-07-19). Terse models stop early and are billed on actual tokens, so the headroom is
+# free for them and necessary for the reasoners.
+MAX_TOK = {"score_only": 1024, "verify_written": 2048}
+RETRY_TOK = {"score_only": 2048, "verify_written": 4096}
 
 
 # --- Domain registry: each maps the 4 canonical conditions to its own frozen builder ------
@@ -112,17 +117,17 @@ def check_models(models, key):
     ok = []
     for m in models:
         try:
-            r = call_openrouter('Reply with only: {"score": 100}', m, key, max_tokens=20)
-            parse_ok = True
-            try:
-                parse_score(r)
-            except Exception:
-                parse_ok = False
-            print(f"  OK   {m}  (responded; score-parse={'yes' if parse_ok else 'no'})")
-            ok.append(m)
+            # give the reasoning models room to reach the verdict, matching the real run
+            r = call_openrouter('Reply with only: {"score": 100}', m, key,
+                                max_tokens=MAX_TOK["score_only"])
+            parse_ok = parse_score(r) is not None
+            print(f"  {'OK  ' if parse_ok else 'FAIL'} {m}  "
+                  f"(responded; score-parse={'yes' if parse_ok else 'no'})")
+            if parse_ok:                      # a resolved-but-unparseable alias does NOT count
+                ok.append(m)
         except Exception as e:
             print(f"  FAIL {m}  -> {type(e).__name__}: {str(e)[:140]}")
-    print(f"resolved {len(ok)}/{len(models)} aliases")
+    print(f"validated {len(ok)}/{len(models)} aliases (score-parse must be 'yes' to count)")
     return ok
 
 
@@ -156,15 +161,20 @@ def load_successful(path):
 
 
 def judge_once(prompt, model, protocol, key, call_fn):
-    raw = call_fn(prompt, model, key, max_tokens=MAX_TOK[protocol])
-    try:
-        return parse_score(raw), raw, None
-    except Exception:
-        raw2 = call_fn(prompt, model, key, max_tokens=RETRY_TOK[protocol])
-        try:
-            return parse_score(raw2), raw2, None
-        except Exception as e:
-            return None, raw2, f"{type(e).__name__}: {e}"
+    # parse_score returns None (it does NOT raise) when there is no parseable score, which for
+    # a reasoning judge almost always means the output was TRUNCATED before the verdict. Retry
+    # once with a larger budget; only then record the cell as missing, tagged by finish_reason
+    # so the missingness table can distinguish truncation from a genuine unparseable answer.
+    raw, fin = call_fn(prompt, model, key, max_tokens=MAX_TOK[protocol], return_finish=True)
+    s = parse_score(raw)
+    if s is not None:
+        return s, raw, None, fin
+    raw2, fin2 = call_fn(prompt, model, key, max_tokens=RETRY_TOK[protocol], return_finish=True)
+    s2 = parse_score(raw2)
+    if s2 is not None:
+        return s2, raw2, None, fin2
+    err = "truncated_no_score" if "length" in (fin, fin2) else "unparseable_no_score"
+    return None, raw2, err, fin2
 
 
 def worker(cell, domain, dom, order_index, key, call_fn):
@@ -173,16 +183,17 @@ def worker(cell, domain, dom, order_index, key, call_fn):
         item = dom["_byid"][iid]
         prompt = dom["build"](item, cond, cand, proto)
         sha = _sha(prompt)
-        score, raw, err = judge_once(prompt, model, proto, key, call_fn)
+        score, raw, err, fin = judge_once(prompt, model, proto, key, call_fn)
         return ({"domain": domain, "item_id": iid, "model": model, "condition": cond,
                  "candidate_type": cand, "protocol": proto, "repetition": rep,
                  "order_index": order_index, "prompt_sha256": sha, "raw_response": raw,
-                 "score": score, "error": err, "timestamp": time.time()}, prompt, sha)
+                 "finish_reason": fin, "score": score, "error": err,
+                 "timestamp": time.time()}, prompt, sha)
     except Exception as e:
         return ({"domain": domain, "item_id": iid, "model": model, "condition": cond,
                  "candidate_type": cand, "protocol": proto, "repetition": rep,
                  "order_index": order_index, "prompt_sha256": None, "raw_response": "",
-                 "score": None, "error": f"worker:{type(e).__name__}: {e}",
+                 "finish_reason": None, "score": None, "error": f"worker:{type(e).__name__}: {e}",
                  "timestamp": time.time()}, None, None)
 
 
@@ -285,12 +296,13 @@ def analyse(domains, floor_frac=0.75):
             print(f"  {m:32s} {mn:+7.2f} [{lo:+7.2f},{hi:+7.2f}] n={n:2d} {tag:12s} {pm:+7.1f} {rm:+7.1f}")
 
 
-def _stub(prompt, model, key, max_tokens=64):
+def _stub(prompt, model, key, max_tokens=64, return_finish=False):
     h = int(hashlib.sha256((prompt + model).encode()).hexdigest(), 16)
     injected = any(s in prompt for s in ("Reference note:", "External", "Additional analysis:",
                                          "Solver", "reference answer", "Reference answer"))
     base = 80 if h % 2 else 70
-    return json.dumps({"score": max(0, min(100, base - (25 if injected else 0) + h % 12))})
+    out = json.dumps({"score": max(0, min(100, base - (25 if injected else 0) + h % 12))})
+    return (out, "stop") if return_finish else out
 
 
 def main():
@@ -305,6 +317,8 @@ def main():
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--analyse-only", action="store_true")
     ap.add_argument("--stub", action="store_true")
+    ap.add_argument("--force-models", action="store_true",
+                    help="skip the --run self-preflight abort (use only to override a known-good alias)")
     ap.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
     ap.add_argument("--progress-secs", type=int, default=600)
     a = ap.parse_args()
@@ -359,9 +373,18 @@ def main():
                 print("ERROR: --models required for a real run."); sys.exit(2)
             from judge_integrity_real import call_openrouter
             call_fn = call_openrouter
+            validated = check_models(models, key)          # self-preflight before any real cell
+            missing = [m for m in models if m not in validated]
+            if missing and not a.force_models:
+                print(f"ERROR: preflight score-parse failed for {missing}. Aborting before any "
+                      f"scored cell — a model that cannot emit a parseable score would fail-closed "
+                      f"to missing and read as false 'no capture'. Fix the alias or budget, or pass "
+                      f"--force-models to override.")
+                sys.exit(3)
         json.dump({"study": "frontier", "seed": SEED, "reps": REPS, "models": models,
                    "domains": domains, "protocols": protocols, "conditions": COND_IDS,
                    "frozen_items": True, "workers": a.workers, "stub": bool(a.stub),
+                   "max_tok": MAX_TOK, "retry_tok": RETRY_TOK,
                    "run_date": time.strftime("%Y-%m-%d"), "python": sys.version.split()[0]},
                   open(os.path.join(RES, "ccc_frontier_meta.json"), "w"), indent=1)
         for d in domains:
