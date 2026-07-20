@@ -38,7 +38,11 @@ from provenance_injection_harness import parse_score
 HERE = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.join(HERE, "results")
 
-SEED = 619273400                     # fresh frontier seed
+# v2 (corrected instrument). Two prior runs (2026-07-19) used the defective 60/240 budget with a
+# dead retry and permissive preflight; both are VOID (archived as void_run / void_run_2). v2 uses a
+# fresh seed and fresh evidence filenames so corrected data can never be conflated with void data.
+SEED = 811529437                     # v2 fresh seed (void runs used 619273400)
+STUDY_TAG = "ccc_frontier_v2"        # fresh evidence filenames (void runs used ccc_frontier_*)
 REPS = 3
 DEFAULT_WORKERS = 4                  # conservative (frontier endpoints, tighter rate limits)
 COND_IDS = ["no_injection", "answer_only", "full_rationale", "solver_rationale"]
@@ -165,16 +169,22 @@ def judge_once(prompt, model, protocol, key, call_fn):
     # a reasoning judge almost always means the output was TRUNCATED before the verdict. Retry
     # once with a larger budget; only then record the cell as missing, tagged by finish_reason
     # so the missingness table can distinguish truncation from a genuine unparseable answer.
+    # BOTH attempts are logged (budget, finish_reason, parsed, raw) for a full audit trail.
+    attempts = []
     raw, fin = call_fn(prompt, model, key, max_tokens=MAX_TOK[protocol], return_finish=True)
     s = parse_score(raw)
+    attempts.append({"max_tokens": MAX_TOK[protocol], "finish_reason": fin,
+                     "parsed": s is not None, "raw": raw})
     if s is not None:
-        return s, raw, None, fin
+        return s, raw, None, fin, attempts
     raw2, fin2 = call_fn(prompt, model, key, max_tokens=RETRY_TOK[protocol], return_finish=True)
     s2 = parse_score(raw2)
+    attempts.append({"max_tokens": RETRY_TOK[protocol], "finish_reason": fin2,
+                     "parsed": s2 is not None, "raw": raw2})
     if s2 is not None:
-        return s2, raw2, None, fin2
+        return s2, raw2, None, fin2, attempts
     err = "truncated_no_score" if "length" in (fin, fin2) else "unparseable_no_score"
-    return None, raw2, err, fin2
+    return None, raw2, err, fin2, attempts
 
 
 def worker(cell, domain, dom, order_index, key, call_fn):
@@ -183,26 +193,30 @@ def worker(cell, domain, dom, order_index, key, call_fn):
         item = dom["_byid"][iid]
         prompt = dom["build"](item, cond, cand, proto)
         sha = _sha(prompt)
-        score, raw, err, fin = judge_once(prompt, model, proto, key, call_fn)
+        score, raw, err, fin, attempts = judge_once(prompt, model, proto, key, call_fn)
         return ({"domain": domain, "item_id": iid, "model": model, "condition": cond,
                  "candidate_type": cand, "protocol": proto, "repetition": rep,
                  "order_index": order_index, "prompt_sha256": sha, "raw_response": raw,
-                 "finish_reason": fin, "score": score, "error": err,
+                 "finish_reason": fin, "attempts": attempts, "score": score, "error": err,
                  "timestamp": time.time()}, prompt, sha)
     except Exception as e:
         return ({"domain": domain, "item_id": iid, "model": model, "condition": cond,
                  "candidate_type": cand, "protocol": proto, "repetition": rep,
                  "order_index": order_index, "prompt_sha256": None, "raw_response": "",
-                 "finish_reason": None, "score": None, "error": f"worker:{type(e).__name__}: {e}",
-                 "timestamp": time.time()}, None, None)
+                 "finish_reason": None, "attempts": [], "score": None,
+                 "error": f"worker:{type(e).__name__}: {e}", "timestamp": time.time()}, None, None)
 
 
 def obs_path(domain):
-    return os.path.join(RES, f"ccc_frontier_{domain}_obs.jsonl")
+    return os.path.join(RES, f"{STUDY_TAG}_{domain}_obs.jsonl")
 
 
 def prompts_path(domain):
-    return os.path.join(RES, f"ccc_frontier_{domain}_prompts.jsonl")
+    return os.path.join(RES, f"{STUDY_TAG}_{domain}_prompts.jsonl")
+
+
+def meta_path():
+    return os.path.join(RES, f"{STUDY_TAG}_meta.json")
 
 
 def run_domain(domain, dom, models, protocols, key, call_fn, workers, resume, progress_secs):
@@ -381,12 +395,14 @@ def main():
                       f"to missing and read as false 'no capture'. Fix the alias or budget, or pass "
                       f"--force-models to override.")
                 sys.exit(3)
-        json.dump({"study": "frontier", "seed": SEED, "reps": REPS, "models": models,
+        json.dump({"study": "frontier_v2", "study_tag": STUDY_TAG,
+                   "supersedes": "ccc_frontier (void runs 1-2, 2026-07-19, seed 619273400)",
+                   "seed": SEED, "reps": REPS, "models": models,
                    "domains": domains, "protocols": protocols, "conditions": COND_IDS,
                    "frozen_items": True, "workers": a.workers, "stub": bool(a.stub),
                    "max_tok": MAX_TOK, "retry_tok": RETRY_TOK,
                    "run_date": time.strftime("%Y-%m-%d"), "python": sys.version.split()[0]},
-                  open(os.path.join(RES, "ccc_frontier_meta.json"), "w"), indent=1)
+                  open(meta_path(), "w"), indent=1)
         for d in domains:
             run_domain(d, doms[d], models, protocols, key, call_fn, a.workers,
                        resume=a.resume, progress_secs=a.progress_secs)

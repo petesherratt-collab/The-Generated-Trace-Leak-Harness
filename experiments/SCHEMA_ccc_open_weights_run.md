@@ -22,9 +22,10 @@ Per domain: **items × N models × 4 conditions × 2 candidate types × {score_o
 | `code`  | 16 | 12 | `ccc_code_items` + `run_ccc_codedomain.build_prompt`; unit-test gold (sandboxed) |
 | `sql`   | 24 | 18 | `ccc_sql_items` + `run_ccc_sql.build_prompt`; SQLite oracle + gold-signature gate |
 
-- **SEED = `619273400`** (fixed). The per-domain schedule shuffle depends on `seed + rep + hash(domain)`
-  only — **not** on model identity — so every model faces the identical frozen schedule. Keep this seed:
-  it makes the open-weights, small-tier, and frontier panels paired within item.
+- **SEED = `811529437`** (v2 fixed seed; the void 2026-07-19 runs used `619273400`). The per-domain
+  schedule shuffle depends on `seed + rep + hash(domain)` only — **not** on model identity — so every
+  model faces the identical frozen schedule. Keep this seed: it makes the open-weights, small-tier, and
+  frontier(v2) panels paired within item.
 - **REPS = 3.** Temperature = 0 (set in `call_openrouter`).
 - Cells per domain per model: 16·4·2·1·3 = 384 (arith, code); 24·4·2·1·3 = 576 (sql).
   For a 5-model open-weights panel: (384+384+576)·5 = **6,720 score_only cells.**
@@ -52,7 +53,7 @@ Both are frozen in the item files; the judge never establishes correctness — t
 
 ## 4. Observation row schema (one JSON object per line, append-only JSONL)
 
-File per domain: `results/ccc_frontier_<domain>_obs.jsonl`. Exact fields written per cell:
+File per domain: `results/ccc_frontier_v2_<domain>_obs.jsonl`. Exact fields written per cell:
 
 | field | type | meaning |
 |---|---|---|
@@ -66,7 +67,8 @@ File per domain: `results/ccc_frontier_<domain>_obs.jsonl`. Exact fields written
 | `order_index` | int | position in the frozen schedule (completion-order independent) |
 | `prompt_sha256` | str \| null | SHA-256 of the exact prompt string sent |
 | `raw_response` | str | verbatim model output (content or reasoning field) |
-| `finish_reason` | str \| null | provider finish reason; `"length"` ⇒ truncated before verdict |
+| `finish_reason` | str \| null | provider finish reason (final attempt); `"length"` ⇒ truncated before verdict |
+| `attempts` | list | one entry per budget attempt: `{max_tokens, finish_reason, parsed, raw}` (full audit trail) |
 | `score` | number \| null | parsed 0–100 judge score; **null = missing** |
 | `error` | str \| null | null on success; else `truncated_no_score` / `unparseable_no_score` / `worker:<Exc>` |
 | `timestamp` | float | epoch seconds |
@@ -83,11 +85,11 @@ fail-closed **missing** — never imputed, never counted, never read as "safe."
 At most **one successful row per key**. Resume re-runs only keys that are not yet successful.
 `order_index` is frozen per schedule and independent of completion order (concurrency-safe).
 
-## 6. Run metadata schema (`results/ccc_frontier_meta.json`)
+## 6. Run metadata schema (`results/ccc_frontier_v2_meta.json`)
 
 ```json
 {
-  "study": "frontier", "seed": 619273400, "reps": 3,
+  "study": "frontier_v2", "supersedes": "ccc_frontier (void runs 1-2, ...)", "seed": 811529437, "reps": 3,
   "models": ["<alias>", "..."], "domains": ["arith","code","sql"],
   "protocols": ["score_only"], "conditions": ["no_injection","answer_only","full_rationale","solver_rationale"],
   "frozen_items": true, "workers": 4, "stub": false,
@@ -173,15 +175,15 @@ python experiments/run_ccc_frontier.py --run --models "$M"
 Requires `OPENROUTER_API_KEY` (loaded from a gitignored `.env` via `OPENROUTER_ENV_FILE`; never commit
 a key). Runs are resumable (`--resume`) — the streamed JSONL is the checkpoint.
 
-**To keep the open-weights evidence separate from the (void) 2026-07-19 frontier files**, move those
-aside first (they share the `ccc_frontier_*` file names). Because the dedup key includes `model`,
-open-weights rows can safely coexist in the same files as a *corrected* frontier run and analyse into
-one comparable table — just not alongside the void run's rows.
+The v2 runner writes **`ccc_frontier_v2_*`** files, which by name never collide with the two void
+runs' `ccc_frontier_*` files (archived under `void_run` / `void_run_2`). Because the dedup key
+includes `model`, open-weights rows can safely coexist in the `ccc_frontier_v2_*` files alongside a
+corrected frontier(v2) run and analyse into one comparable table.
 
 ## 12. What to hand back
 
-- `results/ccc_frontier_arith_obs.jsonl`, `..._code_obs.jsonl`, `..._sql_obs.jsonl`
-- `results/ccc_frontier_meta.json` (authoritative alias + budget + date record)
+- `results/ccc_frontier_v2_arith_obs.jsonl`, `..._code_obs.jsonl`, `..._sql_obs.jsonl`
+- `results/ccc_frontier_v2_meta.json` (authoritative alias + budget + date record)
 - the console analysis block (per-domain SUPPORTED / ns / unmeasurable table)
 
 That is sufficient to audit, recompute the contrasts independently, and write the open-weights findings

@@ -154,3 +154,30 @@ reasoning length tracks the injected conflict, residual truncation could bias th
 than only shrink n. The corrected run reports missingness per (model × condition), and any judge
 whose remaining truncation concentrates in the injection conditions is reported as unmeasurable for
 that contrast rather than estimated.
+
+## Amendment 2 — second void run + v2 instrument (2026-07-19)
+
+**What happened.** The Amendment-1 fix was committed and pushed, but the local checkout was not
+updated before the next run, so a **second full run of the defective instrument** was executed
+(same 60/240 budget, dead retry, permissive preflight, original seed and filenames). Its failure
+pattern reproduced the first almost exactly (Gemini n=0 everywhere, Fable below floor, and this time
+Grok also collapsed in SQL). It is **void** for the same reason and is archived as `void_run_2`.
+The tell was diagnostic: the run printed no preflight block and did not abort on the unparseable
+judges — behaviour only the pre-fix code produces.
+
+**v2 instrument (this is now the only version that counts).** To make corrected data impossible to
+conflate with either void run, v2 adds, on top of the Amendment-1 fixes (1024/2048 budget,
+retry-on-`None`, `finish_reason` logging, parse-gated preflight, `--run` self-preflight/abort):
+- **Fresh seed `811529437`** (void runs used `619273400`) — a genuinely fresh schedule draw, not a
+  re-shuffle of the void schedule.
+- **Fresh evidence filenames** `ccc_frontier_v2_<domain>_obs.jsonl`, `..._prompts.jsonl`,
+  `ccc_frontier_v2_meta.json`; metadata carries `study="frontier_v2"` and a `supersedes` field.
+- **Both-attempt logging:** every cell records an `attempts` list — for each of the two budget
+  attempts, its `max_tokens`, `finish_reason`, whether it `parsed`, and the raw output — so
+  truncation-then-recovery vs genuine-unparseable is fully auditable from the evidence alone.
+
+**Gate before spending credits (unchanged intent, now mandatory).** Confirm the checkout is at the
+v2 runner (contains `1024/2048`, retry-on-`None`, `finish_reason`, parse-gated preflight, seed
+`811529437`, `ccc_frontier_v2` filenames), then run **only the preflight**; proceed to the panel
+run **only if all models report `score-parse=yes`.** A model still failing parse at 1024 tokens is a
+genuine refusal/format issue to diagnose, not a truncation to spend a full run on.
