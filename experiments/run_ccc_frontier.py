@@ -209,7 +209,9 @@ def judge_once(prompt, model, protocol, key, call_fn):
                      "parsed": s2 is not None, "raw": raw2})
     if s2 is not None:
         return s2, raw2, None, fin2, attempts
-    if not (raw2 or "").strip() and not (raw or "").strip():
+    if "content_filter" in (fin, fin2):
+        err = "content_filtered"                      # provider blocked the response (not truncation)
+    elif not (raw2 or "").strip() and not (raw or "").strip():
         err = "empty_no_score"                        # soft refusal / empty completion
     elif "length" in (fin, fin2):
         err = "truncated_no_score"

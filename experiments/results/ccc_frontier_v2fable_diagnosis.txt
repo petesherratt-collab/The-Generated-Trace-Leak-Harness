@@ -1,0 +1,18 @@
+FABLE DIAGNOSTIC — isolated re-run (fixed retry; v2 seed 811529437; tag ccc_frontier_v2fable)
+Reproduce: run the block in the session, or:
+  python -c "import json,collections; [print(dom, collections.Counter(tuple(a.get('finish_reason') for a in (r.get('attempts') or [])) for r in [json.loads(l) for l in open(f'experiments/results/ccc_frontier_v2fable_{dom}_obs.jsonl') if l.strip()] if r.get('score') is None or r.get('error'))) for dom in ['arith','code','sql']]"
+
+FINDING: ~anthropic/claude-fable-latest failures are provider CONTENT-FILTER blocks
+(finish_reason == 'content_filter' on BOTH attempts), not truncation. The larger-budget
+retry fired for every failure (135/135 code, 25/25 sql) and could not help — a filter, not
+a token limit. Blocking is strongly TREATMENT-CORRELATED (triggered by the injected wrong
+conclusion/rationale):
+
+  arith:  0 missing            -> filter never triggers -> MEASURABLE: bare-harm +66.25
+                                  [+46.7,+85.7] n=16 SUPPORTED (strong capture)
+  code:   135 missing (base 9  vs injected 126) -> content_filtered, injection-skewed -> UNMEASURABLE
+  sql:    25 missing  (base 0  vs injected 25)  -> content_filtered, injection-skewed -> UNMEASURABLE
+
+IMPLICATION: no budget change fixes Fable code/sql; expect the same under v3. Report Fable as
+captured in arithmetic and unmeasurable (content-filtered on injected content) in code/SQL.
+The v3 taxonomy now tags these cells 'content_filtered' so the mechanism is explicit in evidence.
