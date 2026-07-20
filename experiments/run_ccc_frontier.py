@@ -164,26 +164,40 @@ def load_successful(path):
     return done
 
 
+def _safe_parse(raw):
+    # provenance_injection_harness.parse_score RAISES on a missing/invalid score (it does not
+    # return None). Normalise both behaviours to "None == no score" so the retry logic below
+    # is correct regardless of which parser is imported.
+    try:
+        return parse_score(raw)
+    except Exception:
+        return None
+
+
 def judge_once(prompt, model, protocol, key, call_fn):
-    # parse_score returns None (it does NOT raise) when there is no parseable score, which for
-    # a reasoning judge almost always means the output was TRUNCATED before the verdict. Retry
-    # once with a larger budget; only then record the cell as missing, tagged by finish_reason
-    # so the missingness table can distinguish truncation from a genuine unparseable answer.
-    # BOTH attempts are logged (budget, finish_reason, parsed, raw) for a full audit trail.
+    # A cell fails to parse when the judge emits no valid score object -- usually because the
+    # output was TRUNCATED before the verdict, or EMPTY (a soft refusal). Retry once with a
+    # larger budget; only then record the cell as missing, tagged by an error taxonomy and the
+    # provider finish_reason. BOTH attempts are logged (budget, finish_reason, parsed, raw).
     attempts = []
     raw, fin = call_fn(prompt, model, key, max_tokens=MAX_TOK[protocol], return_finish=True)
-    s = parse_score(raw)
+    s = _safe_parse(raw)
     attempts.append({"max_tokens": MAX_TOK[protocol], "finish_reason": fin,
                      "parsed": s is not None, "raw": raw})
     if s is not None:
         return s, raw, None, fin, attempts
     raw2, fin2 = call_fn(prompt, model, key, max_tokens=RETRY_TOK[protocol], return_finish=True)
-    s2 = parse_score(raw2)
+    s2 = _safe_parse(raw2)
     attempts.append({"max_tokens": RETRY_TOK[protocol], "finish_reason": fin2,
                      "parsed": s2 is not None, "raw": raw2})
     if s2 is not None:
         return s2, raw2, None, fin2, attempts
-    err = "truncated_no_score" if "length" in (fin, fin2) else "unparseable_no_score"
+    if not (raw2 or "").strip() and not (raw or "").strip():
+        err = "empty_no_score"                        # soft refusal / empty completion
+    elif "length" in (fin, fin2):
+        err = "truncated_no_score"
+    else:
+        err = "unparseable_no_score"
     return None, raw2, err, fin2, attempts
 
 
@@ -207,16 +221,22 @@ def worker(cell, domain, dom, order_index, key, call_fn):
                  "error": f"worker:{type(e).__name__}: {e}", "timestamp": time.time()}, None, None)
 
 
+# wiring-check writes throwaway stub evidence; it MUST NOT use the real STUDY_TAG filenames
+# (a "w"-mode open would truncate real evidence, and its cleanup would delete it). _ACTIVE_TAG
+# is overridden to a throwaway tag inside --wiring-check only.
+_ACTIVE_TAG = STUDY_TAG
+
+
 def obs_path(domain):
-    return os.path.join(RES, f"{STUDY_TAG}_{domain}_obs.jsonl")
+    return os.path.join(RES, f"{_ACTIVE_TAG}_{domain}_obs.jsonl")
 
 
 def prompts_path(domain):
-    return os.path.join(RES, f"{STUDY_TAG}_{domain}_prompts.jsonl")
+    return os.path.join(RES, f"{_ACTIVE_TAG}_{domain}_prompts.jsonl")
 
 
 def meta_path():
-    return os.path.join(RES, f"{STUDY_TAG}_meta.json")
+    return os.path.join(RES, f"{_ACTIVE_TAG}_meta.json")
 
 
 def run_domain(domain, dom, models, protocols, key, call_fn, workers, resume, progress_secs):
@@ -365,6 +385,8 @@ def main():
         return
 
     if a.wiring_check:
+        global _ACTIVE_TAG
+        _ACTIVE_TAG = STUDY_TAG + "_wiring"      # never touch real evidence filenames
         for d in domains:
             run_domain(d, doms[d], models or ["stub/a", "stub/b"], protocols, "STUB", _stub,
                        a.workers, resume=False, progress_secs=a.progress_secs)

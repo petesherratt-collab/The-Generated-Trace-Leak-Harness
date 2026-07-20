@@ -70,7 +70,7 @@ File per domain: `results/ccc_frontier_v2_<domain>_obs.jsonl`. Exact fields writ
 | `finish_reason` | str \| null | provider finish reason (final attempt); `"length"` ⇒ truncated before verdict |
 | `attempts` | list | one entry per budget attempt: `{max_tokens, finish_reason, parsed, raw}` (full audit trail) |
 | `score` | number \| null | parsed 0–100 judge score; **null = missing** |
-| `error` | str \| null | null on success; else `truncated_no_score` / `unparseable_no_score` / `worker:<Exc>` |
+| `error` | str \| null | null on success; else `empty_no_score` (soft refusal) / `truncated_no_score` / `unparseable_no_score` / `worker:<Exc>` |
 | `timestamp` | float | epoch seconds |
 
 **A cell counts as successful iff `score is not null AND error is null`.** Everything else is
