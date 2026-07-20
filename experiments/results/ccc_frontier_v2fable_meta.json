@@ -1,0 +1,37 @@
+{
+ "study": "frontier_v2",
+ "study_tag": "ccc_frontier_v2",
+ "supersedes": "ccc_frontier (void runs 1-2, 2026-07-19, seed 619273400)",
+ "seed": 811529437,
+ "reps": 3,
+ "models": [
+  "~anthropic/claude-fable-latest"
+ ],
+ "domains": [
+  "arith",
+  "code",
+  "sql"
+ ],
+ "protocols": [
+  "score_only"
+ ],
+ "conditions": [
+  "no_injection",
+  "answer_only",
+  "full_rationale",
+  "solver_rationale"
+ ],
+ "frozen_items": true,
+ "workers": 4,
+ "stub": false,
+ "max_tok": {
+  "score_only": 1024,
+  "verify_written": 2048
+ },
+ "retry_tok": {
+  "score_only": 2048,
+  "verify_written": 4096
+ },
+ "run_date": "2026-07-20",
+ "python": "3.13.14"
+}
