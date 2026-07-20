@@ -1,0 +1,45 @@
+{
+ "study": "frontier_v3",
+ "study_tag": "ccc_frontier_v2fable_recheck",
+ "supersedes": "ccc_frontier_v2 (exploratory; dead retry + non-reproducible hash schedule) and ccc_frontier void runs 1-2 (60/240 truncation)",
+ "seed": 305774821,
+ "reps": 3,
+ "models": [
+  "~anthropic/claude-fable-latest"
+ ],
+ "validated_models": [
+  "~anthropic/claude-fable-latest"
+ ],
+ "force_models": false,
+ "domains": [
+  "code"
+ ],
+ "protocols": [
+  "score_only"
+ ],
+ "conditions": [
+  "no_injection",
+  "answer_only",
+  "full_rationale",
+  "solver_rationale"
+ ],
+ "candidates": [
+  "correct",
+  "wrong_matching"
+ ],
+ "frozen_items": true,
+ "workers": 4,
+ "stub": false,
+ "max_tok": {
+  "score_only": 1024,
+  "verify_written": 2048
+ },
+ "retry_tok": {
+  "score_only": 2048,
+  "verify_written": 4096
+ },
+ "git_commit": "447a9fe3b2802e1054a97a0161589068758105f4",
+ "schedule_hash": "sha256(domain) (reproducible)",
+ "run_date": "2026-07-20",
+ "python": "3.13.14"
+}
