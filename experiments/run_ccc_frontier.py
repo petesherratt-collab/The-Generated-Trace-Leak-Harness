@@ -38,11 +38,13 @@ from provenance_injection_harness import parse_score
 HERE = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.join(HERE, "results")
 
-# v2 (corrected instrument). Two prior runs (2026-07-19) used the defective 60/240 budget with a
-# dead retry and permissive preflight; both are VOID (archived as void_run / void_run_2). v2 uses a
-# fresh seed and fresh evidence filenames so corrected data can never be conflated with void data.
-SEED = 811529437                     # v2 fresh seed (void runs used 619273400)
-STUDY_TAG = "ccc_frontier_v2"        # fresh evidence filenames (void runs used ccc_frontier_*)
+# v3 (confirmatory instrument). History: runs 1-2 (2026-07-19) VOID for 60/240 truncation;
+# v2 (seed 811529437) EXPLORATORY ONLY -- valid scores for the three measurable judges but not
+# confirmatory: its retry path was dead (never exercised) and its schedule used a per-process
+# salted hash(domain), so the recorded seed did not reproduce ordering. v3 fixes both (working
+# retry; stable schedule hash) and uses a fresh seed + namespace. See PREREG Amendment 3.
+SEED = 305774821                     # v3 fresh seed (v2 used 811529437; void runs 619273400)
+STUDY_TAG = "ccc_frontier_v3"        # fresh evidence filenames
 REPS = 3
 DEFAULT_WORKERS = 4                  # conservative (frontier endpoints, tighter rate limits)
 COND_IDS = ["no_injection", "answer_only", "full_rationale", "solver_rationale"]
@@ -136,13 +138,28 @@ def check_models(models, key):
 
 
 # --- Schedule (per domain, rep-block deconflicted) --------------------------------------
+def _stable_hash(s):
+    # deterministic across processes (Python's builtin hash() of a str is salted by
+    # PYTHONHASHSEED, so it does NOT reproduce ordering from the recorded seed).
+    return int(hashlib.sha256(s.encode()).hexdigest(), 16)
+
+
+def _git_commit():
+    import subprocess
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=HERE,
+                                       stderr=subprocess.DEVNULL).decode().strip()
+    except Exception:
+        return "unknown"
+
+
 def build_schedule(domain, items_ids, models, protocols, seed=SEED):
     base = [(iid, m, c, cand, p) for iid in items_ids for m in models
             for c in COND_IDS for cand in CANDIDATES for p in protocols]
     sched = []
     for rep in range(REPS):
         block = list(base)
-        random.Random(seed + rep + hash(domain) % 1000).shuffle(block)
+        random.Random(seed + rep + _stable_hash(domain) % 1000).shuffle(block)
         sched += [cell + (rep,) for cell in block]
     return sched
 
@@ -312,8 +329,20 @@ def analyse(domains, floor_frac=0.75):
         models = sorted({r["model"] for r in rows})
         floor = int(len(ids) * floor_frac)
         import collections
-        fail = collections.Counter((r["model"]) for r in rows if r.get("score") is None or r.get("error"))
+        miss = [r for r in rows if r.get("score") is None or r.get("error")]
+        fail = collections.Counter(r["model"] for r in miss)
         print(f"\n=== {domain} ({len(ids)} items, floor {floor}) ===  missingness by model: {dict(fail)}")
+        # condition-balanced completeness: missingness concentrated in the injected conditions
+        # biases the contrast rather than only shrinking n -> such a model is unmeasurable.
+        for m in models:
+            if fail.get(m):
+                by_cc = collections.Counter((r["condition"], r["candidate_type"]) for r in miss
+                                            if r["model"] == m)
+                base_f = sum(v for (c, _), v in by_cc.items() if c == "no_injection")
+                inj_f = sum(v for (c, _), v in by_cc.items() if c != "no_injection")
+                skew = " *INJECTION-SKEWED (treat as unmeasurable)" if inj_f > 6 and inj_f > 3 * max(base_f, 1) else ""
+                cells = "  ".join(f"{c[:4]}/{cd[:3]}:{v}" for (c, cd), v in sorted(by_cc.items()))
+                print(f"    miss[{m.split('/')[-1]:26s}] base={base_f} inj={inj_f}{skew}\n        {cells}")
         print(f"  {'model':32s} {'bare-harm [95% CI]':>26s}  {'prov+':>8s} {'rat+':>8s}")
         for m in models:
             base = _disc(obs, domain, m, "no_injection", ids)
@@ -405,6 +434,7 @@ def main():
 
     if a.run or a.resume:
         call_fn = _stub; key = "STUB"
+        validated = list(models)
         if not a.stub:
             loaded = load_env(); key = os.environ.get("OPENROUTER_API_KEY")
             if loaded: print("loaded from .env:", ", ".join(loaded))
@@ -422,12 +452,15 @@ def main():
                       f"to missing and read as false 'no capture'. Fix the alias or budget, or pass "
                       f"--force-models to override.")
                 sys.exit(3)
-        json.dump({"study": "frontier_v2", "study_tag": STUDY_TAG,
-                   "supersedes": "ccc_frontier (void runs 1-2, 2026-07-19, seed 619273400)",
+        json.dump({"study": "frontier_v3", "study_tag": _ACTIVE_TAG,
+                   "supersedes": "ccc_frontier_v2 (exploratory; dead retry + non-reproducible "
+                                 "hash schedule) and ccc_frontier void runs 1-2 (60/240 truncation)",
                    "seed": SEED, "reps": REPS, "models": models,
+                   "validated_models": validated, "force_models": bool(a.force_models),
                    "domains": domains, "protocols": protocols, "conditions": COND_IDS,
-                   "frozen_items": True, "workers": a.workers, "stub": bool(a.stub),
-                   "max_tok": MAX_TOK, "retry_tok": RETRY_TOK,
+                   "candidates": CANDIDATES, "frozen_items": True, "workers": a.workers,
+                   "stub": bool(a.stub), "max_tok": MAX_TOK, "retry_tok": RETRY_TOK,
+                   "git_commit": _git_commit(), "schedule_hash": "sha256(domain) (reproducible)",
                    "run_date": time.strftime("%Y-%m-%d"), "python": sys.version.split()[0]},
                   open(meta_path(), "w"), indent=1)
         for d in domains:
