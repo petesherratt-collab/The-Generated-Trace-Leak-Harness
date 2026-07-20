@@ -181,3 +181,40 @@ v2 runner (contains `1024/2048`, retry-on-`None`, `finish_reason`, parse-gated p
 `811529437`, `ccc_frontier_v2` filenames), then run **only the preflight**; proceed to the panel
 run **only if all models report `score-parse=yes`.** A model still failing parse at 1024 tokens is a
 genuine refusal/format issue to diagnose, not a truncation to spend a full run on.
+
+## Amendment 3 — v2 is exploratory, not confirmatory; v3 instrument (2026-07-20)
+
+The v2 run completed all 5,376 cells (preflight passed twice; `--force-models` not used). Two
+independent audits (this project's, and an external Codex review) then found defects that, while
+they **cannot alter any recorded score**, disqualify v2 as a *confirmatory* run:
+
+1. **Dead retry path.** `judge_once` called the **raising** `parse_score` (from
+   `provenance_injection_harness`, which raises `ValueError`, not returns `None`) outside a
+   try/except, so a first-attempt parse failure threw straight to `worker()`. The 2,048-token retry
+   never fired once (every success = 1 attempt, every failure = 0), and failed rows lost their
+   structured `raw`/`finish_reason`/`prompt_sha` (only a truncated copy survived in the error string).
+2. **Non-reproducible schedule.** The shuffle used `hash(domain)`, which Python salts per process
+   (`PYTHONHASHSEED`), so the recorded seed did **not** reproduce ordering. Immaterial to a completed
+   full factorial's scores, but a real reproducibility failure and a preregistration defect.
+3. Thinner hygiene: metadata omitted commit / validated-alias / force-flag; `analyse()` reported
+   missingness by model only, not by condition × candidate.
+
+**Status of v2 data.** Retained as **exploratory previews, not confirmatory.** Its scores for the
+three measurable judges are valid (those judges needed zero retries, so their rows are byte-identical
+to a correct implementation): in **SQL**, gpt-5.6-sol (+54), gemini-3.1-pro (+40) and grok-4.5 (+32)
+captured; in **code**, gpt (+8.7) and grok (+5.7) captured; **no** capture in arithmetic. Claude Fable
+is **unmeasurable** (treatment-correlated empty/refusal responses concentrated in injected conditions).
+These are strong previews to be **reconfirmed by v3**, not headline findings.
+
+**v3 instrument (now the confirmatory version).** Fixes all of the above: `_safe_parse` normalises
+raise/None → "no score" with a working larger-budget retry and an `empty_no_score` / `truncated_no_score`
+/ `unparseable_no_score` taxonomy (raw + finish_reason logged per attempt); **stable `sha256(domain)`
+schedule** so the seed fully reproduces ordering; metadata records commit, validated aliases,
+force-flag, candidates, schedule scheme; `analyse()` reports missingness by condition × candidate with
+an injection-skew flag; `--wiring-check` routed to a throwaway tag (it had clobbered real evidence);
+`--tag` supports isolated re-runs. Fresh **seed `305774821`** and **`ccc_frontier_v3`** namespace.
+The Fable-only patch plan is **superseded** — Fable is measured properly inside the clean v3 run.
+
+**Gate for v3 (mandatory).** Checkout at the v3 runner (contains `_safe_parse`, `_stable_hash`, seed
+`305774821`, `ccc_frontier_v3` filenames); preflight all four → `score-parse=yes`; then run. v3 is the
+run whose results may be reported as confirmatory.
