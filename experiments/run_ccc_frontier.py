@@ -355,7 +355,13 @@ def main():
                     help="skip the --run self-preflight abort (use only to override a known-good alias)")
     ap.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
     ap.add_argument("--progress-secs", type=int, default=600)
+    ap.add_argument("--tag", default=None,
+                    help="override evidence file tag for an isolated re-run (e.g. a single-model "
+                         "re-run into fresh files, later merged for analysis); keeps original evidence pristine")
     a = ap.parse_args()
+    global _ACTIVE_TAG
+    if a.tag:
+        _ACTIVE_TAG = a.tag
     models = [m.strip() for m in a.models.split(",") if m.strip()]
     domains = [d.strip() for d in a.domains.split(",") if d.strip()]
     protocols = [p.strip() for p in a.protocols.split(",") if p.strip()]
@@ -385,7 +391,6 @@ def main():
         return
 
     if a.wiring_check:
-        global _ACTIVE_TAG
         _ACTIVE_TAG = STUDY_TAG + "_wiring"      # never touch real evidence filenames
         for d in domains:
             run_domain(d, doms[d], models or ["stub/a", "stub/b"], protocols, "STUB", _stub,
