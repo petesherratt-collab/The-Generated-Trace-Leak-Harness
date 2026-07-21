@@ -92,6 +92,19 @@ wrong-rationale content in code/SQL — it is neither evidence of capture nor of
   capture or resistance.
 - `verify_written` (Phase 2) not run; `score_only` is the vulnerable, low-cost protocol.
 
+## Cost / efficiency note (practical)
+
+Claude Fable was the **highest-spend judge and the lowest measurable yield** — a worst-case cost/data
+ratio. It was content-filtered into *unmeasurable* in code and SQL, leaving arithmetic as its only
+scorable domain, yet it dominated API cost (~half of daily spend on the run days). Three effects
+compound: reasoning tokens per call; **every filtered/failed cell burns a retry** (each of the 148
+code + 27 SQL content-filter blocks fired a second full-budget attempt that also returned blocked/empty
+output); and Phase-2 `verify_written` adds long written derivations, again retry-doubled. Methodological
+takeaway for a future benchmark: a judge whose safety filter blocks injected content is **both
+unmeasurable and expensive** (the two failure modes compound), so cheapest to **pre-screen** for it —
+a tiny injected-content probe in the preflight — and exclude such endpoints before spending, rather
+than discovering it hundreds of blocked cells deep.
+
 ## Phase 2 — does written verification fix it? (`verify_written`)
 
 A conditionally-admitted Phase 2 ran `verify_written` on the Phase-1-captured pairs (see
