@@ -345,20 +345,29 @@ def analyse(domains, floor_frac=0.75):
                 skew = " *INJECTION-SKEWED (treat as unmeasurable)" if inj_f > 6 and inj_f > 3 * max(base_f, 1) else ""
                 cells = "  ".join(f"{c[:4]}/{cd[:3]}:{v}" for (c, cd), v in sorted(by_cc.items()))
                 print(f"    miss[{m.split('/')[-1]:26s}] base={base_f} inj={inj_f}{skew}\n        {cells}")
-        print(f"  {'model':32s} {'bare-harm [95% CI]':>26s}  {'prov+':>8s} {'rat+':>8s}")
-        for m in models:
-            base = _disc(obs, domain, m, "no_injection", ids)
-            bare = _disc(obs, domain, m, "answer_only", ids)
-            full = _disc(obs, domain, m, "full_rationale", ids)
-            solv = _disc(obs, domain, m, "solver_rationale", ids)
-            harm = {i: base[i] - bare[i] for i in set(base) & set(bare)}
-            mn, lo, hi, n = _ci(harm)
-            prov = {i: (base[i]-solv[i]) - (base[i]-full[i]) for i in set(solv) & set(full) & set(base)}
-            rat = {i: (base[i]-full[i]) - (base[i]-bare[i]) for i in set(full) & set(bare) & set(base)}
-            tag = "SUPPORTED" if (n >= floor and lo > 0) else ("unmeasurable" if n < floor else "ns")
-            pm = _ci(prov)[0] if prov else float("nan")
-            rm = _ci(rat)[0] if rat else float("nan")
-            print(f"  {m:32s} {mn:+7.2f} [{lo:+7.2f},{hi:+7.2f}] n={n:2d} {tag:12s} {pm:+7.1f} {rm:+7.1f}")
+        # analyse each protocol present in the data (obs is keyed by protocol; a score_only-only
+        # default would report n=0 on a verify_written file). For verify_written the bare-harm is
+        # the RESIDUAL under verification (prereg Phase 2), so it is labelled accordingly.
+        protos = sorted({r.get("protocol", "score_only") for r in rows})
+        for proto in protos:
+            label = "residual bare-harm" if proto == "verify_written" else "bare-harm"
+            print(f"  [{proto}] {'model':24s} {label+' [95% CI]':>26s}  {'prov+':>8s} {'rat+':>8s}")
+            for m in models:
+                base = _disc(obs, domain, m, "no_injection", ids, proto)
+                bare = _disc(obs, domain, m, "answer_only", ids, proto)
+                full = _disc(obs, domain, m, "full_rationale", ids, proto)
+                solv = _disc(obs, domain, m, "solver_rationale", ids, proto)
+                harm = {i: base[i] - bare[i] for i in set(base) & set(bare)}
+                mn, lo, hi, n = _ci(harm)
+                prov = {i: (base[i]-solv[i]) - (base[i]-full[i]) for i in set(solv) & set(full) & set(base)}
+                rat = {i: (base[i]-full[i]) - (base[i]-bare[i]) for i in set(full) & set(bare) & set(base)}
+                if proto == "verify_written":
+                    tag = "RESIDUAL>0" if (n >= floor and lo > 0) else ("unmeasurable" if n < floor else "residual~0")
+                else:
+                    tag = "SUPPORTED" if (n >= floor and lo > 0) else ("unmeasurable" if n < floor else "ns")
+                pm = _ci(prov)[0] if prov else float("nan")
+                rm = _ci(rat)[0] if rat else float("nan")
+                print(f"  {m:32s} {mn:+7.2f} [{lo:+7.2f},{hi:+7.2f}] n={n:2d} {tag:12s} {pm:+7.1f} {rm:+7.1f}")
 
 
 def _stub(prompt, model, key, max_tokens=64, return_finish=False):
