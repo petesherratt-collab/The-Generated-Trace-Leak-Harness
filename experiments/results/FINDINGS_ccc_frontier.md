@@ -92,6 +92,18 @@ wrong-rationale content in code/SQL — it is neither evidence of capture nor of
   capture or resistance.
 - `verify_written` (Phase 2) not run; `score_only` is the vulnerable, low-cost protocol.
 
+## Phase 2 — does written verification fix it? (`verify_written`)
+
+A conditionally-admitted Phase 2 ran `verify_written` on the Phase-1-captured pairs (see
+[`FINDINGS_ccc_frontier_phase2.md`](FINDINGS_ccc_frontier_phase2.md),
+[`../PREREG_ccc_frontier_phase2.md`](../PREREG_ccc_frontier_phase2.md)). Reading the **residual** harm
+that remains under verification: it eliminated capture in **only 1 of 4 measurable cells** (gpt-SQL,
++50.6 → residual ~0); the residual **persisted** for fable-arith (+19.4) and gpt-code (+8.1, CIs
+exclude 0), was **uncertain** for grok-SQL (+9.5, CI spans 0), and gemini-SQL became **unmeasurable**
+(verify_written's long derivations truncated, injection-skewed). Written self-verification is thus an
+**unreliable, model- and domain-specific mitigation** — consistent with the study's thesis that the
+dependable safeguard is structural context isolation, not asking the conflicted judge to re-check.
+
 ## Relation to the small-tier study
 
 The frontier SQL result **replicates the small-tier finding that SQL is the most capture-prone
