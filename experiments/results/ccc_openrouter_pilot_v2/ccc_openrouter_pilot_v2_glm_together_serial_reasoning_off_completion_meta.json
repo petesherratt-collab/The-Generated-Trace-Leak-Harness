@@ -1,0 +1,293 @@
+{
+ "analysis_protocol": "score_only",
+ "balance_gap": 0.05,
+ "compatibility_pilot": true,
+ "config_sha256": "53de96cc23f08a9f58e6acec45bc8a78cf50401e98e96d7987c7daa751aa5b17",
+ "created_at": "2026-07-22T11:20:09.605903+00:00",
+ "domains": {
+  "arith": {
+   "attempt_cost": 0.006178319999999999,
+   "attempt_count_histogram": {
+    "1": 16
+   },
+   "attempt_schema_ok": true,
+   "complete": true,
+   "error_counts": {},
+   "expected_cells": 16,
+   "expected_unique_prompts": 16,
+   "failed_cells": 0,
+   "max_reasoning_tokens": 0,
+   "observation_sha256": "dac4661cb32c916aee432dc9c8d5ae0a4ea6543fa96a9a9f84c4456f70f5a53b",
+   "pilot_eligible": true,
+   "prompt_manifest_ok": true,
+   "prompt_manifest_sha256": "02a9abc16b2e99a484d928afc21319385e51f813ec09f3019b63e539f87138b2",
+   "provider_response_attempts": 16,
+   "raw_rows": 16,
+   "reasoning_usage_records": 16,
+   "strata": {
+    "z-ai/glm-5.2": {
+     "answer_only": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     },
+     "full_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     },
+     "no_injection": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     },
+     "primary_balance": {
+      "completion_gap": 0.0,
+      "content_filter_delta": 0.0,
+      "passed": true,
+      "truncation_delta": 0.0
+     },
+     "solver_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     }
+    }
+   },
+   "strict_score_cells": 16,
+   "successful_cells": 16,
+   "total_judge_attempts": 16,
+   "total_transport_attempts": 16,
+   "unique_cells": 16,
+   "unique_prompts": 16
+  },
+  "code": {
+   "attempt_cost": 0.00366576,
+   "attempt_count_histogram": {
+    "1": 16
+   },
+   "attempt_schema_ok": true,
+   "complete": true,
+   "error_counts": {},
+   "expected_cells": 16,
+   "expected_unique_prompts": 16,
+   "failed_cells": 0,
+   "max_reasoning_tokens": 0,
+   "observation_sha256": "ed6d8e8d5809a650414014a750ac62fb9f62c7b8cdc60215da54519a4bb7d669",
+   "pilot_eligible": true,
+   "prompt_manifest_ok": true,
+   "prompt_manifest_sha256": "e99fce301bd3ac544f7a5cc466783e4feafa88091108a825fb2bd7d5c6b01308",
+   "provider_response_attempts": 16,
+   "raw_rows": 16,
+   "reasoning_usage_records": 16,
+   "strata": {
+    "z-ai/glm-5.2": {
+     "answer_only": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     },
+     "full_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     },
+     "no_injection": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     },
+     "primary_balance": {
+      "completion_gap": 0.0,
+      "content_filter_delta": 0.0,
+      "passed": true,
+      "truncation_delta": 0.0
+     },
+     "solver_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     }
+    }
+   },
+   "strict_score_cells": 16,
+   "successful_cells": 16,
+   "total_judge_attempts": 16,
+   "total_transport_attempts": 16,
+   "unique_cells": 16,
+   "unique_prompts": 16
+  },
+  "sql": {
+   "attempt_cost": 0.00427408,
+   "attempt_count_histogram": {
+    "1": 16
+   },
+   "attempt_schema_ok": true,
+   "complete": true,
+   "error_counts": {},
+   "expected_cells": 16,
+   "expected_unique_prompts": 16,
+   "failed_cells": 0,
+   "max_reasoning_tokens": 0,
+   "observation_sha256": "05aeac843842739167b1434c8cde9a1408dff68a4606acfa1a5c3404b8fa7c06",
+   "pilot_eligible": true,
+   "prompt_manifest_ok": true,
+   "prompt_manifest_sha256": "28629069948a04a2c849a86a5d69a267eeead271aee899d6ff8d3e99282581d3",
+   "provider_response_attempts": 16,
+   "raw_rows": 16,
+   "reasoning_usage_records": 16,
+   "strata": {
+    "z-ai/glm-5.2": {
+     "answer_only": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     },
+     "full_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     },
+     "no_injection": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     },
+     "primary_balance": {
+      "completion_gap": 0.0,
+      "content_filter_delta": 0.0,
+      "passed": true,
+      "truncation_delta": 0.0
+     },
+     "solver_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 2,
+       "successful": 2,
+       "truncated": 0
+      }
+     }
+    }
+   },
+   "strict_score_cells": 16,
+   "successful_cells": 16,
+   "total_judge_attempts": 16,
+   "total_transport_attempts": 16,
+   "unique_cells": 16,
+   "unique_prompts": 16
+  }
+ },
+ "evidence_complete": true,
+ "initial_metadata_sha256": "35c2b7969d67340e2efb0a2defc39adc3741cc1ef5841c08950fade68fbd2913",
+ "phase_2_executed": false,
+ "pilot_eligible": true,
+ "pilot_reasoning_ceiling": 0,
+ "run_id": "ccc_openrouter_pilot_v2_glm_together_serial_reasoning_off_824663051",
+ "runner_version": "frontier-v3",
+ "study": "openweight_compatibility_pilot_v2"
+}

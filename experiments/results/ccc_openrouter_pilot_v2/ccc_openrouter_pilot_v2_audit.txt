@@ -1,0 +1,53 @@
+CCC OPENROUTER SCORE-OUTPUT COMPATIBILITY PILOT V2 — INDEPENDENT AUDIT
+Date: 2026-07-22
+Seed: 824663051
+Design: 2 items/domain x 3 domains x 4 conditions x 2 candidates x 1 repetition
+Expected cells per complete namespace: 48
+
+MiniMax / first-party / reasoning off
+  prefix: ccc_openrouter_pilot_v2_minimax_official_permissive_reasoning_off
+  rows/unique: 48/48
+  parsed/strict: 48/48
+  failed/retried: 0/0
+  attempts: 48
+  maximum reasoning: 0
+  provider/model mismatches: 0/0
+  scored/preflight/total cost: $0.004102 / $0.000032 / $0.004133
+  verdict: PASS — graduates
+
+GLM 5.2 / Together / two workers
+  prefix: ccc_openrouter_pilot_v2_glm_together_permissive_reasoning_off
+  rows/unique: 48/48
+  parsed/strict: 47/47
+  failed/retried: 1/5
+  attempts: 53
+  maximum reasoning on provider responses: 0
+  provider/model mismatches: 0/0
+  scored/preflight/total cost: $0.013830 / $0.000053 / $0.013883
+  verdict: FAIL — one final HTTP 429 request_error
+
+GLM 5.2 / Together / one worker
+  prefix: ccc_openrouter_pilot_v2_glm_together_serial_reasoning_off
+  rows/unique: 48/48
+  parsed/strict: 48/48
+  failed/retried: 0/0
+  attempts: 48
+  maximum reasoning: 0
+  provider/model mismatches: 0/0
+  scored/preflight/total cost: $0.014118 / $0.000053 / $0.014171
+  verdict: PASS — graduates
+
+Kimi K2.7 Code / Together / mandatory reasoning
+  prefix: ccc_openrouter_pilot_v2_kimi_headroom
+  rows/unique: 47/47 (stopped after gate became irrecoverable)
+  parsed/strict: 47/45
+  failed/retried: 0/1
+  attempts: 48
+  maximum reasoning: 8001 (requested ceiling: 2048)
+  provider/model mismatches: 0/0
+  scored/preflight/total cost: $0.222856 / $0.000217 / $0.223073
+  verdict: FAIL — reasoning and strict-output controls not honoured
+
+Recorded total: $0.255261
+Active matching Python processes after closeout: 0
+No capture estimates were computed from pilot evidence.
