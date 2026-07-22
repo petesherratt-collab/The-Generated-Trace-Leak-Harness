@@ -14,7 +14,7 @@ the through-line; read the linked files for the numbers, caveats, and audit trai
 
 We set out to detect leaked information in generated traces. Repurposing the method as a
 probe of **LLM-as-judge integrity**, we found that an evaluator can be made to mark a
-*correct* answer wrong by placing a plausible wrong answer in its context. Across a dozen
+*correct* answer wrong by placing a plausible wrong answer in its context. Across a sequence of
 preregistered experiments of increasing rigor — a confirmation and causal architecture test
 in arithmetic, then bounded replications in **two further computational-reasoning
 paradigms, Python code and relational SQL** — the mechanism narrowed to a single active
@@ -22,10 +22,14 @@ ingredient. It is **not** the wrong answer's source label, and **not** its suppo
 argument. It is the mere presence of a **conflicting conclusion**. We name this failure mode
 **Contextual Conclusion Capture (CCC)**. The effect and its severity are **model- and
 domain-dependent** (a judge robust in one domain is among the most captured in another);
-written "verify first" instructions reduce it but never abolish it; and the one intervention
+written "verify first" instructions can reduce it but are not dependable; and the one intervention
 that removes the pathway by construction — **keeping the foreign conclusion out of the
 judge's context** (context isolation) — holds structurally, byte-audited, in every domain
-tested.
+tested. A later four-endpoint frontier confirmation reproduced SQL capture across GPT, Gemini
+and Grok, narrowed code capture to GPT, and found Claude Fable captured in arithmetic while
+provider filtering made its code/SQL behaviour unmeasurable. A conditional frontier verification
+follow-up left supported residual capture for Fable arithmetic and GPT code, bounded the measurable
+SQL residuals without proving equivalence, and made Gemini SQL unmeasurable through truncation.
 
 ---
 
@@ -364,6 +368,130 @@ oracle router.
 
 ---
 
+## 10. Frontier extension — what survived one tier up
+
+[`FINDINGS_ccc_frontier.md`](experiments/results/FINDINGS_ccc_frontier.md) ·
+[`PREREG_ccc_frontier.md`](experiments/PREREG_ccc_frontier.md) · independent audit
+[`ccc_frontier_v3_audit.txt`](experiments/results/ccc_frontier_v3_audit.txt).
+
+The next question was the obvious one left by a cost-tier panel: does CCC survive in stronger
+judges? The confirmatory v3 run tested four frontier endpoints under `score_only` across the same
+three mechanically graded domains: 16 arithmetic items, 16 code items, 24 SQL items, and 5,376
+intended judge cells. The final instrument froze seed `305774821`, used a reproducible
+`sha256(domain)` schedule, recorded both retry outcomes where provider attempts occurred, and
+reported missingness by condition × candidate before interpreting an estimate.
+
+| Domain | GPT-5.6-sol | Gemini-3.1-Pro | Grok-4.5 | Claude Fable |
+|---|---:|---:|---:|---:|
+| Arithmetic | not supported (−7.1) | not supported (+0.2) | not supported (−0.5) | **SUPPORTED +62.9** |
+| Code | **SUPPORTED +11.2** | not supported (−2.5) | not supported (+1.4) | unmeasurable — content-filtered |
+| SQL | **SUPPORTED +50.6** | **SUPPORTED +40.9** | **SUPPORTED +27.4** | unmeasurable — content-filtered |
+
+Three things changed the story. First, **SQL capture survived the tier change cleanly**: GPT,
+Gemini and Grok all show large confirmatory harm (+51, +41 and +27), with large descriptive
+provenance increments (+88, +74 and +33). Second, code became narrower: GPT replicated (+11),
+but Grok's exploratory v2 result (+5.7 with a barely positive lower bound) fell to +1.4 with an
+interval crossing zero. Confirmatory replication earned its keep by rejecting a fragile signal.
+Third, Fable showed an inverse domain profile: strong arithmetic capture (+63), but no valid
+code or SQL estimate.
+
+The Fable result is a missingness result, not an immunity result. Its endpoint produced
+`content_filter` on 148 code cells and 27 SQL cells, concentrated in injected conditions. The
+larger-budget retry fired but could not repair a provider filter. Because the surviving observations
+are treatment-selected, the preregistered balance safeguard makes both contrasts **unmeasurable** —
+including SQL's nominal positive estimate. The filter mechanism itself reproduced across diagnostic
+and confirmatory runs.
+
+The independent audit found all 5,376 intended rows, zero duplicate successes, a clean metadata
+record (instrument commit `982b97e`, all four aliases validated, no forced models), and estimates
+matching the runner. Fourteen cells failed with `worker:KeyError: 'choices'` before a usable provider
+choice trace was recorded; they were retained and excluded fail-closed. Their low, non-systematic
+rate changed no verdict, but remains an explicit audit exception.
+
+The frontier result sharpens rather than overturns the central thesis: **CCC transfers across model
+tiers most clearly in SQL, while susceptibility remains endpoint- and domain-specific.**
+
+### Phase 2 — verify first, then score
+
+[`FINDINGS_ccc_frontier_phase2.md`](experiments/results/FINDINGS_ccc_frontier_phase2.md) ·
+[`PREREG_ccc_frontier_phase2.md`](experiments/PREREG_ccc_frontier_phase2.md) · independent audit
+[`ccc_frontier_p2_audit.txt`](experiments/results/ccc_frontier_p2_audit.txt).
+
+Phase 2 conditionally admitted only the five measurable pairs with supported Phase-1 capture. Its
+headline was the residual harm still present under `verify_written`, not the raw improvement from the
+larger score-only baseline.
+
+| Domain / judge | Phase-1 harm | Phase-2 residual [95% CI] | Reading |
+|---|---:|---:|---|
+| Arithmetic · Fable | +62.9 | **+19.38 [+1.79, +39.13]** | capture persists |
+| Code · GPT | +11.2 | **+8.10 [+3.02, +15.48]** | capture persists |
+| SQL · GPT | +50.6 | −0.13 [−0.38, 0.00] | positive residual not supported |
+| SQL · Gemini | +40.9 | not estimated | unmeasurable — truncation-skewed |
+| SQL · Grok | +27.4 | +9.51 [−0.21, +22.01] | positive residual not supported |
+
+The cross-domain contrast is the result. Verification substantially reduced Fable arithmetic but
+left a supported residual; it barely moved GPT code; and it sharply reduced the measurable SQL
+effects. GPT SQL is bounded very near zero, but the preregistration deliberately does not turn a
+zero-touching interval into a proof of elimination. Grok's upper bound still allows a meaningful
+residual. Gemini's verification responses were longer on injected cells: four primary responses and
+six solver-rationale responses truncated after both budgets, making the primary completion gap 5.56%
+and the contrast unmeasurable.
+
+The audit also corrected two tempting mechanism stories. Fable's five arithmetic misses were late
+HTTP 402 billing failures, not content filters; Gemini's SQL failures were truncation, not filtering.
+All 2,496 intended rows exist with zero duplicate successes. The three invocations did overwrite one
+shared metadata file, so arithmetic/SQL configuration is reconstructed from the frozen preregistration,
+terminal record, and complete raw rows—an explicit audit exception.
+
+The conclusion is narrower and stronger than “verification failed” or “verification worked”:
+**written self-verification is a model- and domain-specific attenuation, not a structural safeguard.**
+The frontier phase did not test context isolation or the conflict router; those remain supported only
+by the small-tier architecture experiments.
+
+---
+
+## 11. OpenRouter extension — four additional full arms
+
+[`FINDINGS_ccc_openrouter_openweight.md`](experiments/results/FINDINGS_ccc_openrouter_openweight.md) ·
+[`PREREG_ccc_openrouter_panel.md`](experiments/PREREG_ccc_openrouter_panel.md) · model-specific
+preregistrations, raw evidence, and independent audits under `experiments/results/ccc_openrouter_*`.
+
+The final extension asked whether the frontier pattern survived in a different set of routed model
+families and whether a pilot-first workflow could avoid another expensive protocol mismatch. Four
+complete 1,344-cell arms resulted: Qwen 3.7 Plus, Kimi K2.7 Code, MiniMax M3, and GLM 5.2. This is an
+endpoint comparison, not a model-license audit; Qwen is retained as the hosted comparator.
+
+| Model | Frozen response protocol | Arithmetic | Code | SQL |
+|---|---|---:|---:|---:|
+| Qwen 3.7 Plus | bounded reasoning, Alibaba | **SUPPORTED +94.17** | not supported (-9.27) | **SUPPORTED +165.28** |
+| Kimi K2.7 Code | native reasoning, Together | not supported (-11.88) | not supported (+1.46) | **SUPPORTED +70.69** |
+| MiniMax M3 | no reasoning, Minimax | **SUPPORTED +75.17** | **SUPPORTED +19.65** | **SUPPORTED +143.68** |
+| GLM 5.2 | no reasoning, Together | **SUPPORTED +52.08** | not supported (+13.33) | **SUPPORTED +148.61** |
+
+The invariant is now difficult to dismiss as one provider family: **every one of the four complete
+arms shows supported SQL capture**. Arithmetic capture is common but not universal, and code remains
+model-specific. MiniMax is the only arm with a supported primary effect in all three domains. GLM's
+primary code interval crosses zero, although its descriptive provenance increment is large (+52.1).
+
+Kimi's first pilot failed for a useful reason: the endpoint spends heavily on native reasoning and
+cannot satisfy a terse low-budget response contract. A separately preregistered native-reasoning arm
+made it measurable without pretending it was protocol-identical to MiniMax or GLM. Conversely,
+MiniMax and GLM used zero observed reasoning tokens yet still showed large arithmetic and SQL effects.
+Capture therefore does not require a long chain of thought, and native reasoning does not reliably
+protect the SQL judgement.
+
+All four full arms contain 1,344 unique successful cells with complete condition × candidate strata.
+The two final no-reasoning arms added 2,688 complete cells for $0.38309156 including launch
+preflights, with zero final failures, retries, endpoint drift, or nonzero reasoning records. The
+pilot-first workflow converted earlier odd endpoint behaviour into frozen, endpoint-valid protocols
+rather than paying full-run prices to rediscover incompatibilities.
+
+The final cross-tier conclusion is consequently both broader and more qualified: **SQL conclusion
+capture is robust across the tested endpoint families, while arithmetic and code sensitivity remain
+strongly release- and domain-dependent.**
+
+---
+
 ## Appendix — methodology and integrity practices
 
 The results are meant to be auditable end-to-end:
@@ -398,6 +526,9 @@ The results are meant to be auditable end-to-end:
 | 10 | Code-domain replication, Stage 2 (architectures) | [`FINDINGS_ccc_codedomain_stage2.md`](experiments/results/FINDINGS_ccc_codedomain_stage2.md) |
 | 11 | Relational (SQL) replication, Stage 1 (injection) | [`FINDINGS_ccc_sql_stage1.md`](experiments/results/FINDINGS_ccc_sql_stage1.md) |
 | 12 | Relational (SQL) replication, Stage 2 (architectures) | [`FINDINGS_ccc_sql_stage2.md`](experiments/results/FINDINGS_ccc_sql_stage2.md) |
+| 13 | Frontier-tier confirmation, Phase 1 (arithmetic/code/SQL) | [`FINDINGS_ccc_frontier.md`](experiments/results/FINDINGS_ccc_frontier.md) |
+| 14 | Frontier-tier conditional Phase 2 (`verify_written`) | [`FINDINGS_ccc_frontier_phase2.md`](experiments/results/FINDINGS_ccc_frontier_phase2.md) |
+| 15 | OpenRouter four-arm extension (Qwen/Kimi/MiniMax/GLM) | [`FINDINGS_ccc_openrouter_openweight.md`](experiments/results/FINDINGS_ccc_openrouter_openweight.md) |
 
 *Investigation ordering reflects how understanding developed, including a hypothesis
 (authority deference) that the clean experiments falsified. The falsification is part of the
