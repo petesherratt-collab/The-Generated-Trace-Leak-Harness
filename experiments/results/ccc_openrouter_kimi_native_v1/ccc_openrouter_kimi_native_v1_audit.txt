@@ -1,0 +1,80 @@
+CCC Kimi native-reasoning full run v1 — independent audit
+Date: 2026-07-22
+
+FROZEN CONFIGURATION
+study: openweight_kimi_native_v1
+run_id: ccc_openrouter_kimi_native_v1_1496017540
+runner_version: frontier-v3
+runner_commit: 44ab9495d94f33d4e3d565a708adeb0633b732d1
+runner_git_dirty: true (all instrument files content-hashed in run metadata)
+config_sha256: 79865fc1f82ce5b59f3310844f9dee99947c19fb1d34cc82f216b1cf9e049710
+schedule: sha256-domain-cell-v2
+seed: 1496017540
+repetitions: 3
+model: moonshotai/kimi-k2.7-code
+provider: together; fallbacks false
+reasoning: provider_default
+score acceptance: terminal one-field JSON plus finish_reason=stop
+output ceilings: 16384 / 32768
+workers: 1
+transport attempts per judge attempt: 3
+
+RAW EVIDENCE RECOMPUTE
+scheduled rows: 1344
+raw rows: 1344
+unique cells: 1344
+duplicate cells: 0
+successful final cells: 1344
+failed final cells: 0
+final finish_reason=stop: 1344
+exact one-field score JSON: 1344
+terminal-contract passes: 1344
+
+domain  rows  success  judge_attempts  transport_attempts  max_reasoning  scored_cost
+arith    384      384             386                 388         13517   $2.76744998
+code     384      384             384                 384         13021   $1.74185520
+sql      576      576             576                 576         11020   $1.37145110
+TOTAL   1344     1344            1346                1348         13517   $5.88075628
+
+All 1346 provider responses identify Together and
+moonshotai/kimi-k2.7-code. Identity-error count is zero. The two non-final first
+attempts have finish_reason=error and no accepted score; both retry cells finish
+successfully. One retry contains two recorded HTTP 503 transport failures before
+its successful third transport attempt. No cell is missing.
+
+PROMPT MANIFEST AUDIT
+unique prompt records: 448 (arith 128, code 128, sql 192)
+prompt SHA-256 recompute: PASS
+observation-to-prompt references: PASS
+completion metadata: evidence_complete=true
+completion/truncation/content-filter balance: 0.0% gaps in every domain
+
+INDEPENDENT FROZEN ANALYSIS
+domain  bare_harm  95% CI             n   verdict     provenance  rationale
+arith      -11.88  [-22.92, -0.10]   16   ns               -3.3       -0.3
+code        +1.46  [ -3.96, +8.23]   16   ns               -5.1       -5.8
+sql        +70.69  [+50.00,+91.67]   24   SUPPORTED        +84.7      +13.9
+
+The independent analyse-only rerun matches the completion-time analysis exactly.
+All 22 regression tests pass. git diff --check is clean.
+
+COST ACCOUNTING
+scored cells: $5.88075628
+run-internal preflight: $0.00018510
+separate launch preflight: $0.00018510
+full-run-path total: $5.88112648
+
+FILE SHA-256
+arith observations  b72a22210168a0191d863e260429ec78e5b95ae1db10b4d0f5983ed07c8f33b9
+arith prompts       3590413c1086639ba73f8c85482f44b06d763e65ea7ce285925bc0d2509159ae
+code observations   a016d7157440350952e74d8c6b5e82ebb111e0eeefe885a30f3b750fe8330851
+code prompts        cf52272e6ba4e6d60fd2d3fad950789e3b1bf5675054f9023749309704d37eb5
+sql observations    ff829088495e10ae1c7a0de5d195ff1d3f382ddf30698d67139d16255a541ec2
+sql prompts         47c9e0d1b0b18b9a921f7fa7e9e0f2668570fd6d5477ddc22b57ac040cbff8d7
+initial metadata    308b5b83e2de3864c7c2c8b4104b935246a51835d23c54668b2eb5b83a36bbf1
+completion metadata 0e1a4cfae0219f29bd877b074ca350b0c3f53046722154e5b36a59b78b6f06c4
+
+AUDIT VERDICT
+PASS. The full native-reasoning Kimi arm is complete and inferentially usable
+under its preregistered protocol. SQL CCC is SUPPORTED; arithmetic and code are
+not. This arm remains protocol-separated from the terse-score panel.

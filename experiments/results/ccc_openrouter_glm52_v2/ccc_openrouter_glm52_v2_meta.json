@@ -1,0 +1,212 @@
+{
+ "balance_gap": 0.05,
+ "candidates": [
+  "correct",
+  "wrong_matching"
+ ],
+ "compatibility_pilot": false,
+ "completion_metadata": "ccc_openrouter_glm52_v2_completion_meta.json",
+ "conditions": [
+  "no_injection",
+  "answer_only",
+  "full_rationale",
+  "solver_rationale"
+ ],
+ "config_sha256": "7ed7812de9a6b09ba64f96f4168a9de020030945c0317eb31d2fd1975952a87c",
+ "created_at": "2026-07-22T15:06:21.639738+00:00",
+ "domains": [
+  "arith",
+  "code",
+  "sql"
+ ],
+ "endpoint_identities": {
+  "z-ai/glm-5.2": {
+   "provider": "Together",
+   "response_model": "z-ai/glm-5.2"
+  }
+ },
+ "evidence_dir": "C:\\Users\\Admin\\The-Generated-Trace-Leak-Harness\\The-Generated-Trace-Leak-Harness-main\\The-Generated-Trace-Leak-Harness-main\\_worktrees\\ccc-openweight\\experiments\\results\\ccc_openrouter_glm52_v2",
+ "frozen_items": true,
+ "instrument_sha256": {
+  "PREREG_ccc_frontier_v3.md": "145b78ce3bcc6d219c5f2a3471d3e2d3a74d5b3916a1f48de2c1fc9844386d97",
+  "PREREG_ccc_openrouter_kimi_native_pilot_v1.md": "a1b897a6c81e134f6d8769ffc396f99836bfb91129cc6c6835df30831d96cd3d",
+  "PREREG_ccc_openrouter_kimi_native_v1.md": "7600ae412d7e0b9d430972d389151efaebb3389be13fbe1229b0a6ad2b05b8ef",
+  "PREREG_ccc_openrouter_openweight_full_v2.md": "81e3e74b315b933adb90527c47516472e495daa1963398f17e24e4c0d4f90634",
+  "PREREG_ccc_openrouter_panel.md": "95b21bbe4af3c6ef7498c5a4f073f8b6b6352e44318e17eb6a46cf9dc6f50675",
+  "PREREG_ccc_openrouter_pilot_v2.md": "f3bd2f8e02e2b6aa247a2abccc836a117a56979d95f005582812ad1f3db699e0",
+  "ccc_code_items.py": "f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28",
+  "ccc_code_runner.py": "69cc9ec0d8a51aacdb498461120cb951a0bca16acd876a20a0e8ca7619aa82c6",
+  "ccc_sql_items.py": "72ce9e7dccbbc844261f53820c3f7c5ac7b09e5764a1a5858d207b292f56629c",
+  "judge_integrity_real.py": "1dab1ca3148e7bc5c0c0b1a6351b36ea42faf97a913303417c171b27e6379bf4",
+  "provenance_injection_harness.py": "ed538b9503e451abacef41522be7e9adbb514abb7bcd9266fc242a6fa9bbc96c",
+  "run_ccc_codedomain.py": "046a5aa27dbb275f14c0384b7fbd073086903b2ff97e25e5d837858abbfdf14e",
+  "run_ccc_frontier.py": "1335b697c2c2cde773de9eb219ba68dacd6959ef3f50ef3f3d4b88f451a72369",
+  "run_ccc_kimi_native.ps1": "3513795d2761c7f5efacea2de5678ebd454b6b5615920b3b0b4c8aac7ed8eb50",
+  "run_ccc_openweight_full_v2.ps1": "9c2bcf772b021e02e189d3e992602b607dfa9bdf32622056aec2a01a7a87c6cf",
+  "run_ccc_openweight_pilot.ps1": "7ae8b43a519e657527d8d4ad801773c7519e768c41647948502dba2dda0c2ae0",
+  "run_ccc_sql.py": "293114e5227ccb53fbe01a67cd3cc1af7d88581a77609087425436e441e279b5",
+  "run_provenance_injection.py": "599bfd62ba93c8dc93d07aa1f8cf6e81b376c8c732fcd00ac6f0dece19db0d5e"
+ },
+ "max_tok": {
+  "score_only": 128,
+  "verify_written": 2048
+ },
+ "models": [
+  "z-ai/glm-5.2"
+ ],
+ "output_prefix": "ccc_openrouter_glm52_v2",
+ "pilot_items_per_domain": 0,
+ "pilot_reasoning_ceiling": -1,
+ "preflight": [
+  {
+   "attempts": [
+    {
+     "attempt": 1,
+     "call_error": null,
+     "finish_reason": "stop",
+     "identity_error": null,
+     "max_tokens": 128,
+     "parse_error": null,
+     "parsed": true,
+     "provider": "Together",
+     "provider_requested": "together",
+     "raw_response": "{\"score\": 100}",
+     "response_id": "gen-1784732780-a9K5RFTI3jwCxrWPy9lE",
+     "response_model": "z-ai/glm-5.2",
+     "transport_attempt_count": 1,
+     "transport_errors": [],
+     "usage": {
+      "completion_tokens": 7,
+      "completion_tokens_details": {
+       "audio_tokens": 0,
+       "image_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost": 5.32e-05,
+      "cost_details": {
+       "upstream_inference_completions_cost": 3.08e-05,
+       "upstream_inference_cost": 5.32e-05,
+       "upstream_inference_prompt_cost": 2.24e-05
+      },
+      "is_byok": false,
+      "prompt_tokens": 16,
+      "prompt_tokens_details": {
+       "audio_tokens": 0,
+       "cache_write_tokens": 0,
+       "cached_tokens": 0,
+       "video_tokens": 0
+      },
+      "total_tokens": 23
+     }
+    }
+   ],
+   "error": null,
+   "finish_reason": "stop",
+   "model": "z-ai/glm-5.2",
+   "protocol": "score_only",
+   "provider_requested": "together",
+   "raw_response": "{\"score\": 100}",
+   "resolved_endpoint": {
+    "provider": "Together",
+    "response_model": "z-ai/glm-5.2"
+   },
+   "score": 100.0,
+   "timestamp": 1784732781.6397383,
+   "validated": true
+  }
+ ],
+ "prompt_instrument": "ccc_frontier_prompt_v1",
+ "protocols": [
+  "score_only"
+ ],
+ "provider_fallbacks": false,
+ "provider_require_parameters": false,
+ "provider_route": "together",
+ "python": "3.12.13",
+ "reasoning_policy": {
+  "effort": "none",
+  "exclude": true
+ },
+ "reps": 3,
+ "retry_tok": {
+  "score_only": 256,
+  "verify_written": 4096
+ },
+ "run_id": "ccc_openrouter_glm52_v2_1496017540",
+ "runner_commit": "44ab9495d94f33d4e3d565a708adeb0633b732d1",
+ "runner_git_dirty": true,
+ "runner_version": "frontier-v3",
+ "schedule_version": "sha256-domain-cell-v2",
+ "score_acceptance": "strict",
+ "seed": 1496017540,
+ "selected_item_ids": {
+  "arith": [
+   "item00",
+   "item01",
+   "item02",
+   "item03",
+   "item04",
+   "item05",
+   "item06",
+   "item07",
+   "item08",
+   "item09",
+   "item10",
+   "item11",
+   "item12",
+   "item13",
+   "item14",
+   "item15"
+  ],
+  "code": [
+   "run_length_encode",
+   "is_balanced",
+   "roman_to_int",
+   "missing_number",
+   "caesar_decode",
+   "flatten_sum",
+   "count_words",
+   "gcd",
+   "is_palindrome_alnum",
+   "rpn_eval",
+   "title_case",
+   "binary_to_int",
+   "second_largest",
+   "char_frequency_max",
+   "digital_root",
+   "remove_adjacent_dups"
+  ],
+  "sql": [
+   "join_inner_vs_left",
+   "count_distinct_dept",
+   "count_nonnull_salary",
+   "avg_salary_null",
+   "null_equality",
+   "dept_no_employees",
+   "above_own_dept_avg",
+   "salary_between_inclusive",
+   "highest_paid_name",
+   "depts_more_than_two",
+   "us_order_rows",
+   "distinct_countries",
+   "sum_paid_amount",
+   "count_paid_status",
+   "max_order_customer1",
+   "customers_total_over_250",
+   "all_us_have_paid",
+   "avg_di_orders_null",
+   "stationery_product_count",
+   "total_qty_product1",
+   "two_most_expensive",
+   "never_sold_products",
+   "avg_stationery_price",
+   "categories_with_sales"
+  ]
+ },
+ "structured_score_output": true,
+ "stub": false,
+ "study": "openweight_glm52_v2",
+ "temperature": 0,
+ "transport_retries": 3,
+ "workers": 1
+}

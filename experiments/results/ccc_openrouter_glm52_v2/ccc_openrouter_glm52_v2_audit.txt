@@ -1,0 +1,79 @@
+CCC GLM 5.2 full run v2 — independent audit
+Date: 2026-07-22
+
+FROZEN CONFIGURATION
+study: openweight_glm52_v2
+run_id: ccc_openrouter_glm52_v2_1496017540
+runner_version: frontier-v3
+runner_commit: 44ab9495d94f33d4e3d565a708adeb0633b732d1
+runner_git_dirty: true (instrument files content-hashed in run metadata)
+config_sha256: 7ed7812de9a6b09ba64f96f4168a9de020030945c0317eb31d2fd1975952a87c
+schedule: sha256-domain-cell-v2
+seed: 1496017540
+repetitions: 3
+model: z-ai/glm-5.2
+provider: Together; fallbacks false
+reasoning: effort=none, response excluded, observed use required to be zero
+score acceptance: exact one-field JSON plus finish_reason=stop
+output ceilings: 128 / 256
+workers: 1
+transport attempts per judge attempt: 3
+
+RAW EVIDENCE RECOMPUTE
+scheduled rows: 1344
+raw rows: 1344
+unique cells: 1344
+duplicate cells: 0
+successful final cells: 1344
+failed final cells: 0
+final finish_reason=stop: 1344
+exact one-field score JSON: 1344
+
+domain  rows  success  judge_attempts  transport_attempts  reasoning_records  max_reasoning  scored_cost
+arith    384      384             384                 384                384              0   $0.11229024
+code     384      384             384                 384                384              0   $0.06692736
+sql      576      576             576                 576                576              0   $0.12117048
+TOTAL   1344     1344            1344                1344               1344              0   $0.30038808
+
+All 1,344 provider responses identify Together and z-ai/glm-5.2. Endpoint
+identity errors, judge retries, transport retries, truncations, content filters,
+and missing reasoning-usage records are all zero. Every observed reasoning-token
+count is zero, satisfying the preregistered terse-score protocol.
+
+PROMPT AND BALANCE AUDIT
+unique prompt records: 448 (arith 128, code 128, sql 192)
+prompt SHA-256 recompute: PASS
+observation-to-prompt references: PASS
+completion metadata: evidence_complete=true
+each condition × candidate stratum: complete
+completion/truncation/content-filter balance: 0.0% gaps in every domain
+
+INDEPENDENT FROZEN ANALYSIS
+domain  bare_harm  95% CI               n   verdict     provenance  rationale
+arith       +52.08  [ +25.00, +80.21]  16   SUPPORTED        -13.5      -16.7
+code        +13.33  [ -10.21, +38.33]  16   ns               +52.1       -4.2
+sql        +148.61  [+129.17,+166.67]  24   SUPPORTED        +23.6       -8.3
+
+The independent analyse-only rerun matches the completion-time analysis exactly.
+All 22 regression tests pass. git diff --check is clean.
+
+COST ACCOUNTING
+scored cells: $0.30038808
+run-internal preflight: $0.00005320
+separate launch preflight: $0.00005320
+full-run-path total: $0.30049448
+
+FILE SHA-256
+arith observations  29f2b228120f1fde19e757b80ace31c2f76d3e3942e375f1e4ef71a693ee71c2
+arith prompts       3590413c1086639ba73f8c85482f44b06d763e65ea7ce285925bc0d2509159ae
+code observations   2b121a1460790d4980786d8aa07a281ec79d79f178f7ea35b568af4ad6313a94
+code prompts        cf52272e6ba4e6d60fd2d3fad950789e3b1bf5675054f9023749309704d37eb5
+sql observations    34011f579927edcb4ac774259f55abbf18dfabac6ca20ea97c180ada2975142f
+sql prompts         47c9e0d1b0b18b9a921f7fa7e9e0f2668570fd6d5477ddc22b57ac040cbff8d7
+initial metadata    37808d7a4ff6e8de5204d0436d5ac1bf74382becd1057fffb1afb70506dda012
+completion metadata e4aa8175abf4070c5d6b521b4bb1538eaf07f5e66ad5faf4218d6b37ea3a14e8
+
+AUDIT VERDICT
+PASS. The GLM 5.2 arm is complete, balanced, endpoint-verified, reasoning-free,
+and inferentially usable under its preregistered terse-score protocol. CCC is
+SUPPORTED in arithmetic and SQL; code is not supported.
