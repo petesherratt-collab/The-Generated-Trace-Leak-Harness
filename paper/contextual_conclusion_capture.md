@@ -559,12 +559,132 @@ adapters, reading the raw streamed rows and recomputing every headline contrast;
 a separate human investigator. Both the adapter output and the independent recomputation are in the
 repository, and they matched.
 
+### What can be reproduced
+
+We distinguish two targets that are sometimes both called “reproduction”:
+
+1. **Exact computational re-analysis:** recompute the reported estimates, intervals, missingness
+   decisions, and integrity checks from the committed raw JSONL. This is deterministic, makes no API
+   calls, needs no credential, and should match the tables in §§5–8 to the displayed precision.
+2. **Fresh endpoint replication:** send the frozen prompts to newly resolved endpoints and obtain a
+   new sample. This requires an API credential and incurs cost. Because hosted aliases, provider
+   implementations, content filters, and routing can change, a fresh run is a replication of the
+   protocol and estimand—not a promise of byte-identical responses or identical effect sizes.
+
+The offline path is the minimum required check for every reported result. A successful reproduction
+must (i) exit without an exception, (ii) report no duplicate successful cells, (iii) apply the stated
+completeness and balance gates before estimates, and (iv) reproduce the corresponding paper values
+to rounding. `AUDIT: PASS` is additionally required where an executable structural audit is supplied.
+
+### Exact offline re-analysis (no API calls)
+
+Clone the repository and work from immutable commits rather than a moving branch:
+
+```text
+git clone https://github.com/petesherratt-collab/The-Generated-Trace-Leak-Harness.git
+cd The-Generated-Trace-Leak-Harness
+git checkout 3bb12a8
+```
+
+The original arithmetic, code, SQL, and conditional architecture results are reproduced with:
+
+```text
+python experiments/run_provenance_injection.py --confirmatory --analyse-only
+python experiments/analyze_confirmatory_choice_probability.py
+python experiments/run_architecture_capture.py --analyse-only
+python experiments/analyze_architecture_capture.py
+python experiments/run_ccc_codedomain.py --analyse-only
+python experiments/run_ccc_codedomain_stage2.py --analyse-only
+python experiments/run_ccc_sql.py --analyse-only
+python experiments/run_ccc_sql_stage2.py --analyse-only
+```
+
+The reconciled publication runner reads the historical Frontier namespaces without weakening
+current-run isolation. It requires each evidence file to contain either uniformly legacy rows with no
+`run_id`, or uniformly namespaced rows with one matching non-null `run_id`; mixed or multiple run IDs
+fail closed. For legacy Phase 2 it infers the admitted models and item set independently per domain,
+avoiding the disclosed shared-metadata overwrite:
+
+```text
+python experiments/run_ccc_frontier.py --analyse-only
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols verify_written --evidence-dir experiments/results --output-prefix ccc_frontier_p2
+```
+
+The evidence-era runners at `8611bec` (v3) and `9f7437a` (Phase 2) remain independent historical
+reproduction points. Commit `3bb12a8` is the reviewed unified implementation and adds regression tests
+for uniform legacy, uniform current, mixed, mismatched, and per-domain legacy Phase-2 cases.
+
+Reanalyse each protocol-separated OpenRouter arm:
+
+```text
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols score_only --evidence-dir experiments/results/ccc_openrouter_v1 --output-prefix ccc_openrouter_v1_qwen37_plus_hosted_bounded
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols score_only --evidence-dir experiments/results/ccc_openrouter_kimi_native_v1 --output-prefix ccc_openrouter_kimi_native_v1
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols score_only --evidence-dir experiments/results/ccc_openrouter_minimax_m3_v2 --output-prefix ccc_openrouter_minimax_m3_v2
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols score_only --evidence-dir experiments/results/ccc_openrouter_glm52_v2 --output-prefix ccc_openrouter_glm52_v2
+```
+
+At the publication snapshot, the independent raw-evidence audit accepts both the legacy Qwen metadata
+and the later full-arm schema. Run it once per arm with the frozen reasoning ceiling:
+
+```text
+python experiments/audit_ccc_openweight_evidence.py experiments/results/ccc_openrouter_v1 --prefix ccc_openrouter_v1_qwen37_plus_hosted_bounded --reasoning-ceiling 2048
+python experiments/audit_ccc_openweight_evidence.py experiments/results/ccc_openrouter_kimi_native_v1 --prefix ccc_openrouter_kimi_native_v1 --reasoning-ceiling 32768
+python experiments/audit_ccc_openweight_evidence.py experiments/results/ccc_openrouter_minimax_m3_v2 --prefix ccc_openrouter_minimax_m3_v2 --reasoning-ceiling 0
+python experiments/audit_ccc_openweight_evidence.py experiments/results/ccc_openrouter_glm52_v2 --prefix ccc_openrouter_glm52_v2 --reasoning-ceiling 0
+python -m unittest experiments.test_run_ccc_frontier
+```
+
+The last command must report **24 passing tests**. The four audits must end in `AUDIT: PASS`. The
+analysis commands print the estimates from raw observations; the retained `*_audit.txt` and
+`FINDINGS_*.md` files provide line-by-line comparison targets. Offline analysis uses only the Python
+standard library. The commands above were verified under CPython 3.14.4; the live release gates are
+stricter and require CPython 3.10–3.13 because those are the runtimes on which the executable gold was
+cross-checked.
+
+### Fresh endpoint replication (API calls and cost)
+
+Fresh calls should be made from the last pre-evidence instrument commit, so the historical evidence
+cannot be overwritten. Set `OPENROUTER_API_KEY` (or `OPENROUTER_ENV_FILE`) without printing it, run the
+dry-run/wiring checks first, inspect current pricing and alias resolution, and only then authorize the
+live command. The relevant clean starting commits and entry points are:
+
+| block | pre-evidence commit | live entry point |
+|---|---|---|
+| arithmetic confirmatory | `77ef756` | `python experiments/run_provenance_injection.py --confirmatory` |
+| arithmetic architectures | `ae422bd` | `python experiments/run_architecture_capture.py` |
+| code Stage 1 / Stage 2 | `58d4465` / `824f042` | `python experiments/run_ccc_codedomain.py --run` / `python experiments/run_ccc_codedomain_stage2.py --run` |
+| SQL Stage 1 / Stage 2 | `c045b43` / `fa6eb25` | `python experiments/run_ccc_sql.py --run` / `python experiments/run_ccc_sql_stage2.py --run` |
+| frontier v3 | `982b97e` | commands frozen in `experiments/PREREG_ccc_frontier_v3.md` |
+| frontier Phase 2 | `a57e85a` | the three admitted-set commands in `experiments/PREREG_ccc_frontier_phase2.md` |
+| OpenRouter four-arm extension | `7e00b4d` | the PowerShell launchers below |
+
+For the four OpenRouter arms on Windows, use a supported interpreter and a reviewed credential file:
+
+```powershell
+$Python = 'C:\path\to\python3.13.exe'
+$EnvFile = 'C:\path\to\.env'
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\experiments\run_ccc_openweight.ps1 -Mode Run -Judge qwen -Python $Python -EnvFile $EnvFile -ApproveApiCalls
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\experiments\run_ccc_kimi_native.ps1 -Mode Run -Python $Python -EnvFile $EnvFile -ApproveApiCalls
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\experiments\run_ccc_openweight_full_v2.ps1 -Mode Run -Judge minimax -Python $Python -EnvFile $EnvFile -ApproveApiCalls
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\experiments\run_ccc_openweight_full_v2.ps1 -Mode Run -Judge glm -Python $Python -EnvFile $EnvFile -ApproveApiCalls
+```
+
+Replace `Run` with `DryRun`, `WiringCheck`, and then `CheckModels` (the last with
+`-ApproveApiCalls`) before spending on a full arm. Never run these launchers from a checkout already
+containing the corresponding evidence namespace: they are designed to refuse overwriting finalized
+evidence. A new replication must retain its own date, resolved model/provider identities, completion
+metadata, prompts, raw observations, and audit output. It should be reported as a new endpoint-time
+replication even when every configuration field matches the original.
+
 **Immutable references.** Cite the evidence-bearing commits, not the mutable branch: code Stage 1 at
 commit `1309d78`, code Stage 2 at `c850083`; SQL Stage 1 at `26354f8`, SQL Stage 2 at `4581589`.
 (Frontier v3 evidence is at `8611bec`; its independent audit and findings are at `97790ff`. Frontier
 Phase 2 evidence is at `9f7437a`; its audit and findings are at `3ef311b`.)
 (The OpenRouter runner and audit tooling are at `7e00b4d`; preregistrations and compatibility pilots
 are at `841e9d5`; the four full arms, audits, and combined findings are at `80c0dbe`.)
+(The fail-closed legacy/current reconciliation, complete Frontier Phase-2 re-analysis, legacy-Qwen
+audit compatibility, and 24-test suite are at `3bb12a8`.)
 (The managed remote does not accept tag refs; cite commit SHAs. Archiving a release snapshot, e.g. via
 Zenodo, is recommended before submission.)
 
