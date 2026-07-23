@@ -596,12 +596,27 @@ def _row_content_filtered(row):
 
 
 def _collapse_rows(rows, run_id=None):
+    row_run_ids = {row.get("run_id") for row in rows}
+    non_null_run_ids = {value for value in row_run_ids if value is not None}
+    has_legacy_rows = None in row_run_ids
+    if has_legacy_rows and non_null_run_ids:
+        raise RuntimeError(
+            "evidence mixes legacy rows without run_id and namespaced rows; "
+            "refusing to pool runs"
+        )
+    if len(non_null_run_ids) > 1:
+        raise RuntimeError(
+            f"evidence contains multiple run_ids={sorted(non_null_run_ids)!r}; "
+            "refusing to pool runs"
+        )
+    if run_id is not None and non_null_run_ids and non_null_run_ids != {run_id}:
+        observed = next(iter(non_null_run_ids))
+        raise RuntimeError(
+            f"evidence contains run_id={observed!r}; expected {run_id!r}"
+        )
+
     grouped = {}
     for row in rows:
-        if run_id is not None and row.get("run_id") != run_id:
-            raise RuntimeError(
-                f"evidence contains run_id={row.get('run_id')!r}; expected {run_id!r}"
-            )
         grouped.setdefault(cell_key(row), []).append(row)
     final = {}
     for key, versions in grouped.items():
@@ -1095,6 +1110,7 @@ def main():
         if os.path.exists(mp):
             with open(mp, encoding="utf-8") as source:
                 meta = json.load(source)
+        legacy_metadata = bool(meta) and "run_id" not in meta
         meta_protocols = meta.get("protocols") or protocols
         if len(meta_protocols) != 1 or meta_protocols[0] not in MAX_TOK:
             print("ERROR: metadata must identify exactly one known analysis protocol."); sys.exit(2)
@@ -1104,11 +1120,17 @@ def main():
             with open(cp, encoding="utf-8") as source:
                 print_pilot_report(json.load(source))
         else:
+            if legacy_metadata:
+                print(
+                    "legacy evidence metadata: requiring an all-null run_id namespace "
+                    "and inferring models/items independently per domain"
+                )
             analyse(
                 domains, evidence_dir=evidence_dir, output_prefix=a.output_prefix,
-                run_id=meta.get("run_id", a.run_id),
-                expected_models=meta.get("models") or models or None,
-                expected_items=expected_items,
+                run_id=None if legacy_metadata else meta.get("run_id", a.run_id),
+                expected_models=(None if legacy_metadata
+                                 else meta.get("models") or models or None),
+                expected_items=None if legacy_metadata else expected_items,
                 balance_gap=meta.get("balance_gap", a.balance_gap),
                 protocol=meta_protocols[0],
             )

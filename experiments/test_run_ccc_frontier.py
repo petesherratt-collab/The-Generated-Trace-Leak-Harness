@@ -361,6 +361,91 @@ class FrontierInstrumentTests(unittest.TestCase):
         path = runner.obs_path("sql", "X:/evidence", "ccc_openweight_v1")
         self.assertTrue(path.endswith("ccc_openweight_v1_sql_obs.jsonl"))
 
+    def test_collapse_rows_enforces_one_run_id_mode(self):
+        def row(item_id, run_id_marker):
+            value = {
+                "domain": "arith",
+                "item_id": item_id,
+                "model": "model-1",
+                "condition": "no_injection",
+                "candidate_type": "correct",
+                "protocol": "score_only",
+                "repetition": 0,
+                "score": 100,
+                "error": None,
+                "timestamp": 1.0,
+            }
+            if run_id_marker is not None:
+                value["run_id"] = run_id_marker
+            return value
+
+        legacy = [row("legacy-1", None), row("legacy-2", None)]
+        current = [row("current-1", "run-a"), row("current-2", "run-a")]
+        self.assertEqual(len(runner._collapse_rows(legacy, run_id="run-a")), 2)
+        self.assertEqual(len(runner._collapse_rows(current, run_id="run-a")), 2)
+        with self.assertRaisesRegex(RuntimeError, "mixes legacy rows"):
+            runner._collapse_rows([legacy[0], current[0]], run_id="run-a")
+        with self.assertRaisesRegex(RuntimeError, "multiple run_ids"):
+            runner._collapse_rows(
+                [row("current-1", "run-a"), row("current-2", "run-b")]
+            )
+        with self.assertRaisesRegex(RuntimeError, "expected 'run-b'"):
+            runner._collapse_rows(current, run_id="run-b")
+
+    def test_legacy_analyse_only_infers_models_and_items_per_domain(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = "legacy_phase2"
+            with open(runner.metadata_path(tmp, prefix), "w", encoding="utf-8") as sink:
+                json.dump({
+                    "protocols": ["verify_written"],
+                    # The historical shared metadata was overwritten by the code
+                    # block, so this list is deliberately incomplete.
+                    "models": ["gpt"],
+                }, sink)
+
+            for domain, models in {
+                "arith": ["fable"],
+                "sql": ["gpt", "gemini", "grok"],
+            }.items():
+                path = runner.obs_path(domain, tmp, prefix)
+                with open(path, "w", encoding="utf-8") as sink:
+                    for model in models:
+                        for condition in runner.COND_IDS:
+                            for candidate in runner.CANDIDATES:
+                                for rep in range(runner.REPS):
+                                    sink.write(json.dumps({
+                                        "domain": domain,
+                                        "item_id": f"{domain}-legacy-item",
+                                        "model": model,
+                                        "condition": condition,
+                                        "candidate_type": candidate,
+                                        "protocol": "verify_written",
+                                        "repetition": rep,
+                                        "score": 100 if candidate == "correct" else 0,
+                                        "error": None,
+                                        "timestamp": float(rep),
+                                    }) + "\n")
+
+            output = io.StringIO()
+            argv = [
+                "run_ccc_frontier.py",
+                "--analyse-only",
+                "--domains", "arith,sql",
+                "--protocols", "verify_written",
+                "--evidence-dir", tmp,
+                "--output-prefix", prefix,
+            ]
+            with warnings.catch_warnings(), \
+                    mock.patch("sys.argv", argv), mock.patch("sys.stdout", output):
+                warnings.simplefilter("ignore", ResourceWarning)
+                runner.main()
+            rendered = output.getvalue()
+            self.assertIn("legacy evidence metadata", rendered)
+            self.assertIn("=== arith (1 items", rendered)
+            self.assertIn("=== sql (1 items", rendered)
+            for model in ("fable", "gpt", "gemini", "grok"):
+                self.assertIn(model, rendered)
+
     def test_seeded_bootstrap_is_independent_of_mapping_order(self):
         forward = {"item-a": 10.0, "item-b": 20.0, "item-c": -5.0}
         reverse = dict(reversed(list(forward.items())))

@@ -88,7 +88,11 @@ def main() -> int:
         all_files.extend((obs_path, prompt_path))
         rows = load_jsonl(obs_path)
         prompts = load_jsonl(prompt_path)
-        item_ids = list(meta["selected_item_ids"][domain])
+        # Full-arm evidence created before compatibility-pilot support did not
+        # store selected_item_ids.  For those non-pilot runs the frozen item set
+        # is exactly the set represented in the raw rows, so recover it there.
+        selected_item_ids = meta.get("selected_item_ids") or {}
+        item_ids = list(selected_item_ids.get(domain) or sorted({row["item_id"] for row in rows}))
         expected = len(item_ids) * len(models) * len(conditions) * len(candidates) * len(protocols) * reps
         expected_prompts = len(item_ids) * len(conditions) * len(candidates) * len(protocols)
         keys = [
