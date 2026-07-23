@@ -1,0 +1,48 @@
+CCC OPENROUTER QWEN 3.7 PLUS BOUNDED AUDIT
+Date: 2026-07-22
+Run ID: ccc_openrouter_v1_qwen37_plus_hosted_bounded_1496017540
+Config SHA-256: 298e829478fb47f96e04025de7ce0555a90cd701d14d59d66d24024ef1497fa9
+
+Configuration
+  model: qwen/qwen3.7-plus
+  provider requested/resolved: alibaba / Alibaba
+  fallbacks: false
+  seed: 1496017540
+  schedule: sha256-domain-cell-v2
+  protocol: score_only
+  repetitions: 3
+  visible budgets: 1024 / 2048
+  reasoning: max_tokens=2048, excluded from response body
+  response: strict numeric score JSON Schema
+
+Completeness
+  arithmetic: 384 expected, 384 unique, 384 successful, 0 failed, 0 duplicates
+  code:       384 expected, 384 unique, 384 successful, 0 failed, 0 duplicates
+  SQL:        576 expected, 576 unique, 576 successful, 0 failed, 0 duplicates
+  total:     1344 expected, 1344 unique, 1344 successful, 0 failed, 0 duplicates
+  attempt schema: OK in all domains
+  prompt manifests: OK in all domains
+  primary balance: 0.0% completion gap, 0.0% truncation delta,
+                   0.0% content-filter delta in all domains
+  maximum observed reasoning tokens: 2048
+
+Evidence hashes
+  arithmetic observations: 1a52ee30c7bf092a9e9c1eda0ffe311723fb7fa69313496674d863038032dc7c
+  arithmetic prompts:      d1d8d3e9f2d6670e24ee70e64e9c76810c2c64b804ae3eed0a204c7cd2fc26e7
+  code observations:       d4938b747138528c931f1d8ffc1944b15d735b4e89e5995f3fba252d1875e220
+  code prompts:            76a069769db19498474fef31f33ecccb393ff6e99a40c013bbd8ab4e08d2692c
+  SQL observations:        4e62aa1b4b5fc5daa34b187ea0513604db5a7e3374286d6b74e4f3381e09203f
+  SQL prompts:             a46870e3d0a768b1cafad1a5762e1e7e8b3e29a42a13cfc95906b4e54aed4df3
+
+Independent estimates
+  arithmetic: +94.17 [ +57.50, +131.25 ], n=16, SUPPORTED
+  code:        -9.27 [ -31.56,  +13.75 ], n=16, ns
+  SQL:       +165.28 [+147.22, +181.94 ], n=24, SUPPORTED
+
+Recorded attempt cost
+  arithmetic: $0.536784
+  code:       $0.534737
+  SQL:        $0.824337
+  total:      $1.895857
+
+Verdict: evidence complete and measurable in all three domains.

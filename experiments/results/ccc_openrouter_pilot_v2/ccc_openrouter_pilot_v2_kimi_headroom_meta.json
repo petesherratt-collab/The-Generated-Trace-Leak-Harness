@@ -1,0 +1,155 @@
+{
+ "balance_gap": 0.05,
+ "candidates": [
+  "correct",
+  "wrong_matching"
+ ],
+ "compatibility_pilot": true,
+ "completion_metadata": "ccc_openrouter_pilot_v2_kimi_headroom_completion_meta.json",
+ "conditions": [
+  "no_injection",
+  "answer_only",
+  "full_rationale",
+  "solver_rationale"
+ ],
+ "config_sha256": "854441bf18a40c4562bcf1e86508053bc1a7fdb4f6b60e538660e8ba59b92761",
+ "created_at": "2026-07-22T10:27:21.429116+00:00",
+ "domains": [
+  "arith",
+  "code",
+  "sql"
+ ],
+ "endpoint_identities": {
+  "moonshotai/kimi-k2.7-code": {
+   "provider": "Together",
+   "response_model": "moonshotai/kimi-k2.7-code"
+  }
+ },
+ "evidence_dir": "C:\\Users\\Admin\\The-Generated-Trace-Leak-Harness\\The-Generated-Trace-Leak-Harness-main\\The-Generated-Trace-Leak-Harness-main\\_worktrees\\ccc-openweight\\experiments\\results\\ccc_openrouter_pilot_v2",
+ "frozen_items": true,
+ "instrument_sha256": {
+  "PREREG_ccc_frontier_v3.md": "145b78ce3bcc6d219c5f2a3471d3e2d3a74d5b3916a1f48de2c1fc9844386d97",
+  "PREREG_ccc_openrouter_panel.md": "95b21bbe4af3c6ef7498c5a4f073f8b6b6352e44318e17eb6a46cf9dc6f50675",
+  "PREREG_ccc_openrouter_pilot_v2.md": "a5094983b45bc81f685208a0eafe7efc737963616e5d2f3a2170f4ebe7b7dfa6",
+  "ccc_code_items.py": "f44279390d8faf556b3672cb3f890193576ca5df84ff0f48551593fc2d07af28",
+  "ccc_code_runner.py": "69cc9ec0d8a51aacdb498461120cb951a0bca16acd876a20a0e8ca7619aa82c6",
+  "ccc_sql_items.py": "72ce9e7dccbbc844261f53820c3f7c5ac7b09e5764a1a5858d207b292f56629c",
+  "judge_integrity_real.py": "1dab1ca3148e7bc5c0c0b1a6351b36ea42faf97a913303417c171b27e6379bf4",
+  "provenance_injection_harness.py": "ed538b9503e451abacef41522be7e9adbb514abb7bcd9266fc242a6fa9bbc96c",
+  "run_ccc_codedomain.py": "046a5aa27dbb275f14c0384b7fbd073086903b2ff97e25e5d837858abbfdf14e",
+  "run_ccc_frontier.py": "fc839147ce82fbeec8a9901776249197e8a348afc7fd286b311ecb263762fdee",
+  "run_ccc_openweight_pilot.ps1": "d7a378fc98311d350bc69e202e90e42aedf8191f2e18cc61cea0a7b728ef4f91",
+  "run_ccc_sql.py": "293114e5227ccb53fbe01a67cd3cc1af7d88581a77609087425436e441e279b5",
+  "run_provenance_injection.py": "599bfd62ba93c8dc93d07aa1f8cf6e81b376c8c732fcd00ac6f0dece19db0d5e"
+ },
+ "max_tok": {
+  "score_only": 4096,
+  "verify_written": 2048
+ },
+ "models": [
+  "moonshotai/kimi-k2.7-code"
+ ],
+ "output_prefix": "ccc_openrouter_pilot_v2_kimi_headroom",
+ "pilot_items_per_domain": 2,
+ "pilot_reasoning_ceiling": 2048,
+ "preflight": [
+  {
+   "attempts": [
+    {
+     "attempt": 1,
+     "call_error": null,
+     "finish_reason": "stop",
+     "identity_error": null,
+     "max_tokens": 4096,
+     "parse_error": null,
+     "parsed": true,
+     "provider": "Together",
+     "provider_requested": "together",
+     "raw_response": "{\"score\": 100}",
+     "response_id": "gen-1784716040-fjEO9t4IAxCRDZ0c5EW8",
+     "response_model": "moonshotai/kimi-k2.7-code",
+     "transport_attempt_count": 1,
+     "transport_errors": [],
+     "usage": {
+      "completion_tokens": 50,
+      "completion_tokens_details": {
+       "audio_tokens": 0,
+       "image_tokens": 0,
+       "reasoning_tokens": 42
+      },
+      "cost": 0.0002171,
+      "cost_details": {
+       "upstream_inference_completions_cost": 0.0002,
+       "upstream_inference_cost": 0.0002171,
+       "upstream_inference_prompt_cost": 1.71e-05
+      },
+      "is_byok": false,
+      "prompt_tokens": 18,
+      "prompt_tokens_details": {
+       "audio_tokens": 0,
+       "cache_write_tokens": 0,
+       "cached_tokens": 0,
+       "video_tokens": 0
+      },
+      "total_tokens": 68
+     }
+    }
+   ],
+   "error": null,
+   "finish_reason": "stop",
+   "model": "moonshotai/kimi-k2.7-code",
+   "protocol": "score_only",
+   "provider_requested": "together",
+   "raw_response": "{\"score\": 100}",
+   "resolved_endpoint": {
+    "provider": "Together",
+    "response_model": "moonshotai/kimi-k2.7-code"
+   },
+   "score": 100.0,
+   "timestamp": 1784716041.4291167,
+   "validated": true
+  }
+ ],
+ "prompt_instrument": "ccc_frontier_prompt_v1",
+ "protocols": [
+  "score_only"
+ ],
+ "provider_fallbacks": false,
+ "provider_require_parameters": true,
+ "provider_route": "together",
+ "python": "3.12.13",
+ "reasoning_policy": {
+  "exclude": true,
+  "max_tokens": 2048
+ },
+ "reps": 1,
+ "retry_tok": {
+  "score_only": 8192,
+  "verify_written": 4096
+ },
+ "run_id": "ccc_openrouter_pilot_v2_kimi_headroom_824663051",
+ "runner_commit": "44ab9495d94f33d4e3d565a708adeb0633b732d1",
+ "runner_git_dirty": true,
+ "runner_version": "frontier-v3",
+ "schedule_version": "sha256-domain-cell-v2",
+ "seed": 824663051,
+ "selected_item_ids": {
+  "arith": [
+   "item02",
+   "item08"
+  ],
+  "code": [
+   "gcd",
+   "roman_to_int"
+  ],
+  "sql": [
+   "count_paid_status",
+   "count_distinct_dept"
+  ]
+ },
+ "structured_score_output": true,
+ "stub": false,
+ "study": "openweight_compatibility_pilot_v2",
+ "temperature": 0,
+ "workers": 2
+}

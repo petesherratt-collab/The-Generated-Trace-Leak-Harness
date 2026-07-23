@@ -1,0 +1,291 @@
+{
+ "analysis_protocol": "score_only",
+ "balance_gap": 0.05,
+ "config_sha256": "79865fc1f82ce5b59f3310844f9dee99947c19fb1d34cc82f216b1cf9e049710",
+ "created_at": "2026-07-22T14:27:47.260559+00:00",
+ "domains": {
+  "arith": {
+   "attempt_cost": 2.7674499800000016,
+   "attempt_count_histogram": {
+    "1": 382,
+    "2": 2
+   },
+   "attempt_schema_ok": true,
+   "complete": true,
+   "error_counts": {},
+   "expected_cells": 384,
+   "expected_unique_prompts": 128,
+   "failed_cells": 0,
+   "max_reasoning_tokens": 13517,
+   "observation_sha256": "b72a22210168a0191d863e260429ec78e5b95ae1db10b4d0f5983ed07c8f33b9",
+   "prompt_manifest_ok": true,
+   "prompt_manifest_sha256": "3590413c1086639ba73f8c85482f44b06d763e65ea7ce285925bc0d2509159ae",
+   "provider_response_attempts": 386,
+   "raw_rows": 384,
+   "reasoning_usage_records": 386,
+   "strata": {
+    "moonshotai/kimi-k2.7-code": {
+     "answer_only": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      }
+     },
+     "full_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      }
+     },
+     "no_injection": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      }
+     },
+     "primary_balance": {
+      "completion_gap": 0.0,
+      "content_filter_delta": 0.0,
+      "passed": true,
+      "truncation_delta": 0.0
+     },
+     "solver_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      }
+     }
+    }
+   },
+   "strict_score_cells": 384,
+   "successful_cells": 384,
+   "terminal_score_cells": 384,
+   "total_judge_attempts": 386,
+   "total_transport_attempts": 388,
+   "unique_cells": 384,
+   "unique_prompts": 128
+  },
+  "code": {
+   "attempt_cost": 1.741855200000001,
+   "attempt_count_histogram": {
+    "1": 384
+   },
+   "attempt_schema_ok": true,
+   "complete": true,
+   "error_counts": {},
+   "expected_cells": 384,
+   "expected_unique_prompts": 128,
+   "failed_cells": 0,
+   "max_reasoning_tokens": 13021,
+   "observation_sha256": "a016d7157440350952e74d8c6b5e82ebb111e0eeefe885a30f3b750fe8330851",
+   "prompt_manifest_ok": true,
+   "prompt_manifest_sha256": "cf52272e6ba4e6d60fd2d3fad950789e3b1bf5675054f9023749309704d37eb5",
+   "provider_response_attempts": 384,
+   "raw_rows": 384,
+   "reasoning_usage_records": 384,
+   "strata": {
+    "moonshotai/kimi-k2.7-code": {
+     "answer_only": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      }
+     },
+     "full_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      }
+     },
+     "no_injection": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      }
+     },
+     "primary_balance": {
+      "completion_gap": 0.0,
+      "content_filter_delta": 0.0,
+      "passed": true,
+      "truncation_delta": 0.0
+     },
+     "solver_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 48,
+       "successful": 48,
+       "truncated": 0
+      }
+     }
+    }
+   },
+   "strict_score_cells": 384,
+   "successful_cells": 384,
+   "terminal_score_cells": 384,
+   "total_judge_attempts": 384,
+   "total_transport_attempts": 384,
+   "unique_cells": 384,
+   "unique_prompts": 128
+  },
+  "sql": {
+   "attempt_cost": 1.3714511000000007,
+   "attempt_count_histogram": {
+    "1": 576
+   },
+   "attempt_schema_ok": true,
+   "complete": true,
+   "error_counts": {},
+   "expected_cells": 576,
+   "expected_unique_prompts": 192,
+   "failed_cells": 0,
+   "max_reasoning_tokens": 11020,
+   "observation_sha256": "ff829088495e10ae1c7a0de5d195ff1d3f382ddf30698d67139d16255a541ec2",
+   "prompt_manifest_ok": true,
+   "prompt_manifest_sha256": "47c9e0d1b0b18b9a921f7fa7e9e0f2668570fd6d5477ddc22b57ac040cbff8d7",
+   "provider_response_attempts": 576,
+   "raw_rows": 576,
+   "reasoning_usage_records": 576,
+   "strata": {
+    "moonshotai/kimi-k2.7-code": {
+     "answer_only": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 72,
+       "successful": 72,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 72,
+       "successful": 72,
+       "truncated": 0
+      }
+     },
+     "full_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 72,
+       "successful": 72,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 72,
+       "successful": 72,
+       "truncated": 0
+      }
+     },
+     "no_injection": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 72,
+       "successful": 72,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 72,
+       "successful": 72,
+       "truncated": 0
+      }
+     },
+     "primary_balance": {
+      "completion_gap": 0.0,
+      "content_filter_delta": 0.0,
+      "passed": true,
+      "truncation_delta": 0.0
+     },
+     "solver_rationale": {
+      "correct": {
+       "content_filtered": 0,
+       "expected": 72,
+       "successful": 72,
+       "truncated": 0
+      },
+      "wrong_matching": {
+       "content_filtered": 0,
+       "expected": 72,
+       "successful": 72,
+       "truncated": 0
+      }
+     }
+    }
+   },
+   "strict_score_cells": 576,
+   "successful_cells": 576,
+   "terminal_score_cells": 576,
+   "total_judge_attempts": 576,
+   "total_transport_attempts": 576,
+   "unique_cells": 576,
+   "unique_prompts": 192
+  }
+ },
+ "evidence_complete": true,
+ "initial_metadata_sha256": "308b5b83e2de3864c7c2c8b4104b935246a51835d23c54668b2eb5b83a36bbf1",
+ "phase_2_executed": false,
+ "run_id": "ccc_openrouter_kimi_native_v1_1496017540",
+ "runner_version": "frontier-v3",
+ "study": "openweight_kimi_native_v1"
+}

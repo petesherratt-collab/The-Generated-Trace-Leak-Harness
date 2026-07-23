@@ -15,7 +15,7 @@ Large language models are increasingly used to *judge* the outputs of other mode
 comparing a candidate answer against a reference. We identify and characterise a failure mode we
 call **Contextual Conclusion Capture (CCC)**: an LLM judge's ability to distinguish correct from
 incorrect candidates deteriorates when a *conflicting conclusion* is present in its evaluation
-context. Through preregistered experiments across five model endpoints, we show that neither an
+context. Through preregistered experiments across five cost-tier model endpoints, we show that neither an
 authoritative source label nor an elaborate supporting argument is *necessary* for the effect: a
 **bare, neutrally-labelled wrong answer is sufficient** to induce capture. We then test whether the
 failure survives a change of reasoning domain, using three domains that admit an executable oracle
@@ -24,7 +24,16 @@ unit-test suite), and relational SQL queries (SQLite). CCC replicates in all thr
 magnitude and *which models are affected* are **domain-dependent**: a judge not significantly
 captured in the code domain is among the most affected in the SQL domain, where every one of the
 five models is captured strongly enough to *reverse* its ordering (scoring the wrong answer above
-the correct one). We evaluate three mitigations under mirrored correct/wrong-reference sentinels.
+the correct one). A separate confirmatory extension to four frontier-tier endpoints reproduces SQL
+capture for GPT-5.6-sol, Gemini-3.1-Pro and Grok-4.5; finds weaker, model-specific code capture only
+for GPT-5.6-sol; and finds arithmetic capture only for Claude Fable. Fable's code and SQL contrasts
+are unmeasurable because provider content filtering is concentrated in injected conditions. A
+conditional frontier follow-up finds that written verification leaves supported residual capture for
+Fable arithmetic and GPT code; GPT and Grok SQL have no supported positive residual, while Gemini SQL
+is unmeasurable because verification responses truncate asymmetrically. A further four-arm OpenRouter
+extension finds supported SQL capture for Qwen 3.7 Plus, Kimi K2.7 Code, MiniMax M3, and GLM 5.2;
+arithmetic capture for Qwen, MiniMax, and GLM; and code capture only for MiniMax. We evaluate three mitigations
+on the cost-tier panel under mirrored correct/wrong-reference sentinels.
 Prompt-level written verification reduces but does not eliminate capture in any domain. A **hybrid
 conflict-router** — an independent model solve, followed by a deterministic comparison of
 conclusions — recovers discrimination where that comparison is clean. And **context isolation** —
@@ -59,7 +68,9 @@ Contributions:
    never matter — only that neither is necessary here.
 2. **Generality with heterogeneity.** CCC replicates across three domains with executable
    correctness oracles — arithmetic, imperative code, relational SQL — and both the size of the
-   effect and *which models are affected* differ by domain (§6). Robustness does not transfer.
+   effect and *which models are affected* differ by domain (§6). A four-endpoint frontier extension
+   replicates the cross-provider SQL result while narrowing code capture to one judge; four additional
+   OpenRouter arms all reproduce SQL capture. Robustness does not transfer across domains or releases.
 3. **What prevents it, and in what sense.** Under mirrored sentinels we compare three mitigations.
    Written verification is partial in every domain; a hybrid router recovers discrimination where
    the underlying comparison is clean; and **context isolation removes the reference-to-judge
@@ -131,12 +142,15 @@ wrong) to D = −90 (scores wrong above correct) has harm = +180.
 
 ## 4. Method
 
-**Models.** Five hosted endpoints across four providers, via a common API router:
+**Models.** The initial panel comprised five hosted endpoints across four providers, via a common API router:
 `openai/gpt-4o-mini`, `anthropic/claude-haiku-4.5`, `google/gemini-2.5-flash`,
-`deepseek/deepseek-chat`, `meta-llama/llama-3.3-70b-instruct`. These are cost-efficient models; our
-claims concern the *existence and structure* of the failure, not a ranking of frontier systems (see
-Limitations). Model names are provider aliases whose backing may change over time; run dates and the
-metadata each run records are in the Reproducibility appendix.
+`deepseek/deepseek-chat`, `meta-llama/llama-3.3-70b-instruct`. A later confirmatory frontier panel
+tested `openai/gpt-5.6-sol`, `google/gemini-3.1-pro-preview`, `x-ai/grok-4.5`, and
+`~anthropic/claude-fable-latest` under the score-only protocol. The final OpenRouter extension tested
+`qwen/qwen3.7-plus`, `moonshotai/kimi-k2.7-code`, `minimax/minimax-m3`, and `z-ai/glm-5.2` under
+endpoint-valid, separately frozen response protocols. Model names are provider aliases
+whose backing may change over time; run dates and the metadata each run records are in the
+Reproducibility appendix. Results compare endpoint behaviour, not model quality rankings.
 
 **Operational gold under a frozen oracle.** Correctness is never decided by a model. In every domain
 the correct and wrong candidates are produced or graded by an executable oracle: arithmetic computed
@@ -157,6 +171,23 @@ conclusion into *content* × *label*: `no_injection`; `neutral/answer_only` (bar
 score). **Stage 2 (architectures)** is *conditional*: it runs only on the models admitted by the
 Stage-1 capture threshold (§5.3, §8), crossing four architectures × mirrored correct/wrong references
 × candidates × repetitions.
+
+**Frontier extension.** The frontier experiment reran Stage 1's four injection conditions under
+`score_only` only (Phase 1): 16 arithmetic items, 16 code items, and 24 SQL items × 4 judges × 4
+conditions × 2 candidate types × 3 repetitions = 5,376 cells. The confirmatory v3 schedule used seed
+`305774821`, deterministic `sha256(domain)` ordering, a frozen completeness floor, fail-closed
+missingness, and an injection-balance safeguard. Conditional Phase 2 then admitted the five measurable
+domain–judge pairs with supported Phase-1 capture and ran the same design under `verify_written` only:
+Fable arithmetic, GPT code, and GPT/Gemini/Grok SQL (2,496 cells). Its primary quantity is the
+**residual** harm under verification; mitigation deltas are secondary. No frontier architecture phase
+was run.
+
+**OpenRouter extension.** Each of four model arms used the same 16 arithmetic, 16 code, and 24 SQL
+items × 4 conditions × 2 candidate types × 3 repetitions = 1,344 cells. Compatibility pilots froze
+provider routing, output contract, budgets, reasoning policy, and transport concurrency before each
+full run. Qwen used bounded reasoning, Kimi used provider-default native reasoning with sufficient
+headroom, and MiniMax/GLM used strict one-field JSON with reasoning disabled and zero observed
+reasoning tokens. These arms are compared descriptively but not pooled as protocol-identical.
 
 **Statistics.** For each model and contrast, the estimate is a within-item paired difference,
 aggregated by first averaging a cell's 3 repetitions, then forming the item-level discrimination,
@@ -289,13 +320,82 @@ capture (SQL) also has the lowest baseline discrimination, consistent with judge
 injected result when the task is harder to verify. Domain was not randomized, so this is a hypothesis
 for future work, not a causal result.
 
+### 6.4 Confirmatory frontier-tier extension
+
+The preregistered v3 extension asked whether the Stage-1 pattern survives at a stronger model tier.
+The table reports the primary bare-conclusion harm; **SUPPORTED** requires both a positive 95%
+interval and the frozen completeness/balance safeguards.
+
+| Domain | GPT-5.6-sol | Gemini-3.1-Pro | Grok-4.5 | Claude Fable |
+|---|---:|---:|---:|---:|
+| Arithmetic | not supported (−7.1) | not supported (+0.2) | not supported (−0.5) | **SUPPORTED +62.9** |
+| Code | **SUPPORTED +11.2** | not supported (−2.5) | not supported (+1.4) | unmeasurable — content-filtered |
+| SQL | **SUPPORTED +50.6** | **SUPPORTED +40.9** | **SUPPORTED +27.4** | unmeasurable — content-filtered |
+
+The strongest cross-tier result is **SQL capture**: GPT, Gemini, and Grok all show substantial harm,
+with descriptive provenance increments of +88, +74 and +33 points. Code is weaker and
+model-specific: only GPT is supported. This clean confirmation also rejected a fragile result:
+Grok's exploratory v2 code estimate was +5.7 with a lower interval bound of +0.31, but v3 shrank it
+to +1.4 with an interval crossing zero. Arithmetic shows the inverse endpoint pattern, with Fable
+alone captured strongly and no positive CCC support for the other three judges.
+
+Fable is not interpretable as resistant in code or SQL. Its endpoint returned provider
+`content_filter` blocks for 148 code cells and 27 SQL cells, concentrated in injected conditions.
+That treatment-correlated missingness biases the surviving contrast. Under the preregistered balance
+safeguard, both domains are therefore **unmeasurable**, including the nominal positive SQL estimate.
+The content-filter outcome is a property of this endpoint and stimulus combination, not evidence for
+or against CCC. `experiments/results/FINDINGS_ccc_frontier.md`
+
+Conditional Phase 2 tested written verification only on the five measurable Phase-1-positive pairs.
+The preregistered residual-first analysis gives:
+
+| Domain / judge | Phase-1 harm | Residual under `verify_written` [95% CI] | Verdict |
+|---|---:|---:|---|
+| Arithmetic · Claude Fable | +62.9 | **+19.38 [+1.79, +39.13]** | residual capture |
+| Code · GPT-5.6-sol | +11.2 | **+8.10 [+3.02, +15.48]** | residual capture |
+| SQL · GPT-5.6-sol | +50.6 | −0.13 [−0.38, 0.00] | positive residual not supported |
+| SQL · Gemini-3.1-Pro | +40.9 | not estimated | unmeasurable — truncation-skewed |
+| SQL · Grok-4.5 | +27.4 | +9.51 [−0.21, +22.01] | positive residual not supported |
+
+Written verification therefore attenuates capture strongly for Fable arithmetic and for measurable
+SQL judges, but it is not dependable: Fable retains a supported arithmetic residual, GPT retains a
+supported code residual, and Grok's SQL interval still permits a +22-point residual. GPT SQL is tightly
+bounded near zero, but the preregistration does not treat a zero-touching interval as proof of
+elimination. Gemini SQL fails the 5% balance gate because four primary injected responses truncate,
+creating a 5.56% completion gap; its nominal survivor estimate is not interpreted. The descriptive
+paired mitigation delta is large for Fable arithmetic (+42), GPT SQL (+51), and Grok SQL (+18), but
+not clearly positive for GPT code (+2.8 [−0.2, +5.8]).
+`experiments/results/FINDINGS_ccc_frontier_phase2.md`
+
+### 6.5 OpenRouter model-family extension
+
+Four further full arms used the same primary bare-conclusion contrast. All contain 1,344/1,344
+successful unique cells and pass the frozen condition-balance safeguards.
+
+| Model | Arithmetic | Code | SQL |
+|---|---:|---:|---:|
+| Qwen 3.7 Plus | **SUPPORTED +94.17** | not supported (-9.27) | **SUPPORTED +165.28** |
+| Kimi K2.7 Code | not supported (-11.88) | not supported (+1.46) | **SUPPORTED +70.69** |
+| MiniMax M3 | **SUPPORTED +75.17** | **SUPPORTED +19.65** | **SUPPORTED +143.68** |
+| GLM 5.2 | **SUPPORTED +52.08** | not supported (+13.33) | **SUPPORTED +148.61** |
+
+The common result is SQL: all four arms support capture, despite different providers and response
+protocols. Arithmetic capture appears in three arms; code capture is supported only for MiniMax.
+MiniMax and GLM used zero reasoning tokens, so long hidden reasoning is not necessary for the effect.
+Kimi's separately preregistered native-reasoning arm shows that allowing the endpoint its valid
+generation protocol does not protect SQL judging. The panel is an endpoint comparison rather than a
+model-license audit, and protocol-separated effect sizes are not treated as exchangeable.
+`experiments/results/FINDINGS_ccc_openrouter_openweight.md`
+
 ---
 
 ## 7. Mitigations, precisely described
 
-- **Written verification** (a prompt-level protocol) reduces capture but is incomplete in every domain.
-  In SQL its large mitigation *delta* is an artifact of an extreme baseline; the residual capture under
-  verification is still supported for 4 of 5 models.
+- **Written verification** (a prompt-level protocol) can reduce capture but is not dependable. In the
+  cost-tier SQL panel, a large mitigation *delta* coexists with supported residual capture for 4 of 5
+  models. At the frontier tier it leaves supported residuals for Fable arithmetic and GPT code, bounds
+  GPT SQL near zero, leaves a wide zero-crossing interval for Grok SQL, and makes Gemini SQL
+  unmeasurable through treatment-correlated truncation.
 - **The conflict-router is hybrid, not fully mechanical.** A model produces an independent conclusion by
   solving the task in a separate context; deterministic code then canonicalises and compares that
   conclusion against the external reference; routing (use the exposed path on agreement, quarantine to a
@@ -315,8 +415,9 @@ for future work, not a causal result.
 ## 8. Missingness
 
 Missingness is factor-correlated and scientifically informative, so we report it in the main text.
-Failures are unparseable or non-compliant judge responses; all are retained as evidence, none imputed,
-and affected items are dropped fail-closed (never counted as safe).
+Failures include unparseable, truncated, non-compliant, provider-filtered, and worker-level responses;
+all are retained as evidence, none imputed, and affected items are dropped fail-closed (never counted
+as safe).
 
 | Domain · stage | Cells | Failures | Dominant factor cells |
 |---|---:|---:|---|
@@ -326,6 +427,16 @@ and affected items are dropped fail-closed (never counted as safe).
 | Code · architecture | 3,072 | 29 | gemini × contaminated_verify_written 22/192; gemini × conflict_router 7/192 |
 | SQL · injection | 5,760 | 23 | gemini × verify_written 18/576; llama × verify_written 4; llama × score_only 1 |
 | SQL · architecture | 5,760 | 13 | gemini × contaminated_verify_written 5/288; llama across four architectures 8 |
+| Frontier · arithmetic | 1,536 | 8 | gpt 7 (`worker:KeyError: 'choices'`); gemini 1 truncated |
+| Frontier · code | 1,536 | 154 | Fable 148 content-filtered; gpt 6 `worker:KeyError` |
+| Frontier · SQL | 2,304 | 30 | Fable 27 content-filtered; gemini 2; gpt 1 `worker:KeyError` |
+| Frontier Phase 2 · arithmetic | 384 | 5 | Fable worker HTTP 402: baseline 3, solver 2; primary balance passes |
+| Frontier Phase 2 · code | 384 | 0 | GPT complete |
+| Frontier Phase 2 · SQL | 1,728 | 10 | Gemini truncation only; primary completion gap 5.56% → unmeasurable |
+| OpenRouter · Qwen full arm | 1,344 | 0 | complete under bounded-reasoning protocol |
+| OpenRouter · Kimi full arm | 1,344 | 0 | two first attempts recovered; no final missing cells |
+| OpenRouter · MiniMax full arm | 1,344 | 0 | complete; zero observed reasoning tokens |
+| OpenRouter · GLM full arm | 1,344 | 0 | complete; zero observed reasoning tokens |
 
 Two patterns recur and shape interpretation. (i) **Claude Haiku's arithmetic score-only
 non-compliance** (42%) made it unmeasurable in that domain-stage; it complied fully in code and SQL,
@@ -334,7 +445,14 @@ extent Llama) fail on `verify_written`** across domains — long derivations tru
 JSON — which is why several verification and mitigation contrasts run below full item counts and one
 (SQL Gemini mitigation) at n = 22. Separately, the SQL router's solver produced **334/360** parseable
 conclusions; the 26 unparseable ones fail-safe to quarantine, which is the designed behaviour but also
-a source of router fallibility.
+a source of router fallibility. In the frontier run, Fable's filtering is injection-skewed and makes
+its code/SQL contrasts unmeasurable. Fourteen frontier cells failed before a usable provider choice
+was recorded (`worker:KeyError: 'choices'`); they were retained and dropped fail-closed. Their low,
+non-systematic rate changed no support call, although GPT arithmetic finished exactly at the item floor.
+In frontier Phase 2, five late Fable arithmetic failures were billing errors rather than endpoint
+content filters and remained below the primary balance limit. Gemini's ten SQL failures were instead
+long `verify_written` derivations truncated after both attempts; four fall in the primary injected
+cell, pushing its completion gap just above the frozen limit.
 
 ---
 
@@ -368,8 +486,21 @@ a source of router fallibility.
   largest observed capture" is supported, "SQL causes more capture" is not.
 - **Operational, not absolute, gold.** Especially for code, correctness is defined relative to a frozen
   unit-test suite and hand-audited faults, not general semantic correctness.
-- **Cost-tier models only.** Whether frontier judges are equally susceptible is untested; the observed
-  model-dependence makes this an open question, not a safe extrapolation.
+- **Specific, time-stamped endpoints rather than model classes.** The frontier extension covers four
+  endpoint aliases on 2026-07-20, two of them moving `-latest`/preview routes. It supports no claim about
+  frontier models in general. Fable's treatment-correlated content filtering prevents code/SQL
+  estimation and illustrates why missing output cannot be interpreted as robustness.
+- **Protocol-separated OpenRouter arms.** Kimi requires native-reasoning headroom, Qwen uses bounded
+  reasoning, and MiniMax/GLM use a terse no-reasoning contract. Their results establish endpoint-level
+  replication but are not a license audit and must not be naively pooled as one homogeneous panel.
+- **Only one frontier mitigation was tested.** Conditional Phase 2 tests written verification on the
+  five measurable Phase-1-positive pairs. It does not test context isolation or the hybrid router at
+  the frontier tier, and conditional selection limits inference to those admitted pairs.
+- **Phase-2 metadata exception.** The three domain blocks reused one output prefix, so the shared meta
+  file was overwritten and ultimately describes code only. The complete domain-specific rows and
+  prompt manifests support independent recomputation, but run configuration for arithmetic/SQL is
+  reconstructed from the preregistration, terminal record, and raw evidence rather than preserved in
+  separate final metadata files.
 - **Coarse scores** (frequent 0/100 saturation); key results (the reversal, isolation neutrality) rest on
   decomposition and preregistered support calls, not on treating point magnitudes as precise.
 - **Mechanical-gold domains only.** Open-ended judging — where the router's comparison would itself become
@@ -382,8 +513,14 @@ a source of router fallibility.
 
 A conflicting conclusion is *sufficient* to degrade LLM-judge discrimination — it needs neither authority
 nor argument — and it does so across three domains with executable correctness oracles. Susceptibility is
-model- and domain-dependent: robustness earned in one setting does not carry to another. Among the
-mitigations tested, prompt-level verification is never sufficient; a hybrid router helps where conclusions
+model- and domain-dependent: robustness earned in one setting does not carry to another. The frontier
+extension reinforces rather than erases that heterogeneity: cross-provider SQL capture replicates,
+code capture narrows to one judge, and one endpoint is measurable and captured only in arithmetic.
+The four-arm OpenRouter extension strengthens the SQL result again: every complete arm is captured in
+SQL, while arithmetic and code remain heterogeneous.
+The conditional frontier follow-up also shows that prompt-level verification can sharply reduce harm
+without becoming a reliable safeguard: residual capture survives for Fable arithmetic and GPT code,
+and another endpoint becomes unmeasurable through truncation. Among the mitigations tested, prompt-level verification is never sufficient; a hybrid router helps where conclusions
 can be compared cleanly; and the one intervention whose guarantee we can verify byte-for-byte is the
 simplest — do not let the foreign conclusion into the judge's context. That removes the tested pathway by
 construction; it does not by itself make the judge correct. Evaluator integrity is not a property to
@@ -422,8 +559,132 @@ adapters, reading the raw streamed rows and recomputing every headline contrast;
 a separate human investigator. Both the adapter output and the independent recomputation are in the
 repository, and they matched.
 
+### What can be reproduced
+
+We distinguish two targets that are sometimes both called “reproduction”:
+
+1. **Exact computational re-analysis:** recompute the reported estimates, intervals, missingness
+   decisions, and integrity checks from the committed raw JSONL. This is deterministic, makes no API
+   calls, needs no credential, and should match the tables in §§5–8 to the displayed precision.
+2. **Fresh endpoint replication:** send the frozen prompts to newly resolved endpoints and obtain a
+   new sample. This requires an API credential and incurs cost. Because hosted aliases, provider
+   implementations, content filters, and routing can change, a fresh run is a replication of the
+   protocol and estimand—not a promise of byte-identical responses or identical effect sizes.
+
+The offline path is the minimum required check for every reported result. A successful reproduction
+must (i) exit without an exception, (ii) report no duplicate successful cells, (iii) apply the stated
+completeness and balance gates before estimates, and (iv) reproduce the corresponding paper values
+to rounding. `AUDIT: PASS` is additionally required where an executable structural audit is supplied.
+
+### Exact offline re-analysis (no API calls)
+
+Clone the repository and work from immutable commits rather than a moving branch:
+
+```text
+git clone https://github.com/petesherratt-collab/The-Generated-Trace-Leak-Harness.git
+cd The-Generated-Trace-Leak-Harness
+git checkout 3bb12a8
+```
+
+The original arithmetic, code, SQL, and conditional architecture results are reproduced with:
+
+```text
+python experiments/run_provenance_injection.py --confirmatory --analyse-only
+python experiments/analyze_confirmatory_choice_probability.py
+python experiments/run_architecture_capture.py --analyse-only
+python experiments/analyze_architecture_capture.py
+python experiments/run_ccc_codedomain.py --analyse-only
+python experiments/run_ccc_codedomain_stage2.py --analyse-only
+python experiments/run_ccc_sql.py --analyse-only
+python experiments/run_ccc_sql_stage2.py --analyse-only
+```
+
+The reconciled publication runner reads the historical Frontier namespaces without weakening
+current-run isolation. It requires each evidence file to contain either uniformly legacy rows with no
+`run_id`, or uniformly namespaced rows with one matching non-null `run_id`; mixed or multiple run IDs
+fail closed. For legacy Phase 2 it infers the admitted models and item set independently per domain,
+avoiding the disclosed shared-metadata overwrite:
+
+```text
+python experiments/run_ccc_frontier.py --analyse-only
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols verify_written --evidence-dir experiments/results --output-prefix ccc_frontier_p2
+```
+
+The evidence-era runners at `8611bec` (v3) and `9f7437a` (Phase 2) remain independent historical
+reproduction points. Commit `3bb12a8` is the reviewed unified implementation and adds regression tests
+for uniform legacy, uniform current, mixed, mismatched, and per-domain legacy Phase-2 cases.
+
+Reanalyse each protocol-separated OpenRouter arm:
+
+```text
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols score_only --evidence-dir experiments/results/ccc_openrouter_v1 --output-prefix ccc_openrouter_v1_qwen37_plus_hosted_bounded
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols score_only --evidence-dir experiments/results/ccc_openrouter_kimi_native_v1 --output-prefix ccc_openrouter_kimi_native_v1
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols score_only --evidence-dir experiments/results/ccc_openrouter_minimax_m3_v2 --output-prefix ccc_openrouter_minimax_m3_v2
+python experiments/run_ccc_frontier.py --analyse-only --domains arith,code,sql --protocols score_only --evidence-dir experiments/results/ccc_openrouter_glm52_v2 --output-prefix ccc_openrouter_glm52_v2
+```
+
+At the publication snapshot, the independent raw-evidence audit accepts both the legacy Qwen metadata
+and the later full-arm schema. Run it once per arm with the frozen reasoning ceiling:
+
+```text
+python experiments/audit_ccc_openweight_evidence.py experiments/results/ccc_openrouter_v1 --prefix ccc_openrouter_v1_qwen37_plus_hosted_bounded --reasoning-ceiling 2048
+python experiments/audit_ccc_openweight_evidence.py experiments/results/ccc_openrouter_kimi_native_v1 --prefix ccc_openrouter_kimi_native_v1 --reasoning-ceiling 32768
+python experiments/audit_ccc_openweight_evidence.py experiments/results/ccc_openrouter_minimax_m3_v2 --prefix ccc_openrouter_minimax_m3_v2 --reasoning-ceiling 0
+python experiments/audit_ccc_openweight_evidence.py experiments/results/ccc_openrouter_glm52_v2 --prefix ccc_openrouter_glm52_v2 --reasoning-ceiling 0
+python -m unittest experiments.test_run_ccc_frontier
+```
+
+The last command must report **24 passing tests**. The four audits must end in `AUDIT: PASS`. The
+analysis commands print the estimates from raw observations; the retained `*_audit.txt` and
+`FINDINGS_*.md` files provide line-by-line comparison targets. Offline analysis uses only the Python
+standard library. The commands above were verified under CPython 3.14.4; the live release gates are
+stricter and require CPython 3.10–3.13 because those are the runtimes on which the executable gold was
+cross-checked.
+
+### Fresh endpoint replication (API calls and cost)
+
+Fresh calls should be made from the last pre-evidence instrument commit, so the historical evidence
+cannot be overwritten. Set `OPENROUTER_API_KEY` (or `OPENROUTER_ENV_FILE`) without printing it, run the
+dry-run/wiring checks first, inspect current pricing and alias resolution, and only then authorize the
+live command. The relevant clean starting commits and entry points are:
+
+| block | pre-evidence commit | live entry point |
+|---|---|---|
+| arithmetic confirmatory | `77ef756` | `python experiments/run_provenance_injection.py --confirmatory` |
+| arithmetic architectures | `ae422bd` | `python experiments/run_architecture_capture.py` |
+| code Stage 1 / Stage 2 | `58d4465` / `824f042` | `python experiments/run_ccc_codedomain.py --run` / `python experiments/run_ccc_codedomain_stage2.py --run` |
+| SQL Stage 1 / Stage 2 | `c045b43` / `fa6eb25` | `python experiments/run_ccc_sql.py --run` / `python experiments/run_ccc_sql_stage2.py --run` |
+| frontier v3 | `982b97e` | commands frozen in `experiments/PREREG_ccc_frontier_v3.md` |
+| frontier Phase 2 | `a57e85a` | the three admitted-set commands in `experiments/PREREG_ccc_frontier_phase2.md` |
+| OpenRouter four-arm extension | `7e00b4d` | the PowerShell launchers below |
+
+For the four OpenRouter arms on Windows, use a supported interpreter and a reviewed credential file:
+
+```powershell
+$Python = 'C:\path\to\python3.13.exe'
+$EnvFile = 'C:\path\to\.env'
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\experiments\run_ccc_openweight.ps1 -Mode Run -Judge qwen -Python $Python -EnvFile $EnvFile -ApproveApiCalls
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\experiments\run_ccc_kimi_native.ps1 -Mode Run -Python $Python -EnvFile $EnvFile -ApproveApiCalls
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\experiments\run_ccc_openweight_full_v2.ps1 -Mode Run -Judge minimax -Python $Python -EnvFile $EnvFile -ApproveApiCalls
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\experiments\run_ccc_openweight_full_v2.ps1 -Mode Run -Judge glm -Python $Python -EnvFile $EnvFile -ApproveApiCalls
+```
+
+Replace `Run` with `DryRun`, `WiringCheck`, and then `CheckModels` (the last with
+`-ApproveApiCalls`) before spending on a full arm. Never run these launchers from a checkout already
+containing the corresponding evidence namespace: they are designed to refuse overwriting finalized
+evidence. A new replication must retain its own date, resolved model/provider identities, completion
+metadata, prompts, raw observations, and audit output. It should be reported as a new endpoint-time
+replication even when every configuration field matches the original.
+
 **Immutable references.** Cite the evidence-bearing commits, not the mutable branch: code Stage 1 at
 commit `1309d78`, code Stage 2 at `c850083`; SQL Stage 1 at `26354f8`, SQL Stage 2 at `4581589`.
+(Frontier v3 evidence is at `8611bec`; its independent audit and findings are at `97790ff`. Frontier
+Phase 2 evidence is at `9f7437a`; its audit and findings are at `3ef311b`.)
+(The OpenRouter runner and audit tooling are at `7e00b4d`; preregistrations and compatibility pilots
+are at `841e9d5`; the four full arms, audits, and combined findings are at `80c0dbe`.)
+(The fail-closed legacy/current reconciliation, complete Frontier Phase-2 re-analysis, legacy-Qwen
+audit compatibility, and 24-test suite are at `3bb12a8`.)
 (The managed remote does not accept tag refs; cite commit SHAs. Archiving a release snapshot, e.g. via
 Zenodo, is recommended before submission.)
 
@@ -438,6 +699,12 @@ Zenodo, is recommended before submission.)
 - Run adapters: `experiments/run_ccc_codedomain*.py`, `experiments/run_ccc_sql*.py` (fixed concurrent
   worker pool, single writer; concurrency invariants verified offline and on live evidence).
 - Unified per-domain findings: `experiments/results/FINDINGS_ccc_codedomain.md`, `.../FINDINGS_ccc_sql.md`.
+- Frontier findings and independent audit: `experiments/results/FINDINGS_ccc_frontier.md` and
+  `.../ccc_frontier_v3_audit.txt`.
+- Frontier Phase 2 findings and audit: `experiments/results/FINDINGS_ccc_frontier_phase2.md` and
+  `.../ccc_frontier_p2_audit.txt`.
+- OpenRouter synthesis: `experiments/results/FINDINGS_ccc_openrouter_openweight.md`; model-specific
+  raw evidence, findings, completion metadata, and audits are under `experiments/results/ccc_openrouter_*`.
 - Offline audit logs (independent recomputation from raw rows): `.../ccc_code_offline_audit.txt` and
   `.../ccc_sql_offline_audit.txt`.
 - Evidence: streamed `*_obs_*.jsonl`, `*_prompts_*.jsonl`, `*_solver_*.jsonl`, `*_meta_*.json` per stage;
@@ -450,10 +717,18 @@ provider aliases whose backing may change. Exact routing/version metadata beyond
 what the router returned and is recorded in the `*_meta_*` files; readers reproducing the study should
 record their own endpoint dates and any routing metadata their provider exposes.
 
-**Integrity summary.** Across the six domain-stage runs: one row per intended cell, at most one attempt
+**Integrity summary.** Across the six cost-tier domain-stage runs: one row per intended cell, at most one attempt
 per cell, zero duplicate successful cells, zero order-index/cell mismatches under concurrency, all prompts
 resolvable in the manifests, factor-correlated missingness disclosed and fail-closed, and all headline
-contrasts recomputed by the independent pipeline.
+contrasts recomputed by the independent pipeline. Frontier v3 contains all 5,376 intended rows and zero
+duplicate successes; its independent recomputation matches the reported estimates. Fourteen worker-level
+failures contain no usable provider choice trace, and Fable's injection-skewed filter blocks are explicitly
+reported as unmeasurable rather than safe. Frontier Phase 2 contains all 2,496 intended rows and zero
+duplicate successes; its independent recomputation applies the frozen balance rule, including the
+Gemini-SQL downgrade. Its shared metadata overwrite is disclosed as an audit exception.
+The four OpenRouter full arms each contain 1,344 unique successful cells, complete prompt manifests,
+fixed endpoint identities, and independently reproduced estimates. MiniMax and GLM additionally have
+1,344/1,344 strict terminal JSON responses and zero observed reasoning tokens.
 
 *Acknowledgement: experiments were implemented and analysed with AI-assisted tooling; all
 preregistrations, decision rules, and interpretations were fixed by the author.*

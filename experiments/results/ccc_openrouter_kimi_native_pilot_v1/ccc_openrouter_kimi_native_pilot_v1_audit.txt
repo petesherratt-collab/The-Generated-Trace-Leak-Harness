@@ -1,0 +1,35 @@
+Kimi native-reasoning compatibility pilot v1 — independent closeout
+Date: 2026-07-22
+
+Namespace: ccc_openrouter_kimi_native_pilot_v1_kimi_together_native_reasoning_v1
+Run ID: ccc_openrouter_kimi_native_pilot_v1_kimi_together_native_reasoning_v1_824663051
+Model: moonshotai/kimi-k2.7-code
+Provider: Together (fixed; fallbacks disabled)
+Seed: 824663051
+Acceptance: terminal one-field score JSON plus finish_reason=stop
+
+Raw evidence recompute:
+- scheduled/unique rows: 48/48
+- domain rows: arith 16, code 16, sql 16
+- parsed successes: 48/48
+- final errors: 0
+- judge attempts: 48 (all first-attempt successes)
+- transport attempts: 48 (no transport retry)
+- finish_reason=stop: 48/48
+- exact whole-response one-field JSON: 48/48
+- terminal one-field JSON: 48/48
+- response model matches: 48/48
+- provider matches Together: 48/48
+- prompt manifests: complete and content-addressed in all domains
+- max reasoning: arith 2,994; code 2,447; sql 10,245
+- scored cost: arith $0.05815550; code $0.04011604; sql $0.09431172
+- scored cost total: $0.19258326
+- run preflight: $0.00021710
+- separate launch preflight: $0.00018510
+- native-path total: $0.19298546
+
+Completion metadata reports evidence_complete=true, pilot_eligible=true, and
+pilot_score_acceptance=terminal. Independent raw-row totals match it.
+
+Verdict: PASS for preparation of a separately preregistered full native-reasoning
+Kimi run. No effect estimate or CCC verdict is computed from this pilot.

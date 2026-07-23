@@ -1,0 +1,79 @@
+CCC MiniMax M3 full run v2 — independent audit
+Date: 2026-07-22
+
+FROZEN CONFIGURATION
+study: openweight_minimax_m3_v2
+run_id: ccc_openrouter_minimax_m3_v2_1496017540
+runner_version: frontier-v3
+runner_commit: 44ab9495d94f33d4e3d565a708adeb0633b732d1
+runner_git_dirty: true (instrument files content-hashed in run metadata)
+config_sha256: 8e31df67afb4a67a5c19390ed8067e42fd21ebeaa1754848661c4bdbc4cec537
+schedule: sha256-domain-cell-v2
+seed: 1496017540
+repetitions: 3
+model: minimax/minimax-m3
+provider: Minimax first party; fallbacks false
+reasoning: effort=none, response excluded, observed use required to be zero
+score acceptance: exact one-field JSON plus finish_reason=stop
+output ceilings: 128 / 256
+workers: 2
+transport attempts per judge attempt: 2
+
+RAW EVIDENCE RECOMPUTE
+scheduled rows: 1344
+raw rows: 1344
+unique cells: 1344
+duplicate cells: 0
+successful final cells: 1344
+failed final cells: 0
+final finish_reason=stop: 1344
+exact one-field score JSON: 1344
+
+domain  rows  success  judge_attempts  transport_attempts  reasoning_records  max_reasoning  scored_cost
+arith    384      384             384                 384                384              0   $0.02600292
+code     384      384             384                 384                384              0   $0.02092848
+sql      576      576             576                 576                576              0   $0.03560220
+TOTAL   1344     1344            1344                1344               1344              0   $0.08253360
+
+All 1,344 provider responses identify Minimax and minimax/minimax-m3. Endpoint
+identity errors, judge retries, transport retries, truncations, content filters,
+and missing reasoning-usage records are all zero. Every observed reasoning-token
+count is zero, satisfying the preregistered terse-score protocol.
+
+PROMPT AND BALANCE AUDIT
+unique prompt records: 448 (arith 128, code 128, sql 192)
+prompt SHA-256 recompute: PASS
+observation-to-prompt references: PASS
+completion metadata: evidence_complete=true
+each condition × candidate stratum: complete
+completion/truncation/content-filter balance: 0.0% gaps in every domain
+
+INDEPENDENT FROZEN ANALYSIS
+domain  bare_harm  95% CI               n   verdict     provenance  rationale
+arith       +75.17  [ +48.71,+101.83]  16   SUPPORTED        -14.6      -15.5
+code        +19.65  [  +9.44, +30.25]  16   SUPPORTED        +19.5       -1.1
+sql        +143.68  [+126.44,+160.89]  24   SUPPORTED         +4.4       +0.2
+
+The independent analyse-only rerun matches the completion-time analysis exactly.
+All 22 regression tests pass. git diff --check is clean.
+
+COST ACCOUNTING
+scored cells: $0.08253360
+run-internal preflight: $0.00003174
+separate launch preflight: $0.00003174
+full-run-path total: $0.08259708
+
+FILE SHA-256
+arith observations  05c9417a974bd704919b9c480a46e90d618c7fd9e0d96888ef9a0534e9eb8061
+arith prompts       bad391bc944088e6df0362d00eb092f8b9faabea9a2c64552f2c2269aeebd8ec
+code observations   30302dd490d6c1cc950ec022b29151c7f2aaaac77b387549a37bf394da89d939
+code prompts        7051daf93adb5c4168cfd8cbbbf415e620d14693d6a95020576b306fe2ff30b9
+sql observations    2a7265ea58108881848a79ee657aa4ae719c802220ae02bc107e619a7e7891e9
+sql prompts         9746f203c4a9206e9fac7bfe071b69735508cc5d5abef0a6f48bc2497f9bc5bc
+initial metadata    9f0d73a3b8066137721d0e2a83cf97ea8dc7107e19eb021bdb8ae3973b640f4d
+completion metadata 20f8ec278e4f7b5192e1abaab2b54036ce0ae66bbf7c55b624e0e7c2f7b06c64
+
+AUDIT VERDICT
+PASS. The MiniMax M3 arm is complete, balanced, endpoint-verified, reasoning-free,
+and inferentially usable under its preregistered terse-score protocol. CCC is
+SUPPORTED in arithmetic, code, and SQL.

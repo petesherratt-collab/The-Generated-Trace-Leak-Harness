@@ -153,13 +153,29 @@ _COND_LABEL = {"A": "score-only", "B": "verify + score-only",
 # MODEL CLIENT (OpenRouter, OpenAI-compatible, stdlib only) + score parsing.
 # --------------------------------------------------------------------------- #
 
-def call_openrouter(prompt, model, key, timeout=60, max_tokens=64, retries=5, return_finish=False):
-    body = json.dumps({
+def call_openrouter(prompt, model, key, timeout=60, max_tokens=64, retries=5,
+                    return_finish=False, return_meta=False, provider=None,
+                    reasoning=None, response_format=None,
+                    provider_require_parameters=True):
+    payload = {
         "model": model,
         "max_tokens": max_tokens,
         "temperature": 0,
         "messages": [{"role": "user", "content": prompt}],
-    }).encode()
+    }
+    if provider:
+        # A fixed provider route makes the served endpoint part of the frozen
+        # instrument. No silent provider fallback is allowed in confirmatory runs.
+        payload["provider"] = {
+            "only": [provider],
+            "allow_fallbacks": False,
+            "require_parameters": bool(provider_require_parameters),
+        }
+    if reasoning is not None:
+        payload["reasoning"] = reasoning
+    if response_format is not None:
+        payload["response_format"] = response_format
+    body = json.dumps(payload).encode()
     req = urllib.request.Request(
         "https://openrouter.ai/api/v1/chat/completions", data=body,
         headers={"Authorization": "Bearer " + key,
@@ -168,25 +184,50 @@ def call_openrouter(prompt, model, key, timeout=60, max_tokens=64, retries=5, re
                  "HTTP-Referer": "https://github.com/petesherratt-collab/the-generated-trace-leak-harness",
                  "X-Title": "judge-integrity-harness"})
     last = None
+    transport_errors = []
     for attempt in range(retries):
         try:
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 data = json.load(r)
-            msg = data["choices"][0]["message"]
+            choice = data["choices"][0]
+            msg = choice["message"]
+            if not isinstance(msg, dict):
+                raise TypeError("provider response choice.message is not an object")
             # some models return content=None and put the text in a reasoning field.
             text = msg.get("content") or msg.get("reasoning") or ""
+            if return_meta:
+                return {
+                    "text": text,
+                    "finish_reason": choice.get("finish_reason"),
+                    "response_id": data.get("id"),
+                    "response_model": data.get("model"),
+                    "provider": data.get("provider"),
+                    "usage": data.get("usage"),
+                    "transport_attempt_count": attempt + 1,
+                    "transport_errors": list(transport_errors),
+                }
             if return_finish:                       # 'length' => truncated before the verdict
-                return text, data["choices"][0].get("finish_reason")
+                return text, choice.get("finish_reason")
             return text
         except urllib.error.HTTPError as e:                 # retry only 429 / 5xx
             if e.code != 429 and e.code < 500:
                 raise
             last = e
+            transport_errors.append(f"HTTPError:{e.code}")
         except (urllib.error.URLError, TimeoutError, ConnectionError,
-                http.client.HTTPException, json.JSONDecodeError) as e:
+                http.client.HTTPException, json.JSONDecodeError,
+                KeyError, IndexError, TypeError) as e:
             last = e            # connection reset / timeout / truncated (IncompleteRead) / bad body
-        time.sleep(2 ** attempt)                            # 1, 2, 4, 8, 16 s
-    raise last
+            transport_errors.append(f"{type(e).__name__}:{str(e)[:160]}")
+        if attempt + 1 < retries:
+            time.sleep(2 ** attempt)                        # 1, 2, 4, 8 s
+    err = RuntimeError(
+        f"OpenRouter call failed after {retries} transport attempts: "
+        f"{transport_errors[-1] if transport_errors else type(last).__name__}"
+    )
+    err.transport_attempt_count = retries
+    err.transport_errors = transport_errors
+    raise err from last
 
 
 def parse_score(text):

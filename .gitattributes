@@ -8,3 +8,8 @@
 *.txt  text eol=lf
 *.yml  text eol=lf
 *.sha256 text eol=lf
+
+# OpenRouter evidence metadata records raw-file SHA-256 values. Preserve these
+# frozen result artifacts byte-for-byte instead of normalising their line endings.
+experiments/results/ccc_openrouter_*/* -text whitespace=-trailing-space
+experiments/PREREG_ccc_*.md whitespace=-trailing-space
