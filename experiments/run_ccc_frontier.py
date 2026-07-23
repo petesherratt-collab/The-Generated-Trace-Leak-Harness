@@ -598,9 +598,13 @@ def _row_content_filtered(row):
 def _collapse_rows(rows, run_id=None):
     grouped = {}
     for row in rows:
-        if run_id is not None and row.get("run_id") != run_id:
+        # Legacy evidence (frontier v3 / Phase 2) predates the run_id field: those rows carry
+        # no run_id and are single-run files by construction, so accept them. Still reject a row
+        # that carries a DIFFERENT non-null run_id, which would mean two runs were pooled.
+        row_rid = row.get("run_id")
+        if run_id is not None and row_rid is not None and row_rid != run_id:
             raise RuntimeError(
-                f"evidence contains run_id={row.get('run_id')!r}; expected {run_id!r}"
+                f"evidence contains run_id={row_rid!r}; expected {run_id!r}"
             )
         grouped.setdefault(cell_key(row), []).append(row)
     final = {}
