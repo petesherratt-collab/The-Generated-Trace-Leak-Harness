@@ -15,6 +15,7 @@ ROOT = sys.argv[1] if len(sys.argv) > 1 else "."
 HERE = pathlib.Path(__file__).parent
 
 FIGURES = [
+    ("make_ccc_explainer_figure.py", "fig_ccc_explainer.png",  "§4   explainer triptych — the ruler, the failure, the fix"),
     ("make_ccc_mechanism_figure.py",  "fig_ccc_mechanism.png",  "§5   mechanism — the conclusion is the active ingredient"),
     ("make_ccc_frontier_figure.py",   "fig_ccc_frontier.png",   "§6.4 frontier tier — capture survives, SQL is the common failure"),
     ("make_ccc_openrouter_figure.py", "fig_ccc_openrouter.png", "§6.5 open-weight arms — one wrong reference flips the verdict"),
