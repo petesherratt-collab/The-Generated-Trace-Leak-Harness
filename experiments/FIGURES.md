@@ -1,19 +1,36 @@
 # CCC figure set
 
-**The five.** One methodology figure and four results figures, in narrative order.
-A reader who knows nothing about the subject should be able to go 1 → 5 and
-follow the whole argument.
+## Start here: the audience-proof pair
 
-| # | Figure | Answers |
-|---|---|---|
-| 1 | `fig_ccc_explainer.png` | *What is being measured, what goes wrong, and what fixes it* |
-| 2 | `fig_ccc_openrouter.png` | *Does it really happen?* — yes, SQL judging **inverts** |
-| 3 | `fig_ccc_mechanism.png` | *Why?* — the bare conclusion is the active ingredient |
-| 4 | `fig_ccc_frontier.png` | *Only cheap models?* — no, frontier too |
-| 5 | `fig_ccc_architecture.png` | *So what do I do?* — only isolation closes the pathway |
+For an audience you cannot characterise in advance — including people who have
+never thought about LLM evaluation — show **two figures** and stop.
 
-Figure 1 replaces the seven separate method flow diagrams in `docs/`. Those stay
-as supporting material; they are not part of the five.
+| # | Figure | Answers | Register |
+|---|---|---|---|
+| 1 | `fig_ccc_explainer.png` | *What is being measured, what goes wrong, what fixes it* | plain |
+| 2 | `fig_ccc_reversal_plain.png` | *Is it one grader, or general?* — four graders, and SQL **inverts** | plain |
+
+These two are a complete argument on their own, and they share one vocabulary:
+the triptych closes on "the gap between them", and that gap is exactly what the
+reversal figure's axis plots. Neither says *discrimination*, *capture*,
+*bootstrap* or *supported effect*.
+
+**Add a third only if the audience is choosing what to build:**
+`fig_ccc_architecture.png` — the obvious defences ("tell the judge to check its
+work", "route around conflicts") do not fully work. Partly redundant with
+triptych panel 3, which already shows isolation holding.
+
+**The technical pair, for a paper or a reviewer:** `fig_ccc_mechanism.png` and
+`fig_ccc_frontier.png`. Both are excellent and neither is for a newcomer — the
+mechanism figure in particular requires reading two near-zero panels as a
+positive finding, which is a trained skill.
+
+`fig_ccc_openrouter.png` is the technical-register twin of
+`fig_ccc_reversal_plain.png`: identical data, estimator and validation, paper
+wording. Use one or the other, never both.
+
+Figure 1 replaces the seven method flow diagrams in `docs/`, which stay as
+supporting material.
 
 ---
 
@@ -35,6 +52,7 @@ so the figures cannot silently drift away from the findings.
 | `fig_ccc_explainer.png` | §4 | Triptych: the grader works with a correct reference, **inverts** with a wrong one, and holds when the reference is kept out of the prompt | `architecture_obs.jsonl` |
 | `fig_ccc_mechanism.png` | §5 | The conflicting **conclusion itself** is the active ingredient — a rationale and a solver label add nothing measurable on top | `provinj_obs_confirmatory.jsonl` |
 | `fig_ccc_frontier.png` | §6.4 | Capture survives at the frontier tier; **SQL** is the common failure across every measurable judge | `ccc_frontier_v3_{arith,code,sql}_obs.jsonl` |
+| `fig_ccc_reversal_plain.png` | §6.5 | Plain-language twin of the row below — same data, same estimator, newcomer wording | `ccc_openrouter_*/…_obs.jsonl` |
 | `fig_ccc_openrouter.png` | §6.5 | One wrong reference answer **reverses** SQL judging in three of four open-weight arms | `ccc_openrouter_*/…_obs.jsonl` |
 | `fig_ccc_architecture.png` | §7 | Only **context isolation** closes the pathway; written verification and the router narrow it but leave it open | `architecture_obs.jsonl` |
 
@@ -49,6 +67,7 @@ draws it.
 | mechanism | 13 | all reproduce, including Claude's `n=2` / `n=4` complete-item counts |
 | frontier | 11 | all reproduce |
 | openrouter | 12 | all reproduce |
+| reversal (plain) | 12 | all reproduce — same estimator as openrouter |
 | architecture | 5 | all reproduce, including Claude's `n=7` |
 
 The architecture script additionally re-derives the byte audit from the stored

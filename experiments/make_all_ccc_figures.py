@@ -19,6 +19,7 @@ FIGURES = [
     ("make_ccc_mechanism_figure.py",  "fig_ccc_mechanism.png",  "§5   mechanism — the conclusion is the active ingredient"),
     ("make_ccc_frontier_figure.py",   "fig_ccc_frontier.png",   "§6.4 frontier tier — capture survives, SQL is the common failure"),
     ("make_ccc_openrouter_figure.py", "fig_ccc_openrouter.png", "§6.5 open-weight arms — one wrong reference flips the verdict"),
+    ("make_ccc_reversal_plain.py", "fig_ccc_reversal_plain.png", "§6.5 plain-language twin — for a newcomer audience"),
     ("make_ccc_architecture_figure.py", "fig_ccc_architecture.png", "§7   mitigations — only isolation closes the pathway"),
 ]
 
