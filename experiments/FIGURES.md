@@ -1,6 +1,40 @@
 # CCC figure set
 
-## Start here: the audience-proof pair
+## Two sets, split by register — not by content
+
+The figures divide into a **paper set** and an **outreach set**. Two pairs are the
+same figure in two vocabularies; never publish both members of a pair together.
+
+| paper (technical) | outreach (plain) | same data? |
+|---|---|---|
+| `fig_ccc_method.png` | `fig_ccc_explainer.png` | identical |
+| `fig_ccc_openrouter.png` | `fig_ccc_reversal_plain.png` | identical |
+| `fig_ccc_mechanism.png` | — | paper only |
+| `fig_ccc_frontier.png` | — | paper only |
+| `fig_ccc_architecture.png` | — | paper only |
+
+### Paper placement
+
+Five figures, each immediately **before** the table it illustrates. Keep the
+tables: for a preregistered paper the table is the result and the figure is the
+aid, and the completeness counts that carry the most careful reasoning
+(Claude at n=7, n=4, n=2) are not readable off a chart.
+
+| Figure | § | Table it fronts |
+|---|---|---|
+| 1 `fig_ccc_method.png` | §4 Method | — (no table; this is the missing schematic) |
+| 2 `fig_ccc_mechanism.png` | §5 | mechanism-check tables |
+| 3 `fig_ccc_frontier.png` | §6.4 | frontier harm table |
+| 4 `fig_ccc_openrouter.png` | §6.5 | open-weight arm table |
+| 5 `fig_ccc_architecture.png` | §7 | susceptibility / safeguard table |
+
+**Outstanding:** the paper carries **zero figure cross-references** in 734 lines.
+Each insertion needs a "(Figure N)" in the prose of §§4–7 that earns it, or the
+figures float unreferenced.
+
+---
+
+## Outreach: the audience-proof pair
 
 For an audience you cannot characterise in advance — including people who have
 never thought about LLM evaluation — show **two figures** and stop.
@@ -49,7 +83,8 @@ so the figures cannot silently drift away from the findings.
 
 | Figure | Paper | Claim it carries | Evidence |
 |---|---|---|---|
-| `fig_ccc_explainer.png` | §4 | Triptych: the grader works with a correct reference, **inverts** with a wrong one, and holds when the reference is kept out of the prompt | `architecture_obs.jsonl` |
+| `fig_ccc_method.png` | §4 | **Paper register.** Triptych: exposed-correct → exposed-wrong (inverts) → isolated (holds), defining D as the estimand for §§5–7 | `architecture_obs.jsonl` |
+| `fig_ccc_explainer.png` | — | **Outreach register.** Same three panels, same numbers, plain vocabulary | `architecture_obs.jsonl` |
 | `fig_ccc_mechanism.png` | §5 | The conflicting **conclusion itself** is the active ingredient — a rationale and a solver label add nothing measurable on top | `provinj_obs_confirmatory.jsonl` |
 | `fig_ccc_frontier.png` | §6.4 | Capture survives at the frontier tier; **SQL** is the common failure across every measurable judge | `ccc_frontier_v3_{arith,code,sql}_obs.jsonl` |
 | `fig_ccc_reversal_plain.png` | §6.5 | Plain-language twin of the row below — same data, same estimator, newcomer wording | `ccc_openrouter_*/…_obs.jsonl` |
@@ -63,7 +98,8 @@ draws it.
 
 | Figure | Checks | Result |
 |---|---:|---|
-| explainer | — | every number measured from the rows, none illustrative |
+| method (paper) | — | every number measured from the rows, none illustrative |
+| explainer (outreach) | — | same values as the method figure, plain wording |
 | mechanism | 13 | all reproduce, including Claude's `n=2` / `n=4` complete-item counts |
 | frontier | 11 | all reproduce |
 | openrouter | 12 | all reproduce |
