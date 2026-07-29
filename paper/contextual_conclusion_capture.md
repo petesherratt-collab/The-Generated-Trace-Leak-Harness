@@ -142,7 +142,7 @@ wrong) to D = −90 (scores wrong above correct) has harm = +180.
 
 ## 4. Method
 
-**Models.** The initial panel comprised five hosted endpoints across four providers, via a common API router:
+**Models.** All runs were executed through **OpenRouter**; every model identifier below is an OpenRouter slug. The initial panel comprised five hosted endpoints across four providers:
 `openai/gpt-4o-mini`, `anthropic/claude-haiku-4.5`, `google/gemini-2.5-flash`,
 `deepseek/deepseek-chat`, `meta-llama/llama-3.3-70b-instruct`. A later confirmatory frontier panel
 tested `openai/gpt-5.6-sol`, `google/gemini-3.1-pro-preview`, `x-ai/grok-4.5`, and
@@ -215,7 +215,9 @@ the run machine's SQLite 3.50.4 differed from the 3.45.1 of development, and mat
 
 ## 5. Establishing the phenomenon and its mechanism (arithmetic)
 
-**The phenomenon and the fragility of prompt fixes.** In a 16-item arithmetic pilot, injecting a
+### 5.1 The phenomenon, and the fragility of prompt fixes
+
+In a 16-item arithmetic pilot, injecting a
 poisoned reference collapsed discrimination for every model under score-only judging. A 2×2 factorial
 separating a *verify instruction* from a *requirement to show written work* found the instruction
 alone inert, written work the main lever but incomplete for some models, and only the combination
@@ -227,7 +229,9 @@ zero — in one case asserting "8 does not match my calculation of 8." The verdi
 reference, not by the demonstrably-correct computation. Motivation: **visible reasoning does not reveal
 what controlled the verdict.**
 
-**Provenance and rationale are not necessary (§5.2).** A provenance × content factorial, confirmed in
+### 5.2 Provenance and rationale are not necessary
+
+A provenance × content factorial, confirmed in
 a separate preregistered run, isolates the active ingredient. Naming the source ("Solver") added no
 detectable capture over a neutral label in any model, and for one model *reduced* it; a full wrong
 rationale did not add detectable capture over a bare wrong answer. We therefore conclude that **neither
@@ -235,7 +239,9 @@ authority nor argument is necessary** for CCC in these experiments, and that a b
 is **sufficient**. We do not claim these factors can never matter: the mechanism contrasts are not
 equivalence tests, and their intervals covering zero bound, but do not exclude, small effects.
 
-**Conditional architecture test (§5.3).** A causal architecture experiment (16 items, mirrored
+### 5.3 Conditional architecture test
+
+A causal architecture experiment (16 items, mirrored
 references) compared four pipelines: a contaminated score-only judge; a contaminated verify-written
 judge; a **context-isolated** judge that never receives the reference; and a **hybrid conflict-router**
 (described in §7). Because Stage 2 runs only on models the Stage-1 threshold admitted, its estimates are
@@ -712,7 +718,7 @@ Zenodo, is recommended before submission.)
   worker count, run date, and model aliases. Every reported estimate is auditable back to a stored
   transcript.
 
-**Endpoint provenance.** Runs were executed 2026-07 through a common API router; model identifiers are
+**Endpoint provenance.** Runs were executed 2026-07 through **OpenRouter**; model identifiers are OpenRouter slugs, i.e.
 provider aliases whose backing may change. Exact routing/version metadata beyond the alias is limited to
 what the router returned and is recorded in the `*_meta_*` files; readers reproducing the study should
 record their own endpoint dates and any routing metadata their provider exposes.
