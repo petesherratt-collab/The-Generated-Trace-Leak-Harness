@@ -108,9 +108,6 @@ al., 2022) improve task accuracy. A natural hypothesis is that asking the judge 
 first would cure CCC; we test this and find it reduces but does not eliminate the effect in any
 domain.
 
-*Bibliographic details in the References section should be verified against primary sources before
-submission; they were compiled without live access to bibliographic databases.*
-
 ---
 
 ## 3. Definitions
