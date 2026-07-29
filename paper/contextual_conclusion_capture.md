@@ -30,7 +30,7 @@ for GPT-5.6-sol; and finds arithmetic capture only for Claude Fable. Fable's cod
 are unmeasurable because provider content filtering is concentrated in injected conditions. A
 conditional frontier follow-up finds that written verification leaves supported residual capture for
 Fable arithmetic and GPT code; GPT and Grok SQL have no supported positive residual, while Gemini SQL
-is unmeasurable because verification responses truncate asymmetrically. A further four-arm OpenRouter
+is unmeasurable because verification responses truncate asymmetrically. A further four-arm model-family
 extension finds supported SQL capture for Qwen 3.7 Plus, Kimi K2.7 Code, MiniMax M3, and GLM 5.2;
 arithmetic capture for Qwen, MiniMax, and GLM; and code capture only for MiniMax. We evaluate three mitigations
 on the cost-tier panel under mirrored correct/wrong-reference sentinels.
@@ -70,7 +70,7 @@ Contributions:
    correctness oracles — arithmetic, imperative code, relational SQL — and both the size of the
    effect and *which models are affected* differ by domain (§6). A four-endpoint frontier extension
    replicates the cross-provider SQL result while narrowing code capture to one judge; four additional
-   OpenRouter arms all reproduce SQL capture. Robustness does not transfer across domains or releases.
+   model-family arms all reproduce SQL capture. Robustness does not transfer across domains or releases.
 3. **What prevents it, and in what sense.** Under mirrored sentinels we compare three mitigations.
    Written verification is partial in every domain; a hybrid router recovers discrimination where
    the underlying comparison is clean; and **context isolation removes the reference-to-judge
@@ -146,7 +146,7 @@ wrong) to D = −90 (scores wrong above correct) has harm = +180.
 `openai/gpt-4o-mini`, `anthropic/claude-haiku-4.5`, `google/gemini-2.5-flash`,
 `deepseek/deepseek-chat`, `meta-llama/llama-3.3-70b-instruct`. A later confirmatory frontier panel
 tested `openai/gpt-5.6-sol`, `google/gemini-3.1-pro-preview`, `x-ai/grok-4.5`, and
-`~anthropic/claude-fable-latest` under the score-only protocol. The final OpenRouter extension tested
+`~anthropic/claude-fable-latest` under the score-only protocol. The final four-arm extension tested
 `qwen/qwen3.7-plus`, `moonshotai/kimi-k2.7-code`, `minimax/minimax-m3`, and `z-ai/glm-5.2` under
 endpoint-valid, separately frozen response protocols. Model names are provider aliases
 whose backing may change over time; run dates and the metadata each run records are in the
@@ -189,7 +189,7 @@ Fable arithmetic, GPT code, and GPT/Gemini/Grok SQL (2,496 cells). Its primary q
 **residual** harm under verification; mitigation deltas are secondary. No frontier architecture phase
 was run.
 
-**OpenRouter extension.** Each of four model arms used the same 16 arithmetic, 16 code, and 24 SQL
+**Four-arm extension.** Each of four model arms used the same 16 arithmetic, 16 code, and 24 SQL
 items × 4 conditions × 2 candidate types × 3 repetitions = 1,344 cells. Compatibility pilots froze
 provider routing, output contract, budgets, reasoning policy, and transport concurrency before each
 full run. Qwen used bounded reasoning, Kimi used provider-default native reasoning with sufficient
@@ -392,7 +392,7 @@ paired mitigation delta is large for Fable arithmetic (+42), GPT SQL (+51), and 
 not clearly positive for GPT code (+2.8 [−0.2, +5.8]).
 `experiments/results/FINDINGS_ccc_frontier_phase2.md`
 
-### 6.5 OpenRouter model-family extension
+### 6.5 Four-arm model-family extension
 
 Four further full arms used the same primary bare-conclusion contrast. All contain 1,344/1,344
 successful unique cells and pass the frozen condition-balance safeguards. Figure 4 shows each arm's clean and
@@ -530,7 +530,7 @@ cell, pushing its completion gap just above the frozen limit.
   endpoint aliases on 2026-07-20, two of them moving `-latest`/preview routes. It supports no claim about
   frontier models in general. Fable's treatment-correlated content filtering prevents code/SQL
   estimation and illustrates why missing output cannot be interpreted as robustness.
-- **Protocol-separated OpenRouter arms.** Kimi requires native-reasoning headroom, Qwen uses bounded
+- **Protocol-separated four-arm panel.** Kimi requires native-reasoning headroom, Qwen uses bounded
   reasoning, and MiniMax/GLM use a terse no-reasoning contract. Their results establish endpoint-level
   replication but are not a license audit and must not be naively pooled as one homogeneous panel.
 - **Only one frontier mitigation was tested.** Conditional Phase 2 tests written verification on the
@@ -556,7 +556,7 @@ nor argument — and it does so across three domains with executable correctness
 model- and domain-dependent: robustness earned in one setting does not carry to another. The frontier
 extension reinforces rather than erases that heterogeneity: cross-provider SQL capture replicates,
 code capture narrows to one judge, and one endpoint is measurable and captured only in arithmetic.
-The four-arm OpenRouter extension strengthens the SQL result again: every complete arm is captured in
+The four-arm model-family extension strengthens the SQL result again: every complete arm is captured in
 SQL, while arithmetic and code remain heterogeneous.
 The conditional frontier follow-up also shows that prompt-level verification can sharply reduce harm
 without becoming a reliable safeguard: residual capture survives for Fable arithmetic and GPT code,
