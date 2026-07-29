@@ -425,7 +425,7 @@ reference susceptibility each leaves behind.
 
 ![Figure 5](../experiments/fig_ccc_architecture.png)
 
-***Figure 5.*** *Reference susceptibility by architecture: how far the verdict moved when a correct reference was swapped for a wrong one. Written verification and the conflict router narrow the pathway but leave it open; isolation sits at zero. Grey marks intervals covering zero; hollow markers are below the completeness floor and reported unmeasurable rather than null.*
+***Figure 5.*** *Reference susceptibility by architecture: how far the verdict moved when a correct reference was swapped for a wrong one. Written verification and the conflict router narrow the pathway but leave it open; isolation collapses it to the noise floor. The isolated row is a negative control — those prompts are byte-identical across reference variants, so its true value is zero for every model, and the one arm whose interval clears zero there (Gemini, +5.42 [+0.62, +11.67]) is measuring decoding noise, not a pathway. Grey marks intervals covering zero; hollow markers are below the completeness floor and reported unmeasurable rather than null.*
 
 
 - **Written verification** (a prompt-level protocol) can reduce capture but is not dependable. In the

@@ -25,12 +25,11 @@ aid, and the completeness counts that carry the most careful reasoning
 | 1 `fig_ccc_method.png` | §4 Method | — (no table; this is the missing schematic) |
 | 2 `fig_ccc_mechanism.png` | §5 | mechanism-check tables |
 | 3 `fig_ccc_frontier.png` | §6.4 | frontier harm table |
-| 4 `fig_ccc_openrouter.png` | §6.5 | open-weight arm table |
+| 4 `fig_ccc_openrouter.png` | §6.5 | four-arm model-family table |
 | 5 `fig_ccc_architecture.png` | §7 | susceptibility / safeguard table |
 
-**Outstanding:** the paper carries **zero figure cross-references** in 734 lines.
-Each insertion needs a "(Figure N)" in the prose of §§4–7 that earns it, or the
-figures float unreferenced.
+**Done.** All five are placed, each with a caption and a "(Figure N)" cross-reference
+earned in the prose of §§4–7.
 
 ---
 
@@ -73,7 +72,7 @@ raw `*_obs.jsonl` rows**, not transcribed from the findings tables, and every on
 prints a validation block checking its estimates against the published numbers.
 
 ```bash
-python3 experiments/make_all_ccc_figures.py      # regenerate all four + validate
+python3 experiments/make_all_ccc_figures.py      # regenerate all seven + validate
 ```
 
 The driver exits non-zero if any figure stops reproducing its published values,
