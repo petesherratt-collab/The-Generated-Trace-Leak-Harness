@@ -1,6 +1,6 @@
 # Contextual Conclusion Capture: Conflicting Conclusions Degrade LLM-Judge Discrimination Across Reasoning Domains
 
-**Author:** Pete Sherratt · *affiliation and contact to be completed before submission*
+**Author:** Pete Sherratt · Independent researcher · *dedicated contact address to be supplied before submission*
 
 **Preprint draft — 2026-07 (revised).** All numeric results are produced by preregistered,
 publicly committed experiments with streamed evidence and an independently implemented
@@ -447,6 +447,61 @@ reference susceptibility each leaves behind.
   provably absent. This is a structural property of the pipeline, not a behavioural property of the model:
   isolation removes the tested channel; it does not guarantee the judge is otherwise correct.
 
+### 7.1 The isolated arm is a negative control, and it calibrates the support rule
+
+The byte audit has a consequence we should state plainly rather than bank quietly. If the isolated
+judge's prompt does not change when the reference changes, then its reference susceptibility is *exactly
+zero by construction* — not small, not approximately zero, but a quantity with no mechanism available to
+make it nonzero. Every susceptibility we estimate in that arm is therefore a draw from the estimator's
+own noise, on a contrast whose true value we know. The isolated arm is a **negative control we did not
+have to design**, and it measures the false-positive rate of the support rule used throughout this paper.
+
+It does not come out clean. Applying the frozen rule — at least 12 of 16 complete items and a 95%
+item-clustered bootstrap interval excluding zero — to the confirmatory architecture arm:
+
+| Model | Isolated susceptibility | Complete items | Rule says |
+|---|---:|---:|---|
+| GPT-4o mini | +0.21 `[−3.75, +4.38]` | 16 | not supported |
+| Claude Haiku 4.5 | +0.00 | 5 | unmeasurable |
+| Gemini 2.5 Flash | **+5.42** `[+0.62, +11.67]` | 16 | **supported — and it cannot be** |
+| DeepSeek Chat | −4.38 `[−14.17, +7.92]` | 16 | not supported |
+| Llama 3.3 70B | −4.44 `[−13.33, +0.00]` | 15 | not supported |
+
+One of four measurable arms returns a supported effect on a contrast that is null by construction. We
+report this as a **false positive of our own procedure**, because that is what it is, and the alternative
+reading — that a reference absent from the prompt moved the verdict — is excluded by the hash audit.
+
+The cause is identifiable. Each cell is a mean over three repetitions, and the bootstrap resamples
+*items* while treating those per-cell means as fixed. Within-cell sampling noise from stochastic decoding
+therefore never enters the interval, and the intervals run narrower than the sampling distribution they
+are meant to cover. On these rows a null contrast has a per-item standard deviation of **16.0 score
+points**, so a 16-item mean carries a standard deviation near **4.0 points** from decoding alone.
+`experiments/check_isolation_null_calibration.py` recomputes this table and that dispersion from the raw
+rows.
+
+Two things follow, and they point in opposite directions.
+
+The first is a limit on what small estimates in this paper can bear. An effect whose interval clears zero
+by a few points is inside the region where this arm produces false positives, and should not be read as
+established on the strength of the rule alone. Applying that filter to the architecture findings, the one
+supported claim it touches is **Gemini's isolation safeguard gain, +23.44 `[+3.65, +44.80]`**: its point
+estimate sits well outside the noise floor but its lower bound does not, so we downgrade it here to
+*directionally consistent, not independently established*. No other supported effect in this paper has a
+lower bound inside the band. The capture results the paper is built on — +90.00, +112.50, +129.29 in this
+same experiment — stand at an order of magnitude above it and are untouched.
+
+The second is a point about the estimand. Isolation's guarantee was never that discrimination stays
+numerically fixed; a judge sampled at nonzero temperature will move a little between any two runs. The
+guarantee is that **nothing about the reference can be what moves it**, and that is a claim about the
+prompt bytes, which we can and do check exhaustively. The +5.42 is the size of the wobble you get for
+free from decoding. The contaminated arm's +39.90 for the same model on the same items is what a
+reference pathway looks like when it exists. That the two are separable by nearly an order of magnitude
+is the isolation result, stated more carefully than "isolation works".
+
+A study that ships a structural null and then reads it honestly is in a better position than one that
+never had a null to read. We recommend the design be adopted for its own sake: **run a byte-identical
+arm alongside the treatment arms, and calibrate the decision rule against it before applying it.**
+
 ---
 
 ## 8. Missingness
@@ -540,6 +595,12 @@ cell, pushing its completion gap just above the frozen limit.
   separate final metadata files.
 - **Coarse scores** (frequent 0/100 saturation); key results (the reversal, isolation neutrality) rest on
   decomposition and preregistered support calls, not on treating point magnitudes as precise.
+- **The support rule is anticonservative for small effects.** The item-clustered bootstrap resamples items
+  but holds each cell's three-repetition mean fixed, so decoding noise is outside the interval. Measured
+  against the byte-identical isolated arm, where the true effect is zero by construction, the rule returns
+  a supported effect in one of four measurable cases (§7.1). Estimates whose lower bound falls within a
+  few points of zero should be read as directional. The paper's headline effects are an order of magnitude
+  clear of that band; the one claim we downgrade on these grounds is named in §7.1.
 - **Mechanical-gold domains only.** Open-ended judging — where the router's comparison would itself become
   a judgement — is out of scope, because rigour there would reintroduce the evaluator-for-the-evaluator
   circularity this method avoids. The deterministic test-oracle router is specified but untested.
