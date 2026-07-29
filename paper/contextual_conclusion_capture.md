@@ -565,6 +565,30 @@ assume; it is one to gate on, every release and every domain.
 
 ---
 
+## Author contributions and AI use
+
+All preregistrations, decision rules, completeness floors, and interpretations were fixed by the author,
+who takes responsibility for the work as published. Implementation and analysis used AI systems
+throughout, described here at the level of detail a reader would need to judge what the tooling could
+and could not have influenced.
+
+**Claude (Anthropic)** implemented the experimental harnesses, the independent re-analysis pipeline used
+to recompute every headline contrast from the raw observation rows, and the figure set with its
+validation checks.
+
+**ChatGPT / Codex (OpenAI)** produced the work on the `codex/*` branches: the model-family extension
+runs, the reconciliation of the publication base, and the evidence-audit tooling behind the integrity
+summary.
+
+**Gemini (Google)** served as adversarial reviewer. Its frame-theft attack against an earlier design is
+what forced the move to process isolation, and so is upstream of the architecture result in §7.
+
+None of these systems is listed as an author. Authorship is an accountability claim — that a named party
+approved the final version and can answer for it — and a language model cannot make that claim. The
+contribution was real; the attribution belongs here rather than on the byline.
+
+---
+
 ## References
 
 *Compiled without live bibliographic access; verify every entry against the primary source before
@@ -767,5 +791,4 @@ The four OpenRouter full arms each contain 1,344 unique successful cells, comple
 fixed endpoint identities, and independently reproduced estimates. MiniMax and GLM additionally have
 1,344/1,344 strict terminal JSON responses and zero observed reasoning tokens.
 
-*Acknowledgement: experiments were implemented and analysed with AI-assisted tooling; all
-preregistrations, decision rules, and interpretations were fixed by the author.*
+*AI use in producing these experiments and analyses is described in "Author contributions and AI use".*
