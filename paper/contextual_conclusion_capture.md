@@ -170,7 +170,14 @@ conclusion into *content* × *label*: `no_injection`; `neutral/answer_only` (bar
 (authoritative label). Protocols are `score_only` and `verify_written` (work it out first, then
 score). **Stage 2 (architectures)** is *conditional*: it runs only on the models admitted by the
 Stage-1 capture threshold (§5.3, §8), crossing four architectures × mirrored correct/wrong references
-× candidates × repetitions.
+× candidates × repetitions. Figure 1 shows all three reference conditions on a single
+judge, and the discrimination measure by which every later result is scored.
+
+![Figure 1](../experiments/fig_ccc_method.png)
+
+***Figure 1.*** *Contextual Conclusion Capture and the isolation control. One judge (GPT-4o mini) over the same 16 confirmatory items. (a) and (b) differ only in whether the exposed reference is correct or wrong; (c) removes it from the prompt entirely. Under isolation D is 32.5 with a wrong reference and 32.7 with a correct one, and all 480 isolated judge prompts were byte-identical across reference variants.*
+
+
 
 **Frontier extension.** The frontier experiment reran Stage 1's four injection conditions under
 `score_only` only (Phase 1): 16 arithmetic items, 16 code items, and 24 SQL items × 4 judges × 4
@@ -194,7 +201,7 @@ aggregated by first averaging a cell's 3 repetitions, then forming the item-leve
 then averaging over items. Uncertainty is an **item-clustered nonparametric bootstrap** (resampling
 items with replacement): the analysis adapters use B = 4,000 resamples; the independent re-analysis
 uses B = 4,000–10,000; seeds are fixed in code. We report 95% percentile intervals. An effect is
-**supported** iff its interval excludes zero in the predicted direction *and* a completeness floor is
+**supported** if and only if its interval excludes zero in the predicted direction *and* a completeness floor is
 met (≥75% of items). **No multiplicity correction is applied**: the primary contrast is a single
 preregistered test per model; all secondary and mechanism contrasts are reported descriptively with
 intervals and are **not** equivalence tests — an interval covering zero is not evidence of no effect.
@@ -232,7 +239,13 @@ what controlled the verdict.**
 ### 5.2 Provenance and rationale are not necessary
 
 A provenance × content factorial, confirmed in
-a separate preregistered run, isolates the active ingredient. Naming the source ("Solver") added no
+a separate preregistered run, isolates the active ingredient. Figure 2 plots it.
+
+![Figure 2](../experiments/fig_ccc_mechanism.png)
+
+***Figure 2.*** *The bare conclusion is the active ingredient. Bare-conclusion harm (left) beside the rationale and provenance increments (centre, right) on a shared scale. Models below the completeness floor are drawn as open markers without intervals. An interval covering zero is not evidence of equivalence: the claim is that a label and an argument were unnecessary, not that they can never matter.*
+
+ Naming the source ("Solver") added no
 detectable capture over a neutral label in any model, and for one model *reduced* it; a full wrong
 rationale did not add detectable capture over a bare wrong answer. We therefore conclude that **neither
 authority nor argument is necessary** for CCC in these experiments, and that a bare neutral conclusion
@@ -330,7 +343,13 @@ for future work, not a causal result.
 
 The preregistered v3 extension asked whether the Stage-1 pattern survives at a stronger model tier.
 The table reports the primary bare-conclusion harm; **SUPPORTED** requires both a positive 95%
-interval and the frozen completeness/balance safeguards.
+interval and the frozen completeness/balance safeguards. Figure 3 plots the same estimates.
+
+![Figure 3](../experiments/fig_ccc_frontier.png)
+
+***Figure 3.*** *Bare-conclusion harm at the frontier tier, four judges × three domains. SQL is the common failure across every measurable judge; arithmetic and code are model-specific. Fable is reported unmeasurable in code and SQL under the frozen balance safeguard, because its content-filter missingness is concentrated in injected conditions.*
+
+
 
 | Domain | GPT-5.6-sol | Gemini-3.1-Pro | Grok-4.5 | Claude Fable |
 |---|---:|---:|---:|---:|
@@ -376,7 +395,14 @@ not clearly positive for GPT code (+2.8 [−0.2, +5.8]).
 ### 6.5 OpenRouter model-family extension
 
 Four further full arms used the same primary bare-conclusion contrast. All contain 1,344/1,344
-successful unique cells and pass the frozen condition-balance safeguards.
+successful unique cells and pass the frozen condition-balance safeguards. Figure 4 shows each arm's clean and
+injected discrimination as a pair.
+
+![Figure 4](../experiments/fig_ccc_openrouter.png)
+
+***Figure 4.*** *Each line runs from the judge's discrimination with a clean context to the same judge's discrimination with one bare wrong reference added. On SQL, three of four arms cross zero — the judge ranks the wrong candidate above the correct one. The four arms ran under different reasoning protocols and are compared descriptively, not pooled.*
+
+
 
 | Model | Arithmetic | Code | SQL |
 |---|---:|---:|---:|
@@ -396,6 +422,14 @@ model-license audit, and protocol-separated effect sizes are not treated as exch
 ---
 
 ## 7. Mitigations, precisely described
+
+Figure 5 places the three tested safeguards beside the exposed baseline, measured as the
+reference susceptibility each leaves behind.
+
+![Figure 5](../experiments/fig_ccc_architecture.png)
+
+***Figure 5.*** *Reference susceptibility by architecture: how far the verdict moved when a correct reference was swapped for a wrong one. Written verification and the conflict router narrow the pathway but leave it open; isolation sits at zero. Grey marks intervals covering zero; hollow markers are below the completeness floor and reported unmeasurable rather than null.*
+
 
 - **Written verification** (a prompt-level protocol) can reduce capture but is not dependable. In the
   cost-tier SQL panel, a large mitigation *delta* coexists with supported residual capture for 4 of 5
