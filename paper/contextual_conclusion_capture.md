@@ -1,6 +1,6 @@
 # Contextual Conclusion Capture: Conflicting Conclusions Degrade LLM-Judge Discrimination Across Reasoning Domains
 
-**Author:** Pete Sherratt · Independent researcher · *dedicated contact address to be supplied before submission*
+**Author:** Pete Sherratt · Independent researcher · contextual-conclusion-capture@tuta.com
 
 **Preprint draft — 2026-07 (revised).** All numeric results are produced by preregistered,
 publicly committed experiments with streamed evidence and an independently implemented
