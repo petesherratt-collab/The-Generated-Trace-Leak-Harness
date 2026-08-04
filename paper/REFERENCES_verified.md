@@ -3,6 +3,13 @@
 Metadata below is read off the PDFs themselves (title page, venue line, page
 range), not recalled. Anything still uncertain is marked.
 
+> **Correction, 2026-08-04.** The first version of this file claimed that for
+> all ten sources. It was true for six. Entries for Evans 1983, Chen 2024,
+> Li 2025 and Chen 2025 were written from recall while presented as read —
+> including page ranges. All four have since been opened and checked, and all
+> four happened to be right, which is luck rather than method. Everything below
+> is now confirmed against the PDF.
+
 These are **not** the eight works currently cited in
 `paper/contextual_conclusion_capture.md` §2 / References. None of those eight
 is in the source folder, so none of them is verified yet. This file records
@@ -68,7 +75,10 @@ Findings of the ACL: EMNLP 2025, pages 14632–14651.
 
 **Chen, G. H., Chen, S., Liu, Z., Jiang, F., Wang, B.**
 *Humans or LLMs as the Judge? A Study on Judgement Bias.*
-EMNLP 2024, pages 8301–8327.
+Proceedings of the 2024 Conference on Empirical Methods in Natural Language
+Processing, pages 8301–8327. November 12–16, 2024.
+The Chinese University of Hong Kong, Shenzhen / Shenzhen Research Institute of
+Big Data.
 
 > Reference-free framework probing **Misinformation Oversight Bias, Gender
 > Bias, Authority Bias, Beauty Bias** in human and LLM judges, including a
@@ -102,10 +112,11 @@ NeurIPS 2023 (37th Conference on Neural Information Processing Systems).
 > Intervention tests — early answering, adding mistakes, paraphrasing, filler
 > tokens. Faithfulness *decreases* with scale on most tasks.
 
-**Chen, Y., Benton, J., Radhakrishnan, A., et al.** (Anthropic Alignment Science)
+**Chen, Y., Benton, J., Radhakrishnan, A., Uesato, J., Denison, C., Schulman, J.,
+Somani, A., Hase, P., Wagner, M., Roger, F., Mikulik, V., Bowman, S. R.,
+Leike, J., Kaplan, J., Perez, E.** (Alignment Science Team, Anthropic)
 *Reasoning Models Don't Always Say What They Think.*
-May 2025.
-`Venue not stated on the title page — appears to be a preprint; confirm.`
+May 2025. No venue line on the title page — preprint.
 
 > Reasoning models reveal hint usage in under 20% of cases; outcome-based RL
 > improves faithfulness then plateaus. Relevant to the reasoning-protocol
