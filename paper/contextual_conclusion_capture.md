@@ -114,8 +114,7 @@ instruction it was given. In ours the judge *adopts* it: a candidate the oracle 
 is scored below a wrong one, because the conflicting conclusion overrides the evidence in front of it.
 Domain is the plausible explanation. Entity QA hands the judge a strong parametric prior to defend;
 arithmetic, program semantics and relational queries do not, and the conclusion sitting in context
-fills the vacuum. Consistent with this, our own effect is largest in SQL (§6.2), the domain where a
-judge is least able to recompute the answer for itself.
+fills the vacuum. Consistent with this, our own effect is largest in SQL (§6.2).
 
 Read together the two results are worse than either alone. They do not show that LLM judges
 systematically over-trust references, nor that they systematically under-trust them. They show that
@@ -531,6 +530,43 @@ is the isolation result, stated more carefully than "isolation works".
 A study that ships a structural null and then reads it honestly is in a better position than one that
 never had a null to read. We recommend the design be adopted for its own sake: **run a byte-identical
 arm alongside the treatment arms, and calibrate the decision rule against it before applying it.**
+
+### 7.2 A wrong reference is worse than no reference
+
+The isolated arm serves a second purpose: because the reference never enters the prompt, it is also a
+**no-reference baseline** — the judge's discrimination on the same items, unaided. Reporting the three
+conditions as levels rather than as differences:
+
+| Model | No reference | + correct reference | + wrong reference |
+|---|---:|---:|---:|
+| GPT-4o mini | +32.5 | +63.4 | −26.6 |
+| Gemini 2.5 Flash | +42.7 | +59.2 | +19.3 |
+| DeepSeek Chat | +37.7 | +69.7 | −14.6 |
+| Llama 3.3 70B | +41.7 | +68.8 | −43.8 |
+
+All n = 16; Claude is below the completeness floor in both arms and is omitted. Paired within item
+against the no-reference baseline, a **correct** reference helps every judge — +30.94 `[+9.90, +53.12]`
+for GPT, +31.98 `[+11.04, +57.29]` for DeepSeek, +27.08 `[+8.33, +50.00]` for Llama, and +16.46
+`[+3.12, +32.40]` for Gemini. Reference-conditioned judging earns its place; that is not in dispute.
+
+A **wrong** reference does not simply forfeit that gain. For three of the four measurable judges the
+verdict lands below where it would have been with no reference at all: −59.06 `[−89.58, −28.33]` for
+GPT, −52.29 `[−67.08, −36.88]` for DeepSeek, and −85.42 `[−110.42, −60.42]` for Llama. Gemini's estimate
+runs the same way, −23.44 `[−45.31, −3.12]`, but its lower bound falls inside the noise band of §7.1, so
+we read it as directional only — as we do its correct-reference gain above, whose lower bound of +3.12
+is inside the same band.
+
+The practical reading is narrow and does not require a mechanism. Supplying a reference to a judge is
+not a neutral act with an upside and no downside. On these items and these judges, the loss from a
+wrong reference is larger than the gain from a correct one, and large enough to put the judge below its
+own unaided performance. A pipeline that cannot bound the error rate of its reference answers is not
+choosing between a good reference and a slightly worse one; it is choosing between a good reference and
+an outcome worse than passing no reference at all. `experiments/check_no_reference_baseline.py`
+recomputes every estimate above from the raw rows.
+
+We do not claim to know why the judges defer. The isolated column shows they are not incapable of the
+task, but what governs the trade — the relative difficulty of recomputing the answer, the judge's
+confidence in its own solution, or something else — is not identified by this design.
 
 ---
 
