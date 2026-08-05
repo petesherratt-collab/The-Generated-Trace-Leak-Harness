@@ -655,8 +655,10 @@ contribution was real; the attribution belongs here rather than on the byline.
 *Compiled without live bibliographic access; verify every entry against the primary source before
 submission.*
 
-1. L. Zheng, W.-L. Chiang, Y. Sheng, et al. **Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.**
-   NeurIPS Datasets and Benchmarks, 2023.
+1. L. Zheng, W.-L. Chiang, Y. Sheng, S. Zhuang, Z. Wu, Y. Zhuang, Z. Lin, Z. Li, D. Li, E. P. Xing,
+   H. Zhang, J. E. Gonzalez, I. Stoica. **Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.**
+   Advances in Neural Information Processing Systems 36 (NeurIPS 2023), Datasets and Benchmarks Track
+   (arXiv:2306.05685).
 2. Y. Liu, D. Iter, Y. Xu, et al. **G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment.**
    EMNLP, 2023.
 3. P. Wang, L. Li, L. Chen, et al. **Large Language Models are not Fair Evaluators.** ACL, 2024

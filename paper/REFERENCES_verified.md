@@ -122,8 +122,22 @@ May 2025. No venue line on the title page — preprint.
 > improves faithfulness then plateaus. Relevant to the reasoning-protocol
 > differences across the four-arm panel.
 
-## What this does not settle
+## Status of the eight cited works
 
-The eight works in the current reference list remain unverified — they are not
-in this folder. Their in-text years also disagree with their list entries in
-three places, and two distinct papers are both cited as "Wang et al."
+None is in the source folder, so each has to be confirmed against the primary
+source separately. Confirmed entries are recorded here as they land.
+
+| # | Work | Status |
+|---|---|---|
+| 1 | Zheng et al., MT-Bench / Chatbot Arena | **confirmed** — NeurIPS 2023 Datasets and Benchmarks Track, arXiv:2306.05685. Full author list and arXiv ID supplied by the author and written into the entry. |
+| 2 | Liu et al., G-Eval | unconfirmed |
+| 3 | Wang et al., Not Fair Evaluators | unconfirmed |
+| 4 | Panickssery et al., Own Generations | unconfirmed |
+| 5 | Sharma et al., Sycophancy | unconfirmed |
+| 6 | Greshake et al., Indirect Prompt Injection | unconfirmed |
+| 7 | Wei et al., Chain-of-Thought | unconfirmed |
+| 8 | Wang et al., Self-Consistency | unconfirmed |
+
+Two defects are independent of that check and remain open: the in-text years
+disagree with the list entries for #3, #5 and #8, and #3 and #8 are both cited
+as "Wang et al." with nothing but an inconsistent year to separate them.
