@@ -87,7 +87,13 @@ study is designed so no model establishes the correctness labels it is evaluated
 ## 2. Related work
 
 **LLM-as-a-judge and its biases.** Using strong LLMs as evaluators was popularised by MT-Bench and
-Chatbot Arena (Zheng et al., 2023) and reference-based variants such as G-Eval (Liu et al., 2023).
+Chatbot Arena (Zheng et al., 2023) for pairwise preference, and by single-output scoring metrics such
+as G-Eval (Liu et al., 2023), which prompts the judge with the source document and the candidate and
+has it generate its own evaluation steps. G-Eval is *reference-free*: the judge is conditioned on
+auxiliary context, but never on a gold answer. This paper studies the **reference-conditioned** case,
+in which a gold — or purportedly gold — answer is placed in the judge's prompt alongside the
+candidate. That is the setting our harness implements throughout, and the conclusion the judge is
+captured by enters through exactly that slot.
 Documented biases include position/order effects (Wang et al., 2023) and verbosity / self-preference
 (Panickssery et al., 2024). CCC is distinct: it is not a preference over surface features of the
 *candidate*, but a deterioration of *discrimination* caused by a conflicting conclusion elsewhere in
