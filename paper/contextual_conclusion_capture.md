@@ -100,7 +100,7 @@ Documented biases include position/order effects (Wang et al., 2024) and verbosi
 context, separable (we show) from authority and argument quality.
 
 **Sycophancy and anchoring.** LLMs tend to agree with assertions in context and defer to stated
-beliefs (Sharma et al., 2023). CCC can be read as an evaluation-time anchoring effect, but our
+beliefs (Sharma et al., 2024). CCC can be read as an evaluation-time anchoring effect, but our
 controls show the anchor need not be authoritative or argued, which distinguishes it from pure
 authority-deference.
 
@@ -675,8 +675,10 @@ submission.*
 4. A. Panickssery, S. R. Bowman, S. Feng. **LLM Evaluators Recognize and Favor Their Own Generations.**
    Advances in Neural Information Processing Systems 37 (NeurIPS 2024).
    DOI 10.52202/079017-2197 (arXiv:2404.13076).
-5. M. Sharma, M. Tong, T. Korbak, et al. **Towards Understanding Sycophancy in Language Models.**
-   ICLR, 2024 (arXiv:2310.13548, 2023).
+5. M. Sharma, M. Tong, T. Korbak, D. Duvenaud, A. Askell, S. R. Bowman, N. Cheng, E. Durmus,
+   Z. Hatfield-Dodds, S. R. Johnston, S. Kravec, T. Maxwell, S. McCandlish, K. Ndousse, O. Rausch,
+   N. Schiefer, D. Yan, M. Zhang, E. Perez. **Towards Understanding Sycophancy in Language Models.**
+   International Conference on Learning Representations (ICLR 2024) (arXiv:2310.13548).
 6. K. Greshake, S. Abdelnabi, S. Mishra, et al. **Not What You've Signed Up For: Compromising
    Real-World LLM-Integrated Applications with Indirect Prompt Injection.** AISec, 2023.
 7. J. Wei, X. Wang, D. Schuurmans, et al. **Chain-of-Thought Prompting Elicits Reasoning in Large

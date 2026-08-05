@@ -133,18 +133,18 @@ source separately. Confirmed entries are recorded here as they land.
 | 2 | Liu et al., G-Eval | **confirmed** — EMNLP 2023, pp. 2511–2522, DOI 10.18653/v1/2023.emnlp-main.153, arXiv:2303.16634. §2 described it as reference-based; it is reference-free, and the sentence has been corrected. See below. |
 | 3 | Wang et al., Not Fair Evaluators | **confirmed** — ACL 2024, Vol. 1 Long Papers, pp. 9440–9450, DOI 10.18653/v1/2024.acl-long.511, arXiv:2305.17926. In-text citation corrected from 2023 to **2024**. |
 | 4 | Panickssery et al., Own Generations | **confirmed** — NeurIPS 37 (2024), DOI 10.52202/079017-2197, arXiv:2404.13076. Author list was already complete and the in-text year already correct; no body change needed. |
-| 5 | Sharma et al., Sycophancy | unconfirmed |
+| 5 | Sharma et al., Sycophancy | **confirmed** — ICLR 2024, arXiv:2310.13548. All nineteen authors now listed. In-text citation corrected from 2023 to **2024**. |
 | 6 | Greshake et al., Indirect Prompt Injection | unconfirmed |
 | 7 | Wei et al., Chain-of-Thought | unconfirmed |
 | 8 | Wang et al., Self-Consistency | unconfirmed |
 
 Two defects are independent of that check. Progress on both:
 
-**Year mismatches (#3, #5, #8).** #3 is fixed — the in-text citation now reads
-2024, matching the ACL venue year. #5 and #8 are deliberately left alone: their
-list entries are themselves unconfirmed, and making the body agree with an
-unverified entry propagates the guess instead of fixing it. Both are one
-confirmation away.
+**Year mismatches (#3, #5, #8).** #3 and #5 are fixed — both in-text citations
+now carry the venue year (ACL 2024, ICLR 2024) rather than the arXiv year. #8
+is still deliberately left alone: its list entry is unconfirmed, and making the
+body agree with an unverified entry propagates the guess instead of fixing it.
+One confirmation away.
 
 **The "Wang et al." collision (#3 vs #8).** This resolves itself once both use
 venue years rather than arXiv years. #3 is ACL **2024**; #8 is listed as ICLR
