@@ -659,8 +659,9 @@ submission.*
    H. Zhang, J. E. Gonzalez, I. Stoica. **Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.**
    Advances in Neural Information Processing Systems 36 (NeurIPS 2023), Datasets and Benchmarks Track
    (arXiv:2306.05685).
-2. Y. Liu, D. Iter, Y. Xu, et al. **G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment.**
-   EMNLP, 2023.
+2. Y. Liu, D. Iter, Y. Xu, S. Wang, R. Xu, C. Zhu. **G-Eval: NLG Evaluation using GPT-4 with Better
+   Human Alignment.** Proceedings of the 2023 Conference on Empirical Methods in Natural Language
+   Processing (EMNLP), pages 2511–2522. DOI 10.18653/v1/2023.emnlp-main.153 (arXiv:2303.16634).
 3. P. Wang, L. Li, L. Chen, et al. **Large Language Models are not Fair Evaluators.** ACL, 2024
    (arXiv:2305.17926, 2023).
 4. A. Panickssery, S. R. Bowman, S. Feng. **LLM Evaluators Recognize and Favor Their Own Generations.**

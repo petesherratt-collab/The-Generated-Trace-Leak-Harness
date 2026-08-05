@@ -130,7 +130,7 @@ source separately. Confirmed entries are recorded here as they land.
 | # | Work | Status |
 |---|---|---|
 | 1 | Zheng et al., MT-Bench / Chatbot Arena | **confirmed** — NeurIPS 2023 Datasets and Benchmarks Track, arXiv:2306.05685. Full author list and arXiv ID supplied by the author and written into the entry. |
-| 2 | Liu et al., G-Eval | unconfirmed |
+| 2 | Liu et al., G-Eval | **metadata confirmed** — EMNLP 2023, pp. 2511–2522, DOI 10.18653/v1/2023.emnlp-main.153, arXiv:2303.16634. **But see the note below: §2 may be describing it wrongly.** |
 | 3 | Wang et al., Not Fair Evaluators | unconfirmed |
 | 4 | Panickssery et al., Own Generations | unconfirmed |
 | 5 | Sharma et al., Sycophancy | unconfirmed |
@@ -141,3 +141,27 @@ source separately. Confirmed entries are recorded here as they land.
 Two defects are independent of that check and remain open: the in-text years
 disagree with the list entries for #3, #5 and #8, and #3 and #8 are both cited
 as "Wang et al." with nothing but an inconsistent year to separate them.
+
+### Open question on #2: is G-Eval a reference-based metric?
+
+§2 currently reads: *"Using strong LLMs as evaluators was popularised by
+MT-Bench and Chatbot Arena (Zheng et al., 2023) and reference-based variants
+such as G-Eval (Liu et al., 2023)."*
+
+G-Eval is usually characterised as **reference-free** — it scores a generated
+output against the *source document* using a form-filling prompt with auto-CoT,
+rather than against a gold reference answer. If that is right, G-Eval is the
+wrong example for the clause it is attached to, and the sentence is claiming
+support it does not have.
+
+This matters more than an ordinary miscitation. Reference #2 is the only place
+the paper establishes that **reference-conditioned LLM judging is common
+practice**, and reference-conditioned judging is the entire setting CCC
+operates in. A reviewer who knows G-Eval will read the opening of §2 as
+evidence the related work was not read closely.
+
+Not resolved here: aclanthology.org returns 403 through this environment's
+proxy, so the prompt template could not be checked directly. **Check the G-Eval
+prompt in §2 of that paper** — if the input is source + candidate with no gold
+reference, either move it out of the "reference-based" clause or replace it
+with a genuinely reference-conditioned example.
