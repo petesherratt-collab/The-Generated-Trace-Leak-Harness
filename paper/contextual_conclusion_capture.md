@@ -110,7 +110,7 @@ reference answer of the kind evaluation pipelines routinely paste into judge pro
 is silent mis-scoring rather than hijacked instructions.
 
 **Reasoning and verification.** Chain-of-thought (Wei et al., 2022) and self-consistency (Wang et
-al., 2022) improve task accuracy. A natural hypothesis is that asking the judge to reason/verify
+al., 2023) improve task accuracy. A natural hypothesis is that asking the judge to reason/verify
 first would cure CCC; we test this and find it reduces but does not eliminate the effect in any
 domain.
 
@@ -658,8 +658,9 @@ contribution was real; the attribution belongs here rather than on the byline.
 
 ## References
 
-*Compiled without live bibliographic access; verify every entry against the primary source before
-submission.*
+*Every entry below has been checked against its official proceedings record; venue, year, pages,
+DOI and arXiv identifier are taken from that record rather than reconstructed. In-text citations use
+venue years throughout.*
 
 1. L. Zheng, W.-L. Chiang, Y. Sheng, S. Zhuang, Z. Wu, Y. Zhuang, Z. Lin, Z. Li, D. Li, E. P. Xing,
    H. Zhang, J. E. Gonzalez, I. Stoica. **Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.**
@@ -686,8 +687,9 @@ submission.*
 7. J. Wei, X. Wang, D. Schuurmans, M. Bosma, B. Ichter, F. Xia, E. H. Chi, Q. V. Le, D. Zhou.
    **Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.** Advances in Neural
    Information Processing Systems 35 (NeurIPS 2022) (arXiv:2201.11903).
-8. X. Wang, J. Wei, D. Schuurmans, et al. **Self-Consistency Improves Chain-of-Thought Reasoning in
-   Language Models.** ICLR, 2023 (arXiv:2203.11171, 2022).
+8. X. Wang, J. Wei, D. Schuurmans, Q. V. Le, E. H. Chi, S. Narang, A. Chowdhery, D. Zhou.
+   **Self-Consistency Improves Chain-of-Thought Reasoning in Language Models.** International
+   Conference on Learning Representations (ICLR 2023) (arXiv:2203.11171).
 
 ---
 

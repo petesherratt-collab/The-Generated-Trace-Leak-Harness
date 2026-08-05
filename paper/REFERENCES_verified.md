@@ -122,10 +122,14 @@ May 2025. No venue line on the title page — preprint.
 > improves faithfulness then plateaus. Relevant to the reasoning-protocol
 > differences across the four-arm panel.
 
-## Status of the eight cited works
+## Status of the eight cited works — all confirmed
 
-None is in the source folder, so each has to be confirmed against the primary
-source separately. Confirmed entries are recorded here as they land.
+None is in the source folder, so each was confirmed separately against its
+official proceedings record (ACL Anthology, NeurIPS proceedings, OpenReview,
+ACM DL), supplied by the author. Venue, year, page range, DOI and arXiv
+identifier now come from that record in every entry, and the "compiled without
+live bibliographic access" warning has been removed from the paper because it
+is no longer true.
 
 | # | Work | Status |
 |---|---|---|
@@ -136,20 +140,20 @@ source separately. Confirmed entries are recorded here as they land.
 | 5 | Sharma et al., Sycophancy | **confirmed** — ICLR 2024, arXiv:2310.13548. All nineteen authors now listed. In-text citation corrected from 2023 to **2024**. |
 | 6 | Greshake et al., Indirect Prompt Injection | **confirmed** — 16th ACM Workshop on AI and Security (AISec '23), pp. 79–90, DOI 10.1145/3605764.3623985, arXiv:2302.12173. Venue expanded from the bare "AISec" to the full workshop proceedings title. In-text year already correct. |
 | 7 | Wei et al., Chain-of-Thought | **confirmed** — NeurIPS 35 (2022), arXiv:2201.11903. All nine authors now listed. In-text year already correct. |
-| 8 | Wang et al., Self-Consistency | unconfirmed |
+| 8 | Wang et al., Self-Consistency | **confirmed** — ICLR 2023, arXiv:2203.11171. All eight authors now listed. In-text citation corrected from 2022 to **2023**. |
 
 Two defects are independent of that check. Progress on both:
 
-**Year mismatches (#3, #5, #8).** #3 and #5 are fixed — both in-text citations
-now carry the venue year (ACL 2024, ICLR 2024) rather than the arXiv year. #8
-is still deliberately left alone: its list entry is unconfirmed, and making the
-body agree with an unverified entry propagates the guess instead of fixing it.
-One confirmation away.
+**Year mismatches (#3, #5, #8) — closed.** All three in-text citations now
+carry the venue year rather than the arXiv year: ACL 2024, ICLR 2024, ICLR
+2023. The body and the list agree throughout.
 
-**The "Wang et al." collision (#3 vs #8).** This resolves itself once both use
-venue years rather than arXiv years. #3 is ACL **2024**; #8 is listed as ICLR
-**2023**. Different years, so no 2023a/2023b suffix is needed — but this only
-holds if #8's ICLR 2023 entry is correct, which is still unchecked.
+**The "Wang et al." collision (#3 vs #8) — closed.** Confirmed as ACL **2024**
+and ICLR **2023**, so the year alone disambiguates and no a/b suffix is needed.
+Worth knowing they are also different people: #3 is Peiyi Wang, #8 is Xuezhi
+Wang, who is separately the second author of #7. Initials in the in-text
+citations would make that explicit; the author's decision is to leave it, on
+the grounds that a reader can look it up.
 
 ### Resolved on #2: G-Eval is reference-free, and §2 said otherwise
 
