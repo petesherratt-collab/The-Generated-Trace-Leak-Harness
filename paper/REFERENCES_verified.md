@@ -131,16 +131,25 @@ source separately. Confirmed entries are recorded here as they land.
 |---|---|---|
 | 1 | Zheng et al., MT-Bench / Chatbot Arena | **confirmed** — NeurIPS 2023 Datasets and Benchmarks Track, arXiv:2306.05685. Full author list and arXiv ID supplied by the author and written into the entry. |
 | 2 | Liu et al., G-Eval | **confirmed** — EMNLP 2023, pp. 2511–2522, DOI 10.18653/v1/2023.emnlp-main.153, arXiv:2303.16634. §2 described it as reference-based; it is reference-free, and the sentence has been corrected. See below. |
-| 3 | Wang et al., Not Fair Evaluators | unconfirmed |
+| 3 | Wang et al., Not Fair Evaluators | **confirmed** — ACL 2024, Vol. 1 Long Papers, pp. 9440–9450, DOI 10.18653/v1/2024.acl-long.511, arXiv:2305.17926. In-text citation corrected from 2023 to **2024**. |
 | 4 | Panickssery et al., Own Generations | unconfirmed |
 | 5 | Sharma et al., Sycophancy | unconfirmed |
 | 6 | Greshake et al., Indirect Prompt Injection | unconfirmed |
 | 7 | Wei et al., Chain-of-Thought | unconfirmed |
 | 8 | Wang et al., Self-Consistency | unconfirmed |
 
-Two defects are independent of that check and remain open: the in-text years
-disagree with the list entries for #3, #5 and #8, and #3 and #8 are both cited
-as "Wang et al." with nothing but an inconsistent year to separate them.
+Two defects are independent of that check. Progress on both:
+
+**Year mismatches (#3, #5, #8).** #3 is fixed — the in-text citation now reads
+2024, matching the ACL venue year. #5 and #8 are deliberately left alone: their
+list entries are themselves unconfirmed, and making the body agree with an
+unverified entry propagates the guess instead of fixing it. Both are one
+confirmation away.
+
+**The "Wang et al." collision (#3 vs #8).** This resolves itself once both use
+venue years rather than arXiv years. #3 is ACL **2024**; #8 is listed as ICLR
+**2023**. Different years, so no 2023a/2023b suffix is needed — but this only
+holds if #8's ICLR 2023 entry is correct, which is still unchecked.
 
 ### Resolved on #2: G-Eval is reference-free, and §2 said otherwise
 

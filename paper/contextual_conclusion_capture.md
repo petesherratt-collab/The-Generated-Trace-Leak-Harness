@@ -94,7 +94,7 @@ auxiliary context, but never on a gold answer. This paper studies the **referenc
 in which a gold — or purportedly gold — answer is placed in the judge's prompt alongside the
 candidate. That is the setting our harness implements throughout, and the conclusion the judge is
 captured by enters through exactly that slot.
-Documented biases include position/order effects (Wang et al., 2023) and verbosity / self-preference
+Documented biases include position/order effects (Wang et al., 2024) and verbosity / self-preference
 (Panickssery et al., 2024). CCC is distinct: it is not a preference over surface features of the
 *candidate*, but a deterioration of *discrimination* caused by a conflicting conclusion elsewhere in
 context, separable (we show) from authority and argument quality.
@@ -668,8 +668,10 @@ submission.*
 2. Y. Liu, D. Iter, Y. Xu, S. Wang, R. Xu, C. Zhu. **G-Eval: NLG Evaluation using GPT-4 with Better
    Human Alignment.** Proceedings of the 2023 Conference on Empirical Methods in Natural Language
    Processing (EMNLP), pages 2511–2522. DOI 10.18653/v1/2023.emnlp-main.153 (arXiv:2303.16634).
-3. P. Wang, L. Li, L. Chen, et al. **Large Language Models are not Fair Evaluators.** ACL, 2024
-   (arXiv:2305.17926, 2023).
+3. P. Wang, L. Li, L. Chen, Z. Cai, D. Zhu, B. Lin, Y. Cao, L. Kong, Q. Liu, T. Liu, Z. Sui.
+   **Large Language Models are not Fair Evaluators.** Proceedings of the 62nd Annual Meeting of the
+   Association for Computational Linguistics (ACL 2024), Volume 1: Long Papers, pages 9440–9450.
+   DOI 10.18653/v1/2024.acl-long.511 (arXiv:2305.17926).
 4. A. Panickssery, S. R. Bowman, S. Feng. **LLM Evaluators Recognize and Favor Their Own Generations.**
    NeurIPS, 2024.
 5. M. Sharma, M. Tong, T. Korbak, et al. **Towards Understanding Sycophancy in Language Models.**
