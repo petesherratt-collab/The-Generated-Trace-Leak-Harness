@@ -683,8 +683,9 @@ submission.*
    For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection.**
    Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security (AISec '23),
    pages 79–90. DOI 10.1145/3605764.3623985 (arXiv:2302.12173).
-7. J. Wei, X. Wang, D. Schuurmans, et al. **Chain-of-Thought Prompting Elicits Reasoning in Large
-   Language Models.** NeurIPS, 2022.
+7. J. Wei, X. Wang, D. Schuurmans, M. Bosma, B. Ichter, F. Xia, E. H. Chi, Q. V. Le, D. Zhou.
+   **Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.** Advances in Neural
+   Information Processing Systems 35 (NeurIPS 2022) (arXiv:2201.11903).
 8. X. Wang, J. Wei, D. Schuurmans, et al. **Self-Consistency Improves Chain-of-Thought Reasoning in
    Language Models.** ICLR, 2023 (arXiv:2203.11171, 2022).
 
