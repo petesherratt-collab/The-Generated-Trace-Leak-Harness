@@ -132,7 +132,7 @@ source separately. Confirmed entries are recorded here as they land.
 | 1 | Zheng et al., MT-Bench / Chatbot Arena | **confirmed** — NeurIPS 2023 Datasets and Benchmarks Track, arXiv:2306.05685. Full author list and arXiv ID supplied by the author and written into the entry. |
 | 2 | Liu et al., G-Eval | **confirmed** — EMNLP 2023, pp. 2511–2522, DOI 10.18653/v1/2023.emnlp-main.153, arXiv:2303.16634. §2 described it as reference-based; it is reference-free, and the sentence has been corrected. See below. |
 | 3 | Wang et al., Not Fair Evaluators | **confirmed** — ACL 2024, Vol. 1 Long Papers, pp. 9440–9450, DOI 10.18653/v1/2024.acl-long.511, arXiv:2305.17926. In-text citation corrected from 2023 to **2024**. |
-| 4 | Panickssery et al., Own Generations | unconfirmed |
+| 4 | Panickssery et al., Own Generations | **confirmed** — NeurIPS 37 (2024), DOI 10.52202/079017-2197, arXiv:2404.13076. Author list was already complete and the in-text year already correct; no body change needed. |
 | 5 | Sharma et al., Sycophancy | unconfirmed |
 | 6 | Greshake et al., Indirect Prompt Injection | unconfirmed |
 | 7 | Wei et al., Chain-of-Thought | unconfirmed |

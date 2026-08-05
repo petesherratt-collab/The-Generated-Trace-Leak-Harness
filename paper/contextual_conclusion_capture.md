@@ -673,7 +673,8 @@ submission.*
    Association for Computational Linguistics (ACL 2024), Volume 1: Long Papers, pages 9440–9450.
    DOI 10.18653/v1/2024.acl-long.511 (arXiv:2305.17926).
 4. A. Panickssery, S. R. Bowman, S. Feng. **LLM Evaluators Recognize and Favor Their Own Generations.**
-   NeurIPS, 2024.
+   Advances in Neural Information Processing Systems 37 (NeurIPS 2024).
+   DOI 10.52202/079017-2197 (arXiv:2404.13076).
 5. M. Sharma, M. Tong, T. Korbak, et al. **Towards Understanding Sycophancy in Language Models.**
    ICLR, 2024 (arXiv:2310.13548, 2023).
 6. K. Greshake, S. Abdelnabi, S. Mishra, et al. **Not What You've Signed Up For: Compromising
