@@ -134,7 +134,7 @@ source separately. Confirmed entries are recorded here as they land.
 | 3 | Wang et al., Not Fair Evaluators | **confirmed** — ACL 2024, Vol. 1 Long Papers, pp. 9440–9450, DOI 10.18653/v1/2024.acl-long.511, arXiv:2305.17926. In-text citation corrected from 2023 to **2024**. |
 | 4 | Panickssery et al., Own Generations | **confirmed** — NeurIPS 37 (2024), DOI 10.52202/079017-2197, arXiv:2404.13076. Author list was already complete and the in-text year already correct; no body change needed. |
 | 5 | Sharma et al., Sycophancy | **confirmed** — ICLR 2024, arXiv:2310.13548. All nineteen authors now listed. In-text citation corrected from 2023 to **2024**. |
-| 6 | Greshake et al., Indirect Prompt Injection | unconfirmed |
+| 6 | Greshake et al., Indirect Prompt Injection | **confirmed** — 16th ACM Workshop on AI and Security (AISec '23), pp. 79–90, DOI 10.1145/3605764.3623985, arXiv:2302.12173. Venue expanded from the bare "AISec" to the full workshop proceedings title. In-text year already correct. |
 | 7 | Wei et al., Chain-of-Thought | unconfirmed |
 | 8 | Wang et al., Self-Consistency | unconfirmed |
 

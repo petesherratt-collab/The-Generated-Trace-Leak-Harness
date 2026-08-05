@@ -679,8 +679,10 @@ submission.*
    Z. Hatfield-Dodds, S. R. Johnston, S. Kravec, T. Maxwell, S. McCandlish, K. Ndousse, O. Rausch,
    N. Schiefer, D. Yan, M. Zhang, E. Perez. **Towards Understanding Sycophancy in Language Models.**
    International Conference on Learning Representations (ICLR 2024) (arXiv:2310.13548).
-6. K. Greshake, S. Abdelnabi, S. Mishra, et al. **Not What You've Signed Up For: Compromising
-   Real-World LLM-Integrated Applications with Indirect Prompt Injection.** AISec, 2023.
+6. K. Greshake, S. Abdelnabi, S. Mishra, C. Endres, T. Holz, M. Fritz. **Not What You've Signed Up
+   For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection.**
+   Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security (AISec '23),
+   pages 79–90. DOI 10.1145/3605764.3623985 (arXiv:2302.12173).
 7. J. Wei, X. Wang, D. Schuurmans, et al. **Chain-of-Thought Prompting Elicits Reasoning in Large
    Language Models.** NeurIPS, 2022.
 8. X. Wang, J. Wei, D. Schuurmans, et al. **Self-Consistency Improves Chain-of-Thought Reasoning in
