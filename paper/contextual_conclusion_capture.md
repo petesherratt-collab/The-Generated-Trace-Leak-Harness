@@ -99,6 +99,30 @@ Documented biases include position/order effects (Wang et al., 2024) and verbosi
 *candidate*, but a deterioration of *discrimination* caused by a conflicting conclusion elsewhere in
 context, separable (we show) from authority and argument quality.
 
+**Reference conflict, and which way it resolves.** The closest work to ours is Lee et al. (2026), who
+introduce a controlled *swapped-reference* QA framework: the gold answer is replaced with an incorrect
+entity, candidate answers are aligned to the original and swapped references, and grading reliability
+is measured under the conflict this induces. They find reliability drops sharply across a broad set of
+judges, attribute it to the judges' over-reliance on parametric knowledge, and find the failure
+survives common prompt-based mitigations — which is also what we find, in three different domains and
+against a different mitigation set (§7).
+
+The two failures resolve in **opposite directions**, and the contrast is the more informative result.
+In their setting the judge *rejects* the supplied reference: a candidate that correctly matches the
+swapped reference is graded Incorrect, because the judge's own knowledge of the entity overrides the
+instruction it was given. In ours the judge *adopts* it: a candidate the oracle certifies as correct
+is scored below a wrong one, because the conflicting conclusion overrides the evidence in front of it.
+Domain is the plausible explanation. Entity QA hands the judge a strong parametric prior to defend;
+arithmetic, program semantics and relational queries do not, and the conclusion sitting in context
+fills the vacuum. Consistent with this, our own effect is largest in SQL (§6.2), the domain where a
+judge is least able to recompute the answer for itself.
+
+Read together the two results are worse than either alone. They do not show that LLM judges
+systematically over-trust references, nor that they systematically under-trust them. They show that
+how a judge resolves a reference–belief conflict is **not a stable property of the judge** but a
+function of the domain it is grading in — which is the case for measuring evaluator integrity per
+domain and per release (§9) rather than establishing it once.
+
 **Sycophancy and anchoring.** LLMs tend to agree with assertions in context and defer to stated
 beliefs (Sharma et al., 2024). CCC can be read as an evaluation-time anchoring effect, but our
 controls show the anchor need not be authoritative or argued, which distinguishes it from pure
@@ -106,8 +130,8 @@ authority-deference.
 
 **Prompt injection.** Indirect prompt injection studies untrusted context subverting behaviour
 (Greshake et al., 2023). CCC is a benign-context analogue: the "injection" is an ordinary wrong
-reference answer of the kind evaluation pipelines routinely paste into judge prompts, and the harm
-is silent mis-scoring rather than hijacked instructions.
+reference answer of the kind reference-conditioned evaluation pipelines routinely paste into judge
+prompts (Lee et al., 2026), and the harm is silent mis-scoring rather than hijacked instructions.
 
 **Reasoning and verification.** Chain-of-thought (Wei et al., 2022) and self-consistency (Wang et
 al., 2023) improve task accuracy. A natural hypothesis is that asking the judge to reason/verify
@@ -690,6 +714,9 @@ venue years throughout.*
 8. X. Wang, J. Wei, D. Schuurmans, Q. V. Le, E. H. Chi, S. Narang, A. Chowdhery, D. Zhou.
    **Self-Consistency Improves Chain-of-Thought Reasoning in Language Models.** International
    Conference on Learning Representations (ICLR 2023) (arXiv:2203.11171).
+9. D. Lee, Y. Hwang, T. Kang, M. Lee, Y. Chae, K. Jung. **Judging Against the Reference: Uncovering
+   Knowledge-Driven Failures in LLM-Judges on QA Evaluation.** Seoul National University and LG AI
+   Research. Preprint, June 2026.
 
 ---
 

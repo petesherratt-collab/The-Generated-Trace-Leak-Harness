@@ -21,7 +21,14 @@ what the sources actually are.
 *Judging Against the Reference: Uncovering Knowledge-Driven Failures in
 LLM-Judges on QA Evaluation.*
 Seoul National University / LG AI Research. Preprint, June 2026.
-`arXiv ID not visible in the front matter read — confirm before citing.`
+**Now cited as reference #9**, with a three-paragraph positioning passage placed
+second in §2, immediately after the setting is established.
+
+> `arXiv ID still missing.` It was not on the front matter, and this environment
+> cannot reach arXiv. **This is the one bibliographic gap left in the paper** —
+> every other entry carries a DOI or an arXiv ID, and a preprint cited with no
+> locator is the weakest line in an otherwise closed reference list. Fill it
+> before submission.
 
 > Closest work to CCC by a distance. A controlled **swapped-reference** design
 > that induces reference–belief conflict, finds grading reliability drops
@@ -169,10 +176,7 @@ came from the author.
 that it is reference-free, and states the reference-conditioned setting as the
 paper's own rather than attributing it to G-Eval.
 
-**Still open, and created by this fix.** §2's prompt-injection paragraph claims
-the wrong reference answer is *"of the kind evaluation pipelines routinely paste
-into judge prompts."* That is an assertion about practice, and #2 was the only
-citation standing near it. It is now bare. Two verified sources in this file
-support it directly — Lee et al. (reference-conditioned QA evaluation) and Li et
-al., *Curse of Knowledge* (reference answers as auxiliary information) — so the
-gap closes as soon as the §2 rewrite lands. Until then the claim is uncited.
+**Closed.** §2's prompt-injection paragraph claimed the wrong reference answer is
+*"of the kind evaluation pipelines routinely paste into judge prompts"* with no
+citation once #2 stopped supporting it. It now cites Lee et al. (#9), whose
+swapped-reference framework is exactly a study of that practice.
