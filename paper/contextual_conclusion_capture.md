@@ -2,7 +2,7 @@
 
 **Author:** Pete Sherratt · Independent researcher · contextual-conclusion-capture@tuta.com
 
-**Preprint draft — 2026-07 (revised).** All numeric results are produced by preregistered,
+**Preprint — 2026-08.** All numeric results are produced by preregistered,
 publicly committed experiments with streamed evidence and an independently implemented
 re-analysis from the raw rows; see the Reproducibility appendix for exact artifacts, immutable
 commit references, hashes, and per-result findings files.
@@ -122,10 +122,15 @@ how a judge resolves a reference–belief conflict is **not a stable property of
 function of the domain it is grading in — which is the case for measuring evaluator integrity per
 domain and per release (§9) rather than establishing it once.
 
-**Sycophancy and anchoring.** LLMs tend to agree with assertions in context and defer to stated
-beliefs (Sharma et al., 2024). CCC can be read as an evaluation-time anchoring effect, but our
+**Sycophancy, anchoring, and belief bias.** LLMs tend to agree with assertions in context and defer to
+stated beliefs (Sharma et al., 2024). CCC can be read as an evaluation-time anchoring effect, but our
 controls show the anchor need not be authoritative or argued, which distinguishes it from pure
-authority-deference.
+authority-deference. The effect also has a much older human analogue: Evans, Barston and Pollard (1983)
+show that people evaluating syllogisms endorse arguments whose conclusions they believe and reject
+those they disbelieve, independent of validity, with the bias strongest on *invalid* arguments — the
+same place a judge's error is most costly. We do not argue the mechanisms are the same. We note that
+conclusion-driven evaluation is a known failure of reasoners assessed against a formal standard, and
+that placing a conclusion in an evaluator's context is a design decision, not a neutral one.
 
 **Prompt injection.** Indirect prompt injection studies untrusted context subverting behaviour
 (Greshake et al., 2023). CCC is a benign-context analogue: the "injection" is an ordinary wrong
@@ -135,7 +140,22 @@ prompts (Lee et al., 2026), and the harm is silent mis-scoring rather than hijac
 **Reasoning and verification.** Chain-of-thought (Wei et al., 2022) and self-consistency (Wang et
 al., 2023) improve task accuracy. A natural hypothesis is that asking the judge to reason/verify
 first would cure CCC; we test this and find it reduces but does not eliminate the effect in any
-domain.
+domain. The faithfulness literature predicts as much. Turpin et al. (2023) show that a biasing feature
+in the input can change a model's answer while the chain-of-thought rationalises the new answer without
+ever mentioning the feature, and Lanham et al. (2023) find faithfulness *decreasing* with scale on most
+tasks. Chen et al. (2025) extend this to reasoning models, which reveal their use of an inserted hint
+in under 20% of cases. A written verification step therefore cannot be assumed to expose a captured
+verdict — it may simply supply a well-formed argument for it, which is what §5.1 observes directly.
+
+**Auxiliary information as an attack surface.** Closest in spirit to the setting studied here, Li et al.
+(2025) show that the auxiliary information supplied to improve judges on complex tasks — rubrics,
+background, and reference answers — is itself exploitable, and report Large Reasoning Models as
+*paradoxically* more vulnerable. Li et al. (2026) study scoring-based rather than comparative judges,
+the mode we use throughout, and identify a *reference answer score bias* among biases originating in
+the scoring prompt rather than in the evaluated output. Koo et al. (2024) benchmark six cognitive
+biases across sixteen evaluators and find bias in roughly 40% of comparisons. CCC differs from all
+three in isolating a single factor — the conclusion — and testing it against an executable oracle
+rather than against human preference.
 
 ---
 
@@ -277,6 +297,24 @@ rationale did not add detectable capture over a bare wrong answer. We therefore 
 authority nor argument is necessary** for CCC in these experiments, and that a bare neutral conclusion
 is **sufficient**. We do not claim these factors can never matter: the mechanism contrasts are not
 equivalence tests, and their intervals covering zero bound, but do not exclude, small effects.
+
+**This does not contradict the authority-bias literature, and the distinction matters.** Chen et al.
+(2024) find Authority Bias in both human and LLM judges under a reference-free framework, using a
+*fake references* perturbation among others, and go on to exploit it as an attack. Hwang et al. (2025)
+formalise seven persuasion techniques including Authority, embed them in otherwise identical solutions
+to mathematical problems — a domain where correctness is independent of style — and report inflated
+scores for incorrect solutions, unmitigated by model size and persisting under counter-prompting.
+Both results are about what an authority signal *can* do.
+
+Our claim is the complementary one, and it is weaker in scope and stronger in consequence. We do not
+test whether an authority label can increase capture; we test whether one is *required to produce it*,
+and find it is not. The practical difference is where each result points. If capture needed an
+authority cue, the defence would be to strip such cues from evaluation context — a filtering problem,
+and a tractable one. Because a bare, neutrally-labelled wrong answer is sufficient, there is no cue to
+filter: the payload is the conclusion itself, which is precisely the content a reference field exists
+to carry. That is why §7 pursues structural separation rather than sanitisation. A pipeline that
+successfully removed every authority marker from its judge prompts would not have addressed the effect
+measured here.
 
 ### 5.3 Conditional architecture test
 
@@ -753,6 +791,29 @@ venue years throughout.*
 9. D. Lee, Y. Hwang, T. Kang, M. Lee, Y. Chae, K. Jung. **Judging Against the Reference: Uncovering
    Knowledge-Driven Failures in LLM-Judges on QA Evaluation.** Seoul National University and LG AI
    Research. Preprint, June 2026.
+10. G. H. Chen, S. Chen, Z. Liu, F. Jiang, B. Wang. **Humans or LLMs as the Judge? A Study on
+    Judgement Bias.** Proceedings of the 2024 Conference on Empirical Methods in Natural Language
+    Processing (EMNLP 2024), pages 8301–8327.
+11. Y. Hwang, D. Lee, T. Kang, Y. Kim, K. Jung. **Can You Trick the Grader? Adversarial Persuasion of
+    LLM Judges.** Findings of the Association for Computational Linguistics: EMNLP 2025,
+    pages 14632–14651.
+12. M. Turpin, J. Michael, E. Perez, S. R. Bowman. **Language Models Don't Always Say What They Think:
+    Unfaithful Explanations in Chain-of-Thought Prompting.** Advances in Neural Information Processing
+    Systems 36 (NeurIPS 2023).
+13. T. Lanham, A. Chen, A. Radhakrishnan, et al. **Measuring Faithfulness in Chain-of-Thought
+    Reasoning.** Anthropic, 2023. Preprint.
+14. Y. Chen, J. Benton, A. Radhakrishnan, et al. **Reasoning Models Don't Always Say What They Think.**
+    Alignment Science Team, Anthropic, May 2025. Preprint.
+15. W. Li, X. Wang, S. Yuan, R. Xu, J. Chen, Q. Dong, Y. Xiao, D. Yang. **Curse of Knowledge: When
+    Complex Evaluation Context Benefits yet Biases LLM Judges.** Findings of the Association for
+    Computational Linguistics: EMNLP 2025, pages 14900–14924.
+16. Q. Li, S. Dou, K. Shao, C. Chen, H. Hu. **Evaluating Scoring Bias in LLM-as-a-Judge.**
+    arXiv:2506.22316v4 [cs.CL], 3 February 2026.
+17. R. Koo, M. Lee, V. Raheja, J. Park, Z. M. Kim, D. Kang. **Benchmarking Cognitive Biases in Large
+    Language Models as Evaluators.** Findings of the Association for Computational Linguistics:
+    ACL 2024, pages 517–545.
+18. J. St. B. T. Evans, J. L. Barston, P. Pollard. **On the conflict between logic and belief in
+    syllogistic reasoning.** Memory & Cognition, 1983, 11(3), pages 295–306.
 
 ---
 
