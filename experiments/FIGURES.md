@@ -109,6 +109,36 @@ The architecture script additionally re-derives the byte audit from the stored
 prompt hashes rather than quoting it: all **480 / 480** isolated-architecture
 prompt pairs are hash-identical across reference variants, 0 differing.
 
+## House rules for figure text
+
+Four rounds of review found the same three faults recurring across different
+figures. They are rules, not per-figure fixes.
+
+1. **A strap states what the whole figure shows; a callout states what one
+   panel shows.** "Capture survives at the frontier" over a panel with 4 of 12
+   cells supported, or "one wrong reference can flip a judge's verdict" over
+   nine cells where nothing flips, is a claim the figure does not carry. If the
+   striking result is confined to one panel, the strap says so.
+2. **No sentence appears both inside a figure and in its caption.** Figure text
+   serves someone looking at the chart; the caption serves someone reading the
+   prose. Duplication reads as an editing slip in print. Where a figure carries
+   its own banner, the caption records what the *design* is doing — the shared
+   scale, the nesting of contrasts, the auditable floors — which is what a
+   reader cannot recover from the picture.
+3. **Every non-obvious encoding is stated once, in the figure.** Shaded regions,
+   colour assignments, and the direction a line runs are not self-evident. If a
+   careful reader has to ask what the pale band means, it needs a line of text —
+   including when the answer is "nothing much".
+4. **A claim the reader is meant to count should be countable off the figure.**
+   The "three of four cross zero" claim was correct and still misread, because
+   four markers had to be judged by eye against a shaded half-panel. Printing
+   the value beside each marker removed the ambiguity. Prefer this over trusting
+   the geometry.
+5. **The support rule is not a licence.** §7.1 establishes that an interval
+   excluding zero by a few points can be noise. A figure must not label such an
+   estimate "supported" when the paper's own limitation section asks readers to
+   discount it.
+
 ## Conventions held across the set
 
 - **Fail-closed.** An item enters a contrast only when all three repetitions of

@@ -464,7 +464,7 @@ injected discrimination as a pair.
 
 ![Figure 4](../experiments/fig_ccc_openrouter.png)
 
-***Figure 4.*** *Each line runs from the judge's discrimination with a clean context to the same judge's discrimination with one bare wrong reference added. The slope is the harm; what makes it consequential is where the line ends. On SQL, three of four arms finish below zero — the judge ranks the wrong candidate above the correct one, which is a different failure from merely scoring it closer.*
+***Figure 4.*** *Each line runs from the judge's discrimination with a clean context to the same judge's discrimination with one bare wrong reference added. The slope is the harm; what makes it consequential is where the line ends. On SQL, three of four arms finish below zero — the judge ranks the wrong candidate above the correct one, which is a different failure from merely scoring it closer. Note the two arms marked reasoning-off: MiniMax and GLM ran with reasoning disabled and zero observed reasoning tokens, and are captured in SQL at +143.68 and +148.61. Whatever produces capture here does not require the judge to be thinking at length about the task.*
 
 
 

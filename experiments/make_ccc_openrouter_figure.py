@@ -96,7 +96,7 @@ for k, pe in PUB.items():
 
 # ---------------------------------------------------------------- figure ---
 fig = plt.figure(figsize=(15.0, 8.0))
-fig.text(0.035, 0.966, "One wrong reference answer can flip a judge's verdict",
+fig.text(0.035, 0.966, "One wrong reference answer moves every judge \u2014 in SQL it reverses three of four",
          ha="left", va="top", fontsize=21, fontweight="bold", color=INK)
 fig.text(0.035, 0.921,
          "Each line is one model in one task type. It starts where the judge scored with a clean context, and ends where the same judge scored with a single wrong "
@@ -125,16 +125,29 @@ for pi, (dom, dtitle, floor) in enumerate(DOMAINS):
                 solid_capstyle="round", zorder=3)
         ax.plot([r["base"]], [yi], "o", ms=9, color=TEAL, mec="white", mew=1.5, zorder=5)
         ax.plot([r["inj"]], [yi], "o", ms=9, color=RUST, mec="white", mew=1.5, zorder=5)
+        # value beside the injected marker: the crossing claim in the caption is
+        # countable here, rather than judged by eye against the shaded half-panel
+        left = r["inj"] < r["base"]
+        ax.text(r["inj"] + (-4.5 if left else 4.5), yi - 0.30,
+                f'{r["inj"]:+.0f}', va="center", ha="right" if left else "left",
+                fontsize=8.0, color=RUST, fontweight="bold", zorder=6)
         if r["supported"]:
             ax.text(min(108, max(r["base"], r["inj"]) + 5), yi, "captured",
                     va="center", fontsize=8.2, color=RUST, fontweight="bold")
 
     if dom == "sql":
-        ax.text(-106, -0.52, "REVERSED\nprefers the WRONG answer", fontsize=8.6,
+        # bottom-left: the top-left corner collides with Qwen's value label
+        ax.text(-106, len(ARMS) - 0.42, "REVERSED\nprefers the WRONG answer", fontsize=8.6,
                 color=RUST, fontweight="bold", va="center", ha="left", linespacing=1.3)
 
     ax.set_yticks(range(len(ARMS)))
     ax.set_yticklabels([a for a, _ in ARMS] if pi == 0 else [""] * len(ARMS), fontsize=10.5)
+    if pi == 0:
+        for yi, (arm, _) in enumerate(ARMS):
+            if arm.startswith(("MiniMax", "GLM")):
+                ax.text(-0.012, yi + 0.30, "reasoning off \u00b7 0 tokens",
+                        transform=ax.get_yaxis_transform(), ha="right", va="center",
+                        fontsize=7.4, color=TEAL, style="italic")
     ax.set_xticks([-100, -50, 0, 50, 100])
     ax.tick_params(axis="x", labelsize=9.2)
     ax.text(0.5, 1.055, dtitle, transform=ax.transAxes, ha="center",
@@ -143,7 +156,8 @@ for pi, (dom, dtitle, floor) in enumerate(DOMAINS):
 fig.text(0.5, 0.185, "Can the judge tell a correct answer from a wrong one?",
          ha="center", va="center", fontsize=11.4, color=INK)
 fig.text(0.5, 0.146,
-         "+100 = always ranks the correct answer above the wrong one     ·     0 = cannot tell them apart     ·     below 0 = it ranks the WRONG answer higher",
+         "+100 = always ranks the correct answer above the wrong one     ·     0 = cannot tell them apart     ·     below 0 = it ranks the WRONG answer higher\n"
+         "A line running LEFT means the wrong reference cost the judge discrimination; a line running RIGHT means it scored higher with the reference than without.",
          ha="center", va="center", fontsize=9.7, color=MUTED)
 
 h = [plt.Line2D([0], [0], marker="o", ls="", ms=9, color=TEAL, mec="white"),
