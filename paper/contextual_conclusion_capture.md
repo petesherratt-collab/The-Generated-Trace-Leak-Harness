@@ -803,8 +803,9 @@ venue years throughout.*
 13. T. Lanham, A. Chen, A. Radhakrishnan, B. Steiner, C. Denison, D. Hernandez, D. Li, E. Durmus,
     E. Hubinger, J. Kernion, et al. **Measuring Faithfulness in Chain-of-Thought Reasoning.**
     Anthropic, 2023. arXiv:2307.13702.
-14. Y. Chen, J. Benton, A. Radhakrishnan, et al. **Reasoning Models Don't Always Say What They Think.**
-    Alignment Science Team, Anthropic, May 2025. Preprint.
+14. Y. Chen, J. Benton, A. Radhakrishnan, J. Uesato, C. Denison, J. Schulman, A. Somani, P. Hase,
+    M. Wagner, F. Roger, V. Mikulik, S. R. Bowman, J. Leike, J. Kaplan, E. Perez. **Reasoning Models
+    Don't Always Say What They Think.** Alignment Science Team, Anthropic, 2025. arXiv:2505.05410.
 15. W. Li, X. Wang, S. Yuan, R. Xu, J. Chen, Q. Dong, Y. Xiao, D. Yang. **Curse of Knowledge: When
     Complex Evaluation Context Benefits yet Biases LLM Judges.** Findings of the Association for
     Computational Linguistics: EMNLP 2025, pages 14900–14924.

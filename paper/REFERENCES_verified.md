@@ -124,7 +124,11 @@ rather than assumed.
 Somani, A., Hase, P., Wagner, M., Roger, F., Mikulik, V., Bowman, S. R.,
 Leike, J., Kaplan, J., Perez, E.** (Alignment Science Team, Anthropic)
 *Reasoning Models Don't Always Say What They Think.*
-May 2025. No venue line on the title page — preprint.
+Anthropic, 2025. **arXiv:2505.05410.** Preprint, confirmed rather than inferred.
+
+> Note on the date. Anthropic announced the work on 3 April 2025; the arXiv
+> version is May 2025. The entry gives the year and the identifier and asserts
+> no month, as with #9.
 
 > Reasoning models reveal hint usage in under 20% of cases; outcome-based RL
 > improves faithfulness then plateaus. Relevant to the reasoning-protocol
