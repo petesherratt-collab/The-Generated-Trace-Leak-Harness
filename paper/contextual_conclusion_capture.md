@@ -41,9 +41,14 @@ never placing the foreign conclusion in the judge's prompt — is the only teste
 **removes the reference-to-judge pathway by construction**, which we verify by showing the judge's
 prompt is byte-identical whether the reference is correct or wrong. We are careful to distinguish
 this *structural* guarantee (the pathway is absent) from a behavioural one (the judge is correct):
-isolation removes the tested channel, not all sources of error. We argue evaluator integrity should
-be treated as a **per-release, per-domain** property rather than one established once, and release
-all items, harnesses, preregistrations, and evidence.
+isolation removes the tested channel, not all sources of error. That byte-identical arm then does
+further work as a **negative control**: its susceptibility is zero by construction, so it measures our
+estimator rather than the architecture. Read that way it shows our own support rule returning a
+supported effect on a null contrast in one of four measurable arms — which bounds what small estimates
+elsewhere in the paper can carry — and it supplies the judge's *unaided* discrimination, against which
+a wrong reference leaves three of four judges **worse off than no reference at all**. We argue
+evaluator integrity should be treated as a **per-release, per-domain** property rather than one
+established once, and release all items, harnesses, preregistrations, and evidence.
 
 ---
 
@@ -76,6 +81,15 @@ Contributions:
    the underlying comparison is clean; and **context isolation removes the reference-to-judge
    pathway by construction**, which we verify byte-for-byte. We separate this structural claim from
    any claim of correct judging (§7).
+4. **A structural control is also a measuring instrument.** Because the isolated architecture's
+   prompts are byte-identical across reference variants, its susceptibility is zero *by
+   construction* — which makes it a negative control we did not have to design. Reading it as one
+   yields two results the treatment arms cannot: our own support rule returns a supported effect on
+   that null contrast in one of four measurable arms, which bounds what small estimates elsewhere in
+   this paper can carry (§7.1); and the same arm supplies the judge's *unaided* discrimination, against
+   which a wrong reference leaves three of four judges worse off than no reference at all (§7.2).
+   We recommend the design independently of our findings: **run a byte-identical arm alongside the
+   treatment arms, and calibrate the decision rule against it before applying it.**
 
 Every experiment was preregistered before data collection, uses fail-closed handling of missing
 observations, streams auditable evidence, and was re-analysed by an independently implemented
@@ -136,6 +150,24 @@ that placing a conclusion in an evaluator's context is a design decision, not a 
 (Greshake et al., 2023). CCC is a benign-context analogue: the "injection" is an ordinary wrong
 reference answer of the kind reference-conditioned evaluation pipelines routinely paste into judge
 prompts (Lee et al., 2026), and the harm is silent mis-scoring rather than hijacked instructions.
+
+**What the family shares, and why CCC needs a different fix.** Position bias, verbosity and
+self-preference, sycophancy, persuasion, authority bias and knowledge–reference conflict are usually
+catalogued as separate defects. They share one property: **the judge's verdict is a function of
+something other than the evidence it was asked to grade.** Where they differ is in what that something
+is, and this is what determines the available defence. Position, verbosity and beauty are properties of
+the *presentation*, and can be neutralised by randomising or normalising it. Authority and persuasion
+are properties of the *framing*, and can be attacked by stripping the cue. Self-preference is a
+property of the *judge*, and can be attacked by changing the judge. Each of those defences works
+because the offending feature is separable from the content the judge needs.
+
+CCC is the case where it is not. The feature that moves the verdict is the conflicting conclusion
+itself — not its wrapper, since we show a bare neutral answer suffices (§5.2) — and a conclusion is
+precisely the payload a reference field exists to carry. There is no cue to strip, no presentation to
+normalise, and no second judge that would not face the same context. That is why the mitigations in §7
+are structural rather than corrective: the only intervention with a guarantee we can verify is the one
+that changes what enters the prompt, because the defect is not a bias layered on the evidence but a
+substitution for it.
 
 **Reasoning and verification.** Chain-of-thought (Wei et al., 2022) and self-consistency (Wang et
 al., 2023) improve task accuracy. A natural hypothesis is that asking the judge to reason/verify
