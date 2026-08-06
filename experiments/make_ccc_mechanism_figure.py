@@ -108,13 +108,13 @@ fig = plt.figure(figsize=(15.2, 7.6))
 fig.text(0.035, 0.965, "The active ingredient is the conclusion itself",
          ha="left", va="top", fontsize=21, fontweight="bold", color=INK)
 fig.text(0.035, 0.918,
-         "A wrong answer placed in a judge's context destroys its ability to tell correct from incorrect. Dressing that answer up — with a full argument, or with a "
-         "solver's authority — adds nothing measurable on top.",
+         "A wrong answer placed in a judge's context collapses its ability to tell correct from incorrect. Dressing that answer up — with a full argument, or with a "
+         "solver's authority — adds no measurable capture on top, and one label reduced it.",
          ha="left", va="top", fontsize=12.3, color=MUTED)
 
 lo_x, hi_x = -62, 126
 for pi, ((title, sub, need, fn, colour, xlab), res) in enumerate(zip(PANELS, results)):
-    ax = fig.add_axes([0.075 + pi * 0.313, 0.235, 0.268, 0.545])
+    ax = fig.add_axes([0.075 + pi * 0.313, 0.275, 0.268, 0.525])
     ax.axvspan(lo_x, 0, color="#F4F7F9", zorder=0)
     ax.axvline(0, color=INK, lw=1.4, zorder=2)
     ax.set_xlim(lo_x, hi_x)
@@ -155,20 +155,26 @@ for pi, ((title, sub, need, fn, colour, xlab), res) in enumerate(zip(PANELS, res
     ax.text(0.5, 1.055, sub, transform=ax.transAxes, ha="center",
             fontsize=9.4, color=MUTED, style="italic")
 
-# annotate the one supported increment — it runs the wrong way for capture
+# The one interval that excludes zero anywhere in the two increment panels. Its
+# bound is -6.25, inside the +/-7.8 noise band that the isolated negative control
+# establishes (see the paper's 7.1), so the rule alone does not carry it. Label it
+# directional, not supported: the figure must not make the kind of claim that
+# section warns readers to discount.
 r = results[2][4]
 axL = fig.axes[2]
-axL.annotate("the only supported increment,\nand it REDUCES capture",
-             xy=(r["est"], 4), xytext=(r["est"] + 6, 2.45),
-             fontsize=8.6, color=TEAL, ha="left", va="center",
+axL.annotate("the only interval excluding zero,\nand it runs AWAY from capture\n(bound inside the noise band — directional)",
+             xy=(r["hi"] + 1, 4), xytext=(14, 4.35),
+             fontsize=8.4, color=TEAL, ha="left", va="center",
              arrowprops=dict(arrowstyle="->", color=TEAL, lw=1.4),
              bbox=dict(boxstyle="round,pad=0.35", fc="#E4F2EE", ec=TEAL, lw=1.1))
 
-fig.text(0.5, 0.135,
+fig.text(0.5, 0.148,
          "Score-only judging. Points are score-points of discrimination (correct minus wrong candidate); bars are 95% item-clustered bootstrap intervals, B = 4,000, recomputed from the raw\n"
-         "observation rows and reproducing every published point estimate. Fail-closed: an item counts only where all three repetitions of every required cell succeeded.",
+         "observation rows and reproducing every published point estimate. Fail-closed: an item counts only where all three repetitions of every required cell succeeded.\n"
+         "Shading marks negative territory — an estimate there means the manipulation improved discrimination rather than harming it. Colour marks the panel, not significance:\n"
+         "the primary harm contrast is rust, the two increments steel.",
          ha="center", va="center", fontsize=9.4, color=MUTED, linespacing=1.5)
-fig.text(0.5, 0.045,
+fig.text(0.5, 0.035,
          "An interval covering zero is not proof of equivalence. The claim is that a privileged label and a supporting argument were UNNECESSARY for the effect — not that they can never matter.",
          ha="center", va="center", fontsize=9.6, color=INK, linespacing=1.5,
          fontweight="bold")

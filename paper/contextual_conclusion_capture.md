@@ -289,7 +289,7 @@ a separate preregistered run, isolates the active ingredient. Figure 2 plots it.
 
 ![Figure 2](../experiments/fig_ccc_mechanism.png)
 
-***Figure 2.*** *The bare conclusion is the active ingredient. Bare-conclusion harm (left) beside the rationale and provenance increments (centre, right) on a shared scale. Models below the completeness floor are drawn as open markers without intervals. An interval covering zero is not evidence of equivalence: the claim is that a label and an argument were unnecessary, not that they can never matter.*
+***Figure 2.*** *The bare conclusion is the active ingredient. Bare-conclusion harm (left) beside the rationale and provenance increments (centre, right) on a shared scale, so the long left-hand bars and the near-zero increments are read against the same ruler. Both increments are nested: the centre panel is rationale-over-bare and the right is solver-over-neutral with rationale held constant. Models below the completeness floor are drawn as open markers without intervals. The figure carries its own equivalence caveat, which applies to every interval in the two right-hand panels.*
 
  Naming the source ("Solver") added no
 detectable capture over a neutral label in any model, and for one model *reduced* it; a full wrong
