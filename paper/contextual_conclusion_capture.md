@@ -411,7 +411,7 @@ interval and the frozen completeness/balance safeguards. Figure 3 plots the same
 
 ![Figure 3](../experiments/fig_ccc_frontier.png)
 
-***Figure 3.*** *Bare-conclusion harm at the frontier tier, four judges × three domains. SQL is the common failure across every measurable judge; arithmetic and code are model-specific. Fable is reported unmeasurable in code and SQL under the frozen balance safeguard, because its content-filter missingness is concentrated in injected conditions.*
+***Figure 3.*** *Bare-conclusion harm at the frontier tier: four judges × three domains on one shared scale. Each panel carries its own item count and completeness floor, so the fail-closed rule can be checked against the plotted n rather than taken on trust. Four of the twelve cells are supported, three of them SQL. Open markers are cells the frozen balance safeguard reports unmeasurable; the figure states on its face why.*
 
 
 
@@ -464,7 +464,7 @@ injected discrimination as a pair.
 
 ![Figure 4](../experiments/fig_ccc_openrouter.png)
 
-***Figure 4.*** *Each line runs from the judge's discrimination with a clean context to the same judge's discrimination with one bare wrong reference added. On SQL, three of four arms cross zero — the judge ranks the wrong candidate above the correct one. The four arms ran under different reasoning protocols and are compared descriptively, not pooled.*
+***Figure 4.*** *Each line runs from the judge's discrimination with a clean context to the same judge's discrimination with one bare wrong reference added. The slope is the harm; what makes it consequential is where the line ends. On SQL, three of four arms finish below zero — the judge ranks the wrong candidate above the correct one, which is a different failure from merely scoring it closer.*
 
 
 
@@ -492,7 +492,7 @@ reference susceptibility each leaves behind.
 
 ![Figure 5](../experiments/fig_ccc_architecture.png)
 
-***Figure 5.*** *Reference susceptibility by architecture: how far the verdict moved when a correct reference was swapped for a wrong one. Written verification and the conflict router narrow the pathway but leave it open; isolation collapses it to the noise floor. The isolated row is a negative control — those prompts are byte-identical across reference variants, so its true value is zero for every model, and the one arm whose interval clears zero there (Gemini, +5.42 [+0.62, +11.67]) is measuring decoding noise, not a pathway. Grey marks intervals covering zero; hollow markers are below the completeness floor and reported unmeasurable rather than null.*
+***Figure 5.*** *Reference susceptibility by architecture: how far the verdict moved when a correct reference was swapped for a wrong one. Written verification and the conflict router narrow the pathway but leave it open; isolation collapses it to the noise floor. Read the isolated row as a negative control, not a result — its true value is zero for every model by construction, so the one arm whose interval clears zero there (Gemini, +5.42 [+0.62, +11.67]) is measuring decoding noise. §7.1 uses that arm to calibrate the support rule. Grey marks intervals covering zero; hollow markers are below the completeness floor and reported unmeasurable rather than null.*
 
 
 - **Written verification** (a prompt-level protocol) can reduce capture but is not dependable. In the

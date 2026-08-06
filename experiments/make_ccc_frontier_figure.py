@@ -104,11 +104,11 @@ for (dom, mid), pe in PUB.items():
 
 # ---------------------------------------------------------------- figure ---
 fig = plt.figure(figsize=(14.6, 7.4))
-fig.text(0.035, 0.965, "Capture survives at the frontier — and SQL is where it bites",
+fig.text(0.035, 0.965, "A stronger tier does not remove capture — it relocates it into SQL",
          ha="left", va="top", fontsize=21, fontweight="bold", color=INK)
 fig.text(0.035, 0.918,
          "The preregistered v3 extension, four frontier judges across three mechanically-verifiable domains. A bare wrong answer in context; nothing else changed. "
-         "Positive means the judge lost the ability to tell correct from wrong.",
+         "Positive means discrimination degraded; larger means more of it lost.",
          ha="left", va="top", fontsize=12.1, color=MUTED)
 
 lo_x, hi_x = -30, 100
@@ -157,12 +157,13 @@ fig.text(0.5, 0.176, "score points of discrimination lost when a bare wrong answ
          ha="center", va="center", fontsize=10, color=MUTED)
 
 fig.text(0.5, 0.108,
-         "Grey = interval covers zero. 95% item-clustered bootstrap, B = 4,000, recomputed from the frozen v3 observation rows; every estimate reproduces the run output exactly.\n"
-         "Fable is not resistant in code or SQL — its endpoint returned provider content-filter blocks on 148 code and 27 SQL cells, almost all in injected conditions. Missingness that\n"
-         "tracks the treatment biases the surviving contrast, so the frozen balance safeguard reports those cells unmeasurable rather than letting a nominal estimate stand.",
+         "Grey = interval covers zero. Shading marks negative territory: an estimate there means the injection improved discrimination. 95% item-clustered bootstrap, B = 4,000,\n"
+         "recomputed from the frozen v3 observation rows; every estimate reproduces the run output exactly. Fable is not resistant in code or SQL — its endpoint returned provider\n"
+         "content-filter blocks on 148 code and 27 SQL cells, almost all in injected conditions. Missingness that tracks the treatment biases the surviving contrast, so the frozen\n"
+         "balance safeguard reports those cells unmeasurable rather than letting a nominal estimate stand.",
          ha="center", va="center", fontsize=9.1, color=MUTED, linespacing=1.5)
 fig.text(0.5, 0.028,
-         "SQL is the common failure across every measurable frontier judge. Arithmetic and code are model-specific — a stronger model tier does not remove the effect, it relocates it.",
+         "SQL is the common failure across every measurable frontier judge — and those three judges come from three different providers. Arithmetic and code are model-specific.",
          ha="center", va="center", fontsize=9.9, color=INK, fontweight="bold")
 
 fig.savefig(OUT, dpi=170, facecolor="white", bbox_inches="tight")
