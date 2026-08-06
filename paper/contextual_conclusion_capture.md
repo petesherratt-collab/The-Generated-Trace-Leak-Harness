@@ -221,7 +221,7 @@ judge, and the discrimination measure by which every later result is scored.
 
 ![Figure 1](../experiments/fig_ccc_method.png)
 
-***Figure 1.*** *Contextual Conclusion Capture and the isolation control. One judge (GPT-4o mini) over the same 16 confirmatory items. (a) and (b) differ only in whether the exposed reference is correct or wrong; (c) removes it from the prompt entirely. Under isolation D is 32.5 with a wrong reference and 32.7 with a correct one, and all 480 isolated judge prompts were byte-identical across reference variants.*
+***Figure 1.*** *Contextual Conclusion Capture and the isolation control. One judge (GPT-4o mini) over the same 16 confirmatory items. (a) and (b) differ only in whether the exposed reference is correct or wrong; (c) removes it from the prompt entirely. Throughout, D = mean s(correct **candidate**) − mean s(wrong **candidate**); “correct” and “wrong” in the panel titles describe the **reference**, which is a separate factor. Under isolation D is 32.5 when the withheld reference was wrong and 32.7 when it was correct, and all 480 isolated judge prompts were byte-identical across reference variants.*
 
 
 
@@ -649,6 +649,17 @@ In frontier Phase 2, five late Fable arithmetic failures were billing errors rat
 content filters and remained below the primary balance limit. Gemini's ten SQL failures were instead
 long `verify_written` derivations truncated after both attempts; four fall in the primary injected
 cell, pushing its completion gap just above the frozen limit.
+
+**Treatment-correlated refusal is a silent failure mode of API-mediated evaluation, and it deserves
+naming separately from the statistics.** Fable's content filter did not fire at random: it fired
+overwhelmingly in the injected conditions — the very cells in which capture, if present, would show. A
+pipeline that simply averaged the returned verdicts would read that as evidence of robustness, because
+the compromised cells are the ones missing. The filter is not a neutral dropout mechanism; conditioning
+on "the provider returned a verdict" is conditioning on a variable that the treatment influences, which
+breaks the contrast rather than thinning it. This generalises past our study: **any evaluation harness
+that treats a provider refusal as a skipped row, rather than as a fact about the row, will report
+safety it has not measured.** Our balance safeguard exists for this reason, and it is why the honest
+output for those cells is *unmeasurable* — a refusal to conclude, not a null.
 
 ---
 
