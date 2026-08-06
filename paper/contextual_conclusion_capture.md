@@ -492,7 +492,7 @@ reference susceptibility each leaves behind.
 
 ![Figure 5](../experiments/fig_ccc_architecture.png)
 
-***Figure 5.*** *Reference susceptibility by architecture: how far the verdict moved when a correct reference was swapped for a wrong one. Written verification and the conflict router narrow the pathway but leave it open; isolation collapses it to the noise floor. Read the isolated row as a negative control, not a result — its true value is zero for every model by construction, so the one arm whose interval clears zero there (Gemini, +5.42 [+0.62, +11.67]) is measuring decoding noise. §7.1 uses that arm to calibrate the support rule. Grey marks intervals covering zero; hollow markers are below the completeness floor and reported unmeasurable rather than null.*
+***Figure 5.*** *Reference susceptibility by architecture. The four panels are ordered as an argument rather than by magnitude: the ordinary setup, then two defences that operate on the same contaminated context, then the one that changes what the judge is given. The subheads carry that distinction, because the rightmost panel differs from the others in kind and not only in size. It is drawn as a control, not a fourth treatment — every true value in it is zero by construction, so its column measures the estimator rather than the architecture, which is the calibration §7.1 rests on.*
 
 
 - **Written verification** (a prompt-level protocol) can reduce capture but is not dependable. In the
@@ -530,7 +530,7 @@ item-clustered bootstrap interval excluding zero — to the confirmatory archite
 |---|---:|---:|---|
 | GPT-4o mini | +0.21 `[−3.75, +4.38]` | 16 | not supported |
 | Claude Haiku 4.5 | +0.00 | 5 | unmeasurable |
-| Gemini 2.5 Flash | **+5.42** `[+0.62, +11.67]` | 16 | **supported — and it cannot be** |
+| Gemini 2.5 Flash | **+5.42** `[+0.62, +11.04]` | 16 | **supported — and it cannot be** |
 | DeepSeek Chat | −4.38 `[−14.17, +7.92]` | 16 | not supported |
 | Llama 3.3 70B | −4.44 `[−13.33, +0.00]` | 15 | not supported |
 
@@ -583,15 +583,15 @@ conditions as levels rather than as differences:
 | Llama 3.3 70B | +41.7 | +68.8 | −43.8 |
 
 All n = 16; Claude is below the completeness floor in both arms and is omitted. Paired within item
-against the no-reference baseline, a **correct** reference helps every judge — +30.94 `[+9.90, +53.12]`
-for GPT, +31.98 `[+11.04, +57.29]` for DeepSeek, +27.08 `[+8.33, +50.00]` for Llama, and +16.46
-`[+3.12, +32.40]` for Gemini. Reference-conditioned judging earns its place; that is not in dispute.
+against the no-reference baseline, a **correct** reference helps every judge — +30.94 `[+9.58, +53.02]`
+for GPT, +31.98 `[+10.63, +57.50]` for DeepSeek, +27.08 `[+8.33, +50.00]` for Llama, and +16.46
+`[+3.54, +32.60]` for Gemini. Reference-conditioned judging earns its place; that is not in dispute.
 
 A **wrong** reference does not simply forfeit that gain. For three of the four measurable judges the
-verdict lands below where it would have been with no reference at all: −59.06 `[−89.58, −28.33]` for
-GPT, −52.29 `[−67.08, −36.88]` for DeepSeek, and −85.42 `[−110.42, −60.42]` for Llama. Gemini's estimate
-runs the same way, −23.44 `[−45.31, −3.12]`, but its lower bound falls inside the noise band of §7.1, so
-we read it as directional only — as we do its correct-reference gain above, whose lower bound of +3.12
+verdict lands below where it would have been with no reference at all: −59.06 `[−89.27, −29.06]` for
+GPT, −52.29 `[−66.88, −37.29]` for DeepSeek, and −85.42 `[−110.42, −62.50]` for Llama. Gemini's estimate
+runs the same way, −23.44 `[−44.79, −4.17]`, but its lower bound falls inside the noise band of §7.1, so
+we read it as directional only — as we do its correct-reference gain above, whose lower bound of +3.54
 is inside the same band.
 
 The practical reading is narrow and does not require a mechanism. Supplying a reference to a judge is

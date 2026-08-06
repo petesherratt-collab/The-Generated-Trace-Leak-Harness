@@ -70,7 +70,7 @@ for mid, name in MODELS:
         print(f"{name:<20} {n:>3}  {'--':>9}  {'--':>20}  no data")
         continue
     est = statistics.mean(vals)
-    rng = random.Random(20260729)
+    rng = random.Random(20260714)
     boots = sorted(statistics.mean(rng.choices(vals, k=n)) for _ in range(B))
     lo, hi = boots[int(.025 * B)], boots[int(.975 * B)]
     if n < FLOOR:

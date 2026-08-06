@@ -56,7 +56,7 @@ ARCHS = [
     ("conflict_router", "Independent solve, then route on conflict",
      "quarantine + fresh judge when the solve disagrees", STEEL),
     ("context_isolated_score_only", "Reference never enters the prompt",
-     "structural separation, byte-audited", TEAL),
+     "NEGATIVE CONTROL \u2014 byte-identical prompts, true value zero", TEAL),
 ]
 
 
@@ -113,11 +113,11 @@ for r, (mid, name) in zip(results[0], MODELS):
 
 # ---------------------------------------------------------------- figure ---
 fig = plt.figure(figsize=(16.4, 7.9))
-fig.text(0.032, 0.965, "Only one safeguard actually closes the pathway",
+fig.text(0.032, 0.965, "Only one safeguard removes the pathway by construction",
          ha="left", va="top", fontsize=21, fontweight="bold", color=INK)
 fig.text(0.032, 0.918,
-         "Each judge scored the same candidates twice — once with a correct reference available, once with a wrong one. The bar is how much that swap moved its verdict. "
-         "Zero means the reference never reached the decision.",
+         "Each judge scored the same candidates twice — once with a correct reference available, once with a wrong one. The bar is how much that swap moved its verdict. Removing the "
+         "pathway is not the same as making the judge correct: the rightmost architecture closes the tested channel, not every source of error.",
          ha="left", va="top", fontsize=12.2, color=MUTED)
 
 lo_x, hi_x = -55, 175
@@ -138,7 +138,13 @@ for pi, ((arch, title, sub, colour), res) in enumerate(zip(ARCHS, results)):
             continue
         if r["n"] >= FLOOR:
             supported = r["lo"] > 0 or r["hi"] < 0
-            c = colour if supported else GREY
+            if arch == "context_isolated_score_only":
+                # Control panel: every true value here is zero, so "supported"
+                # is not a finding to colour in -- it is the estimator's error
+                # rate. One neutral treatment for the whole column.
+                c = GREY
+            else:
+                c = colour if supported else GREY
             ax.plot([r["lo"], r["hi"]], [yi, yi], color=c, lw=2.4,
                     solid_capstyle="round", zorder=3)
             ax.plot([r["est"]], [yi], "o", ms=9.5, color=c, mec="white",
@@ -165,16 +171,24 @@ fig.text(0.5, 0.178, "how far the verdict moved when the reference was swapped  
 
 # the honest complication: the router narrows the pathway but does not close it
 axR = fig.axes[2]
-axR.annotate("still leaking — supported\nsusceptibility in 2 of the 3\nmeasurable models",
-             xy=(results[2][3]["est"], 3), xytext=(78, 1.45),
+axR.annotate("the router still leaks: supported susceptibility\nin 2 of its 3 measurable models",
+             xy=(results[2][3]["est"], 3.12), xytext=(-50, 4.46),
              fontsize=8.3, color=RUST, ha="left", va="center",
              arrowprops=dict(arrowstyle="->", color=RUST, lw=1.3),
              bbox=dict(boxstyle="round,pad=0.32", fc="#F7E9E5", ec=RUST, lw=1.0))
 
+axI = fig.axes[3]
+axI.annotate("every true value here is zero, yet the rule returned\n"
+             "\u201csupported\u201d once (+5.42) \u2014 \u00a77.1's calibration, not a leak",
+             xy=(results[3][2]["est"] + 2, 2.12), xytext=(-50, 4.46),
+             fontsize=8.3, color=TEAL, ha="left", va="center",
+             arrowprops=dict(arrowstyle="->", color=TEAL, lw=1.3),
+             bbox=dict(boxstyle="round,pad=0.32", fc="#E4F2EE", ec=TEAL, lw=1.0))
+
 fig.text(0.5, 0.113,
-         "Grey = interval covers zero (no supported effect); hollow marker = below the 12-of-16 completeness floor, reported unmeasurable rather than null. 95% item-clustered bootstrap, B = 4,000, recomputed\n"
-         "from the raw rows; the leftmost panel reproduces the published susceptibility column exactly. Gemini's small +5.42 under isolation is the preregistered randomisation check, not a pathway — the two\n"
-         "prompts it compares were provably the same bytes, so any residual is sampling noise.",
+         "Grey = interval covers zero (no supported effect); hollow marker = below the 12-of-16 completeness floor, reported unmeasurable rather than null, with its item count printed. Shading marks negative\n"
+         "territory. 95% item-clustered bootstrap, B = 4,000, recomputed from the raw rows; the leftmost panel reproduces the published susceptibility column exactly. The rightmost panel is drawn in one neutral\n"
+         "colour because it is a control: its prompts are byte-identical across reference variants, so every true value in it is zero and an interval excluding zero there is a false positive of the support rule.",
          ha="center", va="center", fontsize=9.1, color=MUTED, linespacing=1.5)
 fig.text(0.5, 0.028,
          "Isolation is the only architecture that keeps the reference away from the verdict across models — and the only one whose guarantee is structural rather than behavioural: "

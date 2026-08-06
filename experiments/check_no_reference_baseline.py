@@ -67,7 +67,7 @@ for mid, name in MODELS:
         print(f"{name:<20} {n:>3}  {'--':>10}")
         continue
     est = statistics.mean(vals)
-    lo, hi = boot(vals, 20260805)
+    lo, hi = boot(vals, 20260714)
     if n < FLOOR:
         call = "unmeasurable (below floor)"
     elif hi < 0:
@@ -90,6 +90,6 @@ for mid, name in MODELS:
     if n == 0:
         continue
     est = statistics.mean(vals)
-    lo, hi = boot(vals, 20260806)
+    lo, hi = boot(vals, 20260714)
     flag = "" if n >= FLOOR else "  (below floor)"
     print(f"{name:<20} {n:>3}  {est:>+10.2f}  [{lo:>+8.2f}, {hi:>+8.2f}]{flag}")
