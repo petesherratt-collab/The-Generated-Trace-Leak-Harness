@@ -4,3 +4,6 @@ report.txt
 .env
 .env.*
 *.env
+
+# built PDF (regenerate with paper/build_pdf.sh)
+paper/*.pdf
