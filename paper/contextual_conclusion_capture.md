@@ -387,8 +387,11 @@ under verification — remains supported for 4 of 5 models (small for GPT and Cl
 | Hybrid router | partial (some models) | 3/4 admitted | 5/5 |
 | Written verification | partial | supported for none | partial (residual 4/5) |
 
-*Denominators are admitted, measurable models — the conditional Stage-2 subset — not all five
-endpoints; "3/4" excludes both non-admitted and unmeasurable models.*
+> **Read this table conditionally, not as a like-for-like comparison.** Denominators are *admitted,
+> measurable models* — the conditional Stage-2 subset — not all five endpoints; "3/4" excludes both
+> non-admitted and unmeasurable models. Stage 2 ran only on models the Stage-1 capture threshold
+> admitted, so its rows are estimated on a set selected for showing the effect, which can inflate them
+> relative to an unconditional panel. The rows are not exchangeable across columns.
 
 Two findings cut across the table. First, **capture and its severity are model- and domain-dependent**:
 DeepSeek is *not* significantly captured in code (+10.2, CI includes 0) yet is *the most* captured in SQL
@@ -427,6 +430,15 @@ model-specific: only GPT is supported. This clean confirmation also rejected a f
 Grok's exploratory v2 code estimate was +5.7 with a lower interval bound of +0.31, but v3 shrank it
 to +1.4 with an interval crossing zero. Arithmetic shows the inverse endpoint pattern, with Fable
 alone captured strongly and no positive CCC support for the other three judges.
+
+**GPT's code result should be read as directional.** Its estimate is +11.19 `[+4.83, +21.05]`, and
+that lower bound sits inside the ±7.8-point band which §7.1 derives from a contrast that is null by
+construction. We have not measured the noise floor of *this* arm — §7.1's band comes from the
+architecture experiment, on arithmetic items — so we cannot say the two are interchangeable. But the
+asymmetry cuts one way: we downgraded a claim of our own in §7.1 on exactly this reasoning, and
+declining to apply it here because the result is one we would rather keep would be the more suspect
+choice. The SQL cells (+50.6, +40.9, +27.4, lower bounds +23.1, +24.2, +9.7) and Fable's arithmetic
+(+62.9, lower bound +41.6) are untouched by this; they clear the band by wide margins.
 
 Fable is not interpretable as resistant in code or SQL. Its endpoint returned provider
 `content_filter` blocks for 148 code cells and 27 SQL cells, concentrated in injected conditions.
