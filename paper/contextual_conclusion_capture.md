@@ -800,8 +800,9 @@ venue years throughout.*
 12. M. Turpin, J. Michael, E. Perez, S. R. Bowman. **Language Models Don't Always Say What They Think:
     Unfaithful Explanations in Chain-of-Thought Prompting.** Advances in Neural Information Processing
     Systems 36 (NeurIPS 2023).
-13. T. Lanham, A. Chen, A. Radhakrishnan, et al. **Measuring Faithfulness in Chain-of-Thought
-    Reasoning.** Anthropic, 2023. Preprint.
+13. T. Lanham, A. Chen, A. Radhakrishnan, B. Steiner, C. Denison, D. Hernandez, D. Li, E. Durmus,
+    E. Hubinger, J. Kernion, et al. **Measuring Faithfulness in Chain-of-Thought Reasoning.**
+    Anthropic, 2023. arXiv:2307.13702.
 14. Y. Chen, J. Benton, A. Radhakrishnan, et al. **Reasoning Models Don't Always Say What They Think.**
     Alignment Science Team, Anthropic, May 2025. Preprint.
 15. W. Li, X. Wang, S. Yuan, R. Xu, J. Chen, Q. Dong, Y. Xiao, D. Yang. **Curse of Knowledge: When

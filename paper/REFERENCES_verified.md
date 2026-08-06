@@ -114,8 +114,8 @@ NeurIPS 2023 (37th Conference on Neural Information Processing Systems).
 
 **Lanham, T., Chen, A., Radhakrishnan, A., et al.** (Anthropic; Brauner at Oxford)
 *Measuring Faithfulness in Chain-of-Thought Reasoning.*
-2023.
-`Venue not stated on the title page — appears to be a preprint; confirm.`
+Anthropic, 2023. **arXiv:2307.13702.** No venue: it is a preprint, now confirmed
+rather than assumed.
 
 > Intervention tests — early answering, adding mistakes, paraphrasing, filler
 > tokens. Faithfulness *decreases* with scale on most tasks.
