@@ -67,7 +67,7 @@ PANELS = [
      M[("contaminated_score_only", "wrong_reference")], "in-prompt", RUST,
      "It inverts. The grader now scores the WRONG answer higher."),
     ("3.  The crib sheet kept out of the prompt",
-     "The reference is never shown to the grader. It is compared\nto an independent solve in ordinary code instead.",
+     "The reference is never shown to the grader at all.\nIt marks the answer on its own.",
      M[("context_isolated_score_only", "wrong_reference")], "isolated", TEAL,
      "It holds — and is unchanged whether the reference was right or wrong."),
 ]
@@ -116,7 +116,7 @@ for pi, (title, sub, (cor, wro, n), mode, accent, verdict) in enumerate(PANELS):
                                     boxstyle="round,pad=0.3,rounding_size=1.0",
                                     linewidth=1.3, edgecolor=TEAL, facecolor=TEALSOFT,
                                     zorder=2))
-        ax.text(50, 56.5, "compared in code to an independent solve — never sent to the grader",
+        ax.text(50, 56.5, "the wrong answer is never sent to the grader at all",
                 ha="center", va="center", fontsize=8.0, color=TEAL,
                 fontweight="bold", zorder=3)
 

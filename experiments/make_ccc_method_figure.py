@@ -68,8 +68,8 @@ PANELS = [
      "Identical except that the reference is wrong. Candidates,\ntask and prompt template are unchanged.",
      M[("contaminated_score_only", "wrong_reference")], "in-prompt", RUST,
      "Discrimination inverts: the wrong candidate now scores higher."),
-    ("(c)  Context-isolated reference",
-     "The reference never enters the judge prompt; it is compared\nmechanically against an independent solve.",
+    ("(c)  Context-isolated, wrong reference",
+     "The reference is withheld. The judge scores the candidate\nunaided; nothing is compared for it.",
      M[("context_isolated_score_only", "wrong_reference")], "isolated", TEAL,
      "Discrimination is preserved and invariant to the reference variant."),
 ]
@@ -77,10 +77,9 @@ PANELS = [
 fig = plt.figure(figsize=(16.2, 8.6))
 fig.text(0.03, 0.972, "Figure 1.  Contextual Conclusion Capture and the isolation control",
          ha="left", va="top", fontsize=20, fontweight="bold", color=INK)
-fig.text(0.03, 0.928,
-         "One judge (GPT-4o mini) over the same 16 confirmatory items under three reference conditions. Panels (a) and (b) differ only in whether the exposed "
-         "reference is correct or wrong;\n(c) removes the reference from the prompt entirely. Bars are mean scores over items \u00d7 3 repetitions.",
-         ha="left", va="top", fontsize=11.6, color=MUTED, linespacing=1.5)
+# No descriptive sub-line here: the paper's caption carries it, and printing both
+# reads as an editing slip. The in-card title stays so the figure survives being
+# lifted out of the paper.
 
 
 def box(ax, x, y, w, h, text, ec, fc="white", fs=9.2, weight="bold", tc=None, ls="solid", lw=1.5):
@@ -91,7 +90,7 @@ def box(ax, x, y, w, h, text, ec, fc="white", fs=9.2, weight="bold", tc=None, ls
 
 
 for pi, (title, sub, (cor, wro, n), mode, accent, verdict) in enumerate(PANELS):
-    ax = fig.add_axes([0.035 + pi * 0.325, 0.075, 0.29, 0.80])
+    ax = fig.add_axes([0.035 + pi * 0.325, 0.075, 0.29, 0.855])
     ax.set_xlim(0, 100); ax.set_ylim(0, 100); ax.axis("off")
 
     ax.text(0, 99, title, fontsize=13.4, fontweight="bold", color=INK, ha="left", va="top")
@@ -118,7 +117,7 @@ for pi, (title, sub, (cor, wro, n), mode, accent, verdict) in enumerate(PANELS):
                                     boxstyle="round,pad=0.3,rounding_size=1.0",
                                     linewidth=1.3, edgecolor=TEAL, facecolor=TEALSOFT,
                                     zorder=2))
-        ax.text(50, 56.5, "compared mechanically against an independent solve",
+        ax.text(50, 56.5, "480 / 480 prompts byte-identical across variants",
                 ha="center", va="center", fontsize=8.3, color=TEAL,
                 fontweight="bold", zorder=3)
 
@@ -159,7 +158,7 @@ for pi, (title, sub, (cor, wro, n), mode, accent, verdict) in enumerate(PANELS):
                                 facecolor=RUSTSOFT if gap < 0 else TEALSOFT, zorder=3))
     ax.text(50, 7.4, f"discrimination  D = {gap:+.1f}", ha="center", va="center",
             fontsize=10.2, color=vcol, fontweight="bold", zorder=4)
-    ax.text(50, 3.6, verdict, ha="center", va="center", fontsize=8.6,
+    ax.text(50, 3.6, verdict, ha="center", va="center", fontsize=7.8,
             color=INK, zorder=4)
 
 fig.text(0.5, 0.026,
