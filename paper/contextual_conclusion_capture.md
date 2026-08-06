@@ -963,6 +963,50 @@ standard library. The commands above were verified under CPython 3.14.4; the liv
 stricter and require CPython 3.10–3.13 because those are the runtimes on which the executable gold was
 cross-checked.
 
+### The revision analyses, figures, and the document itself
+
+The material in §7.1, §7.2 and the figures was added after the runs and reads the same committed
+rows. Nothing in it required a new API call, so all of it belongs to the offline path above.
+
+**The two control readings.** Both recompute their tables from `architecture_obs.jsonl` and print
+them; neither transcribes a value from the text:
+
+```text
+python experiments/check_isolation_null_calibration.py      # §7.1 — the null contrast and the false-positive rate
+python experiments/check_no_reference_baseline.py           # §7.2 — wrong reference vs no reference at all
+```
+
+**The figures.** All seven are regenerated from the raw `*_obs.jsonl` rows by one driver, which
+re-derives every plotted estimate and checks it against the published value. It **exits non-zero on any
+mismatch**, so a figure cannot silently drift away from the findings it illustrates:
+
+```text
+python experiments/make_all_ccc_figures.py
+```
+
+Each script also prints its own validation block. The architecture figure additionally re-derives the
+byte audit from the stored `prompt_sha256` values rather than quoting it: 480 / 480 isolated prompt
+pairs hash-identical across reference variants, 0 differing. `experiments/FIGURES.md` records what each
+figure claims, which evidence file it reads, and the drawing conventions the set holds to.
+
+**Bootstrap seeds.** Every interval in this paper — figures and control readings alike — uses
+`B = 4,000` and the single seed `20260714`. An earlier revision ran the check scripts on their own
+seeds, which produced a second, equally valid interval for a quantity already published with another;
+the estimates agreed and only the resample differed. One seed now covers all of them, so any two
+reported intervals for the same contrast are identical rather than merely compatible.
+
+**The document.** The PDF is built from the markdown source by a mechanical converter — no word of the
+source is altered — which inlines the figures and prints through headless Chromium:
+
+```text
+paper/build_pdf.sh                     # -> paper/Contextual_Conclusion_Capture.pdf
+```
+
+**References.** `paper/REFERENCES_verified.md` records how each of the eighteen entries was confirmed
+against its official proceedings record, which of the author's source PDFs supports which claim, and —
+because the point of that file is the distinction — a correction noting that four entries in its first
+version were written from recall while presented as checked.
+
 ### Fresh endpoint replication (API calls and cost)
 
 Fresh calls should be made from the last pre-evidence instrument commit, so the historical evidence
