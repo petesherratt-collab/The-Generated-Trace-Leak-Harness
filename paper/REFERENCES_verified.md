@@ -20,15 +20,16 @@ what the sources actually are.
 **Lee, D., Hwang, Y., Kang, T., Lee, M., Chae, Y., Jung, K.**
 *Judging Against the Reference: Uncovering Knowledge-Driven Failures in
 LLM-Judges on QA Evaluation.*
-Seoul National University / LG AI Research. Preprint, June 2026.
-**Now cited as reference #9**, with a three-paragraph positioning passage placed
-second in §2, immediately after the setting is established.
+Seoul National University / LG AI Research, 2026. **arXiv:2601.07506.**
 
-> `arXiv ID still missing.` It was not on the front matter, and this environment
-> cannot reach arXiv. **This is the one bibliographic gap left in the paper** —
-> every other entry carries a DOI or an arXiv ID, and a preprint cited with no
-> locator is the weakest line in an otherwise closed reference list. Fill it
-> before submission.
+> Note on the date. The local PDF was filed as "Lee JUne 2026", but the arXiv
+> identifier `2601` encodes a **January 2026** first submission. The entry
+> therefore gives the year and the identifier and asserts no month; the arXiv
+> ID is the authoritative locator either way. If a specific version is being
+> cited, pin it (`arXiv:2601.07506v2`).
+**Now cited as reference #9**, with a three-paragraph positioning passage placed
+second in §2, immediately after the setting is established. **arXiv ID supplied
+and written in — the last bibliographic gap in the paper is closed.**
 
 > Closest work to CCC by a distance. A controlled **swapped-reference** design
 > that induces reference–belief conflict, finds grading reliability drops

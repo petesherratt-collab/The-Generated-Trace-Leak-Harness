@@ -790,7 +790,7 @@ venue years throughout.*
    Conference on Learning Representations (ICLR 2023) (arXiv:2203.11171).
 9. D. Lee, Y. Hwang, T. Kang, M. Lee, Y. Chae, K. Jung. **Judging Against the Reference: Uncovering
    Knowledge-Driven Failures in LLM-Judges on QA Evaluation.** Seoul National University and LG AI
-   Research. Preprint, June 2026.
+   Research, 2026. arXiv:2601.07506.
 10. G. H. Chen, S. Chen, Z. Liu, F. Jiang, B. Wang. **Humans or LLMs as the Judge? A Study on
     Judgement Bias.** Proceedings of the 2024 Conference on Empirical Methods in Natural Language
     Processing (EMNLP 2024), pages 8301–8327.
