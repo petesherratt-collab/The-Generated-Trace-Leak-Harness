@@ -1054,8 +1054,23 @@ Phase 2 evidence is at `9f7437a`; its audit and findings are at `3ef311b`.)
 are at `841e9d5`; the four full arms, audits, and combined findings are at `80c0dbe`.)
 (The fail-closed legacy/current reconciliation, complete Frontier Phase-2 re-analysis, legacy-Qwen
 audit compatibility, and 24-test suite are at `3bb12a8`.)
-(The managed remote does not accept tag refs; cite commit SHAs. Archiving a release snapshot, e.g. via
-Zenodo, is recommended before submission.)
+(The managed remote does not accept tag refs; cite commit SHAs.)
+
+**Archived snapshot.** The state of the repository described by this paper is deposited at
+**[doi:10.5281/zenodo.21835342](https://doi.org/10.5281/zenodo.21835342)** — release
+`v1.0-ccc-preprint`, commit `b4e4caa`. That is a *version* DOI and resolves to this snapshot
+permanently; cite it rather than the concept DOI `10.5281/zenodo.21835341`, which always redirects to
+the newest version and so cannot pin a result. The deposit is a complete copy: paper source and PDF,
+the seven figures with the tooling that regenerates and validates them, every preregistration, and the
+raw observation rows for all experiments reported here. `SHA256SUMS.md` inside it binds all 37
+artifacts by hash, so a single check confirms the deposit matches what was analysed:
+
+```text
+python3 experiments/make_sha256_manifest.py --check
+```
+
+At deposit this reported 37 verified, 0 changed, 0 missing, and all seven figures reproduced their
+published values. The record is additionally archived by Software Heritage and indexed in OpenAIRE.
 
 **Artifacts.**
 - Narrative and index of all experiments: `RESEARCH_NARRATIVE.md`.
