@@ -1,7 +1,7 @@
 # SHA-256 manifest — Contextual Conclusion Capture
 
-Git commit: 07c15dd5e4b3f174e93133204090f126b2c338b4
-Generated:  2026-08-06T22:16:09Z
+Git commit: 8d73ccf37f6c166fe1d314880f795f9a893c1f49
+Generated:  2026-08-07T08:20:10Z
 
 Timestamp THIS FILE to fix the whole set in time: every artifact below is bound
 to it by hash, so one timestamp covers the paper, the figures and the raw
@@ -9,15 +9,25 @@ evidence. Verify any single file with:
 
     sha256sum -c --ignore-missing SHA256SUMS.md
 
+Or check the whole manifest, which also catches files that have gone missing:
+
+    python3 experiments/make_sha256_manifest.py --check
+
+Regenerate it with the same script and no argument, after rebuilding the
+figures and the PDF. A manifest is only worth as much as its currency.
+
 ```
 # paper and tooling
-33d8266de3e34e95eb8e9c3550263f7ac416f0278cee624967bedce6d987f6c7  paper/contextual_conclusion_capture.md
-2b77e20515cb42f4a15400ebbbf4fe7dfb2690be80f99aa4e23409cd1a93d753  paper/Contextual_Conclusion_Capture.pdf
+96726f19399083f579ec874c8cde77611f3173622c00b0a2243001dc28754c65  paper/contextual_conclusion_capture.md
+3ae3cac0839a7d5f8cec6dcf401dd3b77e7ab7baf26b19ae3711eec140ab3cc7  paper/Contextual_Conclusion_Capture.pdf
 9ef609dbba0391a04951329652a26a5fc4385e4b7f40d3a856ba5cb186ef5159  paper/REFERENCES_verified.md
+10e1fd55f7865d33ee96f8174e81389adc5acca203013700bd7e805c66f4e627  paper/render_paper.py
+930f572d4717b0488df79a23d6cde096766e85f939408ab757bbc632a8200a63  paper/build_pdf.sh
 16b462538949b55b447d3c5c492803eac6b8a91a2efd3a7475082e9e7c8c253a  experiments/FIGURES.md
 cc3b772292c2fe88be2986761365c7feac656e70d2607bd019966be0054116cf  experiments/make_all_ccc_figures.py
 41b348fd7864af637cda42f4e283465b942cc1585e6d4af0fe4b181a75185355  experiments/check_isolation_null_calibration.py
 98eea428b3fce1176947f05fb3be88d1a1d59988790f68cd04c1698cebd37d26  experiments/check_no_reference_baseline.py
+b5b22c0344da8731bc9b9e265461d4de04be1298baf26f25eb709e7a98d76017  experiments/make_sha256_manifest.py
 
 # figures
 d2359bae458936364c0a54e51743426a0847f083203af108a2f61726beba734e  experiments/fig_ccc_architecture.png
@@ -49,5 +59,4 @@ a16ec6ee7084b4b3b0268381e156379cca54132ff8901bfc7d38692c493ca9bc  experiments/re
 04d916bf56cde91768e988237902f7e4f02d5484a4e3e9dfff8ca414a270d538  experiments/results/ccc_sql_obs_stage2.jsonl
 82cc57b424eb40ca330943a1e934deab9d67ca90d4ceebbbd0d5584680e5e2d0  experiments/results/provinj_obs_confirmatory.jsonl
 5ea2b7efaf6314b00b186b2cb984d8da6cdea15cf7f067625d2ec8d864f40bcc  experiments/results/provinj_obs_stage2.jsonl
-
 ```
