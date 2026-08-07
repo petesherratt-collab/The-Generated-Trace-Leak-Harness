@@ -172,12 +172,15 @@ substitution for it.
 **Reasoning and verification.** Chain-of-thought (Wei et al., 2022) and self-consistency (Wang et
 al., 2023) improve task accuracy. A natural hypothesis is that asking the judge to reason/verify
 first would cure CCC; we test this and find it reduces but does not eliminate the effect in any
-domain. The faithfulness literature predicts as much. Turpin et al. (2023) show that a biasing feature
-in the input can change a model's answer while the chain-of-thought rationalises the new answer without
-ever mentioning the feature, and Lanham et al. (2023) find faithfulness *decreasing* with scale on most
-tasks. Chen et al. (2025) extend this to reasoning models, which reveal their use of an inserted hint
-in under 20% of cases. A written verification step therefore cannot be assumed to expose a captured
-verdict — it may simply supply a well-formed argument for it, which is what §5.1 observes directly.
+domain. A sustained line of work on chain-of-thought faithfulness predicts as much. Turpin et al. (2023)
+show that a biasing feature in the input can change a model's answer while the chain-of-thought
+rationalises the new answer without ever mentioning the feature; Lanham et al. (2023) find faithfulness
+*decreasing* with scale on most tasks; and Chen et al. (2025) extend the result to reasoning models,
+which reveal their use of an inserted hint in under 20% of cases. These are three stages of one
+programme rather than three independent confirmations — the three papers share authors, and we are not
+aware of a comparably developed line arguing the other way. A written verification step therefore
+cannot be assumed to expose a captured verdict; it may simply supply a well-formed argument for it,
+which is what §5.1 observes directly and what §7 measures.
 
 **Auxiliary information as an attack surface.** Closest in spirit to the setting studied here, Li et al.
 (2025) show that the auxiliary information supplied to improve judges on complex tasks — rubrics,
