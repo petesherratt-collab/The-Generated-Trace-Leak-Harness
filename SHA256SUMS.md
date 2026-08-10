@@ -1,7 +1,7 @@
 # SHA-256 manifest — Contextual Conclusion Capture
 
-Git commit: b4e4caadae03268657d7f73afe43ff8ebeede901
-Generated:  2026-08-07T09:01:43Z
+Git commit: 743db6d6deedbd9264ef7622eefb6cbe1e2a59bf
+Generated:  2026-08-10T19:28:37Z
 
 Timestamp THIS FILE to fix the whole set in time: every artifact below is bound
 to it by hash, so one timestamp covers the paper, the figures and the raw
@@ -18,8 +18,8 @@ figures and the PDF. A manifest is only worth as much as its currency.
 
 ```
 # paper and tooling
-293fd6c64417d8b1741ff4809c217f28af29da3935ba80b9a23ab923a6d45692  paper/contextual_conclusion_capture.md
-f148b1c806da15f105ad8003cdec436f1ae1a7076c4b099eed60cd92aa5633b2  paper/Contextual_Conclusion_Capture.pdf
+66fd155812db3f45d1b8c18c3d731af82a7c5e6ddb943c771d53b60ec1fa0025  paper/contextual_conclusion_capture.md
+6d8ba24a956a83f08328fafd97e882fad31396b339d534f54dd135433cb88c2a  paper/Contextual_Conclusion_Capture.pdf
 9ef609dbba0391a04951329652a26a5fc4385e4b7f40d3a856ba5cb186ef5159  paper/REFERENCES_verified.md
 10e1fd55f7865d33ee96f8174e81389adc5acca203013700bd7e805c66f4e627  paper/render_paper.py
 930f572d4717b0488df79a23d6cde096766e85f939408ab757bbc632a8200a63  paper/build_pdf.sh

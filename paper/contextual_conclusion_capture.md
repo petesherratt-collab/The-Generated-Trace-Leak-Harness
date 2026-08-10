@@ -2,7 +2,10 @@
 
 **Author:** Pete Sherratt · Independent researcher · contextual-conclusion-capture@tuta.com
 
-**Preprint — 2026-08.** All numeric results are produced by preregistered,
+**Preprint — 2026-08** · [doi:10.5281/zenodo.21878047](https://doi.org/10.5281/zenodo.21878047)
+· evidence and code: [doi:10.5281/zenodo.21835342](https://doi.org/10.5281/zenodo.21835342)
+
+All numeric results are produced by preregistered,
 publicly committed experiments with streamed evidence and an independently implemented
 re-analysis from the raw rows; see the Reproducibility appendix for exact artifacts, immutable
 commit references, hashes, and per-result findings files.
@@ -1055,6 +1058,10 @@ are at `841e9d5`; the four full arms, audits, and combined findings are at `80c0
 (The fail-closed legacy/current reconciliation, complete Frontier Phase-2 re-analysis, legacy-Qwen
 audit compatibility, and 24-test suite are at `3bb12a8`.)
 (The managed remote does not accept tag refs; cite commit SHAs.)
+
+**This paper.** The preprint itself is deposited at
+**[doi:10.5281/zenodo.21878047](https://doi.org/10.5281/zenodo.21878047)**. Cite that for the paper
+and the DOI below for the evidence; the two records are cross-linked, so either resolves to the other.
 
 **Archived snapshot.** The state of the repository described by this paper is deposited at
 **[doi:10.5281/zenodo.21835342](https://doi.org/10.5281/zenodo.21835342)** — release
