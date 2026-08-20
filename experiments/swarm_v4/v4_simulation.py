@@ -31,8 +31,12 @@ import pandas as pd
 # estimators
 # ----------------------------------------------------------------------------
 
-def laplace_rate(k: int, n: int) -> float:
-    """p_hat = (k + 0.5) / (n + 1). Handles 0-hit / 0-FA without clipping."""
+def loglinear_rate(k: int, n: int) -> float:
+    """p_hat = (k + 0.5) / (n + 1). This is the log-linear (Hautus) correction
+    standard in signal-detection work, NOT Laplace add-one smoothing, which
+    would be (k + 1) / (n + 2). It handles 0-hit / 0-FA cells without the
+    arbitrary clipping that would otherwise bound d' at whatever floor the
+    clip implies."""
     return (k + 0.5) / (n + 1.0)
 
 
@@ -164,7 +168,12 @@ def run(cfg: Config, draws: Draws) -> Dict:
             alt_root = np.take_along_axis(root_of, draws.alt_source, axis=1)
             prov2 = np.take_along_axis(draws.prov, alt_root, axis=1) * cfg.sigma_prov
         elif cfg.verify_policy == "independent":
-            # a genuinely fresh root, never shared with the poisoned narrative
+            # A fresh provenance root, drawn independently of the root the
+            # poisoned narrative occupies. Note what this does NOT do: `mu`
+            # below is still the class mean, so the second reading carries the
+            # same marginal reliability as the first. Only its provenance
+            # component is independent -- this policy does not hand the worker
+            # a source that knows the item is poisoned.
             prov2 = draws.prov_extra * cfg.sigma_prov
         else:
             raise ValueError(f"unknown verify_policy {cfg.verify_policy!r}")
@@ -189,8 +198,8 @@ def run(cfg: Config, draws: Draws) -> Dict:
     ph = int(planner_accept[gen].sum()); pn_t = int(gen.sum())
     pf = int(planner_accept[~gen].sum()); pn_f = int((~gen).sum())
 
-    wh_r, wf_r = laplace_rate(wh, wn_t), laplace_rate(wf, wn_f)
-    ph_r, pf_r = laplace_rate(ph, pn_t), laplace_rate(pf, pn_f)
+    wh_r, wf_r = loglinear_rate(wh, wn_t), loglinear_rate(wf, wn_f)
+    ph_r, pf_r = loglinear_rate(ph, pn_t), loglinear_rate(pf, pn_f)
 
     return {
         "poison_quality": cfg.poison_quality,
@@ -251,8 +260,15 @@ if __name__ == "__main__":
 
     print("=== TEST: poison_roots=10 must equal matched baseline (CRN) ===")
     ident = df[df.poison_roots == 10]
-    print("max |planner_D delta| :", ident.planner_D_delta.abs().max())
-    print("max |commit delta|    :", ident.commit_rate_delta.abs().max())
+    d_max = ident.planner_D_delta.abs().max()
+    c_max = ident.commit_rate_delta.abs().max()
+    print("max |planner_D delta| :", d_max)
+    print("max |commit delta|    :", c_max)
+    # Assert, do not merely report. If the CRN pairing breaks, every contrast
+    # in the sweep is confounded, and a run that only printed the failure would
+    # still exit 0 and still write a CSV that looks fine.
+    assert d_max == 0.0, f"CRN identity broken: planner_D delta {d_max}"
+    assert c_max == 0.0, f"CRN identity broken: commit delta {c_max}"
 
     print("\n=== worker vs planner D, by roots (verify_rate=0) ===")
     v0 = df[(df.verify_rate == 0.0)]

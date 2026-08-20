@@ -143,8 +143,10 @@ diversity overstates its evidential independence — N apparent sources folding 
 M hidden provenance roots.
 
 The headline is a **silent** collapse: as M falls, planner discrimination drops while
-commit rate *rises* and latency is unchanged, so no operational metric reports the
-attack. A second result sharpens the mechanism — coherent poison does not degrade
+commit rate *rises* and latency is unchanged — so none of the three operational
+metrics this model measures reports the attack, and the two that move, move in the
+reassuring direction. (Latency is invariant by construction, not empirically; signals
+outside the model are not evaluated.) A second result sharpens the mechanism — coherent poison does not degrade
 cross-checking in general, it disables it selectively on exactly the items that
 needed it, leaving aggregate verification metrics looking healthy.
 
