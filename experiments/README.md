@@ -131,3 +131,26 @@ python3 experiments/run_provenance_injection.py --confirmatory --dry-run
 
 The real run is deliberately two-step: prepare and freeze the eight new text sets first, then
 run the judge schedule. Confirmatory outputs use separate filenames and cannot overwrite Stage 2.
+
+---
+
+## `swarm_v4/` — does a swarm's cross-checking survive coherent poison?
+
+A provenance-explicit Monte Carlo model, sitting downstream of the CCC result. CCC
+found that models accept conclusions embedded in rich context; `swarm_v4/` asks what
+happens when a swarm of such models cross-checks against evidence whose *apparent*
+diversity overstates its evidential independence — N apparent sources folding onto
+M hidden provenance roots.
+
+The headline is a **silent** collapse: as M falls, planner discrimination drops while
+commit rate *rises* and latency is unchanged — so none of the three operational
+metrics this model measures reports the attack, and the two that move, move in the
+reassuring direction. (Latency is invariant by construction, not empirically; signals
+outside the model are not evaluated.) A second result sharpens the mechanism — coherent poison does not degrade
+cross-checking in general, it disables it selectively on exactly the items that
+needed it, leaving aggregate verification metrics looking healthy.
+
+This is a mechanism model producing testable predictions, not an empirical finding
+about real swarms; the model is constructed so the aggregation penalty cannot fail to
+appear. See [`swarm_v4/walkthrough.md`](swarm_v4/walkthrough.md) for the claims and
+[`swarm_v4/README.md`](swarm_v4/README.md) for how to reproduce it.
