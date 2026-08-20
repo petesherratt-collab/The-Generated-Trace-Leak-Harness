@@ -29,9 +29,20 @@ To demonstrate that this collapse is "silent," we compare the swarm's operationa
 | **Planner AUROC** | 0.652 | 0.575 | −0.077 |
 | **Commit rate** | 0.768 | 0.849 | +0.081 |
 | **Abstain rate** | 0.232 | 0.151 | −0.081 |
-| **Mean latency** | 0.000 | 0.000 | 0.000 |
+| **Mean latency** † | 0.000 | 0.000 | 0.000 |
 
-*Observations*: Moving from 10 independent roots to 1 shared root causes discrimination to fall significantly. However, the commit rate actually *increases* (the swarm is more decisive), and there is no latency or abstention signal to indicate an ongoing attack. The swarm operates completely normally while losing its discriminative power, establishing a true silent collapse. The same pattern holds at `vr=0.5` (Planner D −0.140, AUROC −0.080, commit rate +0.073, latency delta 0.000): verification changes the latency *level* but not the difference between the attacked and unattacked conditions, so latency carries no signal about the attack either way.
+† Invariant by construction — see caveat 2 below.
+
+*Observations*: Moving from 10 independent roots to one shared root produces a substantial simulated discrimination loss. Commitment rises and abstention falls — the swarm becomes *more* decisive as it becomes less able to tell genuine from poisoned — while matched verification latency is unchanged. V4 therefore exhibits **operationally silent discrimination loss with respect to the three signals it models**. The same pattern holds at `vr=0.5` (Planner D −0.140, AUROC −0.080, commit rate +0.073, latency delta 0.000).
+
+> [!IMPORTANT]
+> Three scoping caveats, because this is the passage most likely to be over-read:
+>
+> 1. **"Substantial" is not "statistically significant."** No test is run here; these are means over five replicates, and the shaded bands in the figures are ±1 SD across replicates, not confidence intervals.
+> 2. **The latency null is a property of the model, not a finding.** Verification cost in V4 depends only on `verify_rate`, never on provenance structure, so latency *cannot* differ between the attacked and unattacked conditions. It is asserted as an invariant in `test_v4.py` precisely so it is never quoted as evidence. Whether real swarm latency would move under this attack is untested and untestable here.
+> 3. **Abstention is not silent — it moves.** The claim is not that no modelled signal responds; abstention falls by 0.081. The claim is that the signals that do respond move in the *reassuring* direction, so a defender watching them sees a swarm that looks healthier, not one that looks attacked.
+>
+> Detection signals outside the model — output-distribution drift, source-overlap auditing, provenance attestation, cross-run disagreement — are not evaluated and could well catch this. Nothing here argues the attack is undetectable in general.
 
 ### Planner d' and AUROC (Different Apparent Source)
 
@@ -40,6 +51,8 @@ The primary realistic condition is `different_apparent`, simulating a web-search
 ![Planner d' (Different Apparent Source)](different_dprime.png)
 ![Planner AUROC (Different Apparent Source)](different_auroc.png)
 ![Aggregation Gap (Different Apparent Source)](different_dprime_gap.png)
+
+In all figures the line is the mean over five replicates and the shaded band is **±1 SD across those replicates** — a dispersion band, not a confidence interval.
 
 *Observations*: Under high poison quality, reducing the number of provenance roots (moving left-to-right on the x-axis) induces a silent collapse. The aggregation advantage over a single average worker shrinks monotonically as poison quality rises. In the extreme case (Quality=0.9, Roots=1), the aggregation gain vanishes and turns marginally negative, as shown below:
 
@@ -130,12 +143,15 @@ A second limitation worth naming: the model was *built* so that consolidating pr
 ## 5. Reproduction
 
 ```
-python3 v4_simulation.py    # writes v4_sweep.csv, runs the CRN identity test
+python3 test_v4.py          # 17 self-checks; raises on failure
+python3 v4_simulation.py    # writes v4_sweep.csv; asserts the CRN identity
 python3 plot_v4.py          # writes the 5 figures referenced above
 python3 analysis_tables.py  # prints every table quoted in this document
 ```
 
+`test_v4.py` covers the estimators (AUROC at perfect separation, reversed separation, all-tied, and partial ties; the log-linear rate correction against its Laplace look-alike; d′ at chance) and the structural properties the claims above rest on: the CRN identity, latency invariance to `poison_roots`, worker d′ flat in M and monotone in quality, and the M=1 identity between `different` and `same` on the poisoned class.
+
 Sanity checks that must hold on any re-run:
 
-- **CRN identity test**: at `poison_roots=10` the treatment must reproduce the matched baseline exactly. Observed `max |planner_D delta| = 0.0`, `max |commit delta| = 0.0`.
-- **Metric agreement**: planner d′ and planner AUROC must rank the conditions the same way. Observed Spearman ρ = 0.9834.
+- **CRN identity test**: at `poison_roots=10` the treatment must reproduce the matched baseline exactly. Observed `max |planner_D delta| = 0.0`, `max |commit delta| = 0.0`. This is now an `assert` in `v4_simulation.py`, not a print — a broken identity used to exit 0 and still write a plausible-looking CSV.
+- **Metric agreement**: planner d′ and planner AUROC show strong but *not* identical rank agreement, Spearman ρ = 0.9834. Identical ranking would be ρ = 1.0; the residual disagreement is expected, since d′ is computed from thresholded accept rates while AUROC ranks the underlying continuous accept-fraction. The check is that the two do not diverge, not that they coincide.

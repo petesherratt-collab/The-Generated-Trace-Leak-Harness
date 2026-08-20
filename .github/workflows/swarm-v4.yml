@@ -1,0 +1,58 @@
+# The v4 swarm simulation is a mechanism model: its claims are only as good as
+# the structural properties they rest on. So CI runs the self-checks rather than
+# just importing the module — the common-random-numbers identity, latency
+# invariance to provenance structure, worker d' flat in M, and the M=1 identity
+# between the 'different' and 'same' verification policies. If any of those
+# breaks, the walkthrough's numbers are confounded and the run must fail.
+#
+# Kept separate from harness.yml, which asserts the root leak-harness verdict
+# table and has no reason to grow a numpy/scipy dependency.
+name: swarm-v4
+
+on:
+  push:
+    paths:
+      - "experiments/swarm_v4/**"
+      - ".github/workflows/swarm-v4.yml"
+  pull_request:
+    paths:
+      - "experiments/swarm_v4/**"
+      - ".github/workflows/swarm-v4.yml"
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: experiments/swarm_v4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install numpy pandas scipy matplotlib
+      - name: Run the self-checks
+        run: python test_v4.py
+      - name: Re-run the sweep (asserts the CRN identity)
+        run: python v4_simulation.py
+      - name: Assert the committed CSV still reproduces
+        run: |
+          python - <<'EOF'
+          import subprocess
+          # v4_simulation.py has just overwritten v4_sweep.csv. If the committed
+          # copy differs, the CSV in the repo no longer backs the walkthrough's
+          # tables and analysis_tables.py would print numbers nobody reviewed.
+          diff = subprocess.run(
+              ["git", "diff", "--stat", "--", "v4_sweep.csv"],
+              capture_output=True, text=True, check=True,
+          ).stdout.strip()
+          assert not diff, (
+              "committed v4_sweep.csv does not reproduce from v4_simulation.py:\n"
+              + diff
+          )
+          print("committed sweep reproduces exactly")
+          EOF
+      - name: Regenerate the tables quoted in the walkthrough
+        run: python analysis_tables.py

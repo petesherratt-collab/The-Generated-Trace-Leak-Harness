@@ -14,7 +14,13 @@ def plot_policy(policy, filename, metric="planner_dprime", ylabel="Planner d'"):
     data = df[df["verify_policy"] == policy]
 
     fig, axes = plt.subplots(1, 4, figsize=(16, 4), sharey=True)
-    fig.suptitle(f"Verification policy: {policy}  —  {ylabel}", y=1.04, fontsize=13)
+    # State the band's meaning on the figure itself: these images get lifted
+    # out of the walkthrough and read on their own, and a shaded band is read
+    # as a confidence interval unless it says otherwise.
+    fig.suptitle(f"Verification policy: {policy}  —  {ylabel}\n"
+                 f"lines = mean over 5 replicates; bands = ±1 SD across "
+                 f"replicates (not confidence intervals)",
+                 y=1.10, fontsize=13)
 
     for i, q in enumerate(QUALITIES):
         ax = axes[i]
