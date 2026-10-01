@@ -1,0 +1,7 @@
+# Pinned because the swarm-v4 workflow asserts v4_sweep.csv reproduces
+# bit-for-bit. Floating-point output is only reproducible against a fixed
+# toolchain, so these move only in a commit that also regenerates the CSV.
+numpy==2.4.6
+pandas==3.0.5
+scipy==1.17.1
+matplotlib==3.11.1

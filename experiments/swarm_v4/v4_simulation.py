@@ -79,6 +79,9 @@ def auroc(scores: np.ndarray, labels: np.ndarray) -> float:
 # configuration
 # ----------------------------------------------------------------------------
 
+VERIFY_POLICIES = frozenset({"same", "different", "independent"})
+
+
 @dataclass
 class Config:
     # environment
@@ -136,9 +139,16 @@ class Draws:
         # a strictly different apparent source: offset in [1, N-1] can never
         # return the worker's own source, which would silently dilute the
         # 'different' policy into 'same'.
-        offset = rng.integers(1, N, size=(T, N))
         worker_source = np.arange(N)[None, :]
-        self.alt_source = (worker_source + offset) % N
+        if N > 1:
+            offset = rng.integers(1, N, size=(T, N))
+            self.alt_source = (worker_source + offset) % N
+        else:
+            # A single worker has no other apparent source to turn to, so
+            # 'different' degenerates to 'same'. Say so here rather than
+            # letting rng.integers(1, 1) raise, which blocked the
+            # single-worker control the walkthrough invites readers to run.
+            self.alt_source = np.zeros((T, 1), dtype=int)
 
 
 # ----------------------------------------------------------------------------
@@ -150,10 +160,24 @@ def run(cfg: Config, draws: Draws) -> Dict:
     gen = draws.is_genuine
     mu = np.where(gen, cfg.mu_true, cfg.mu_false)[:, None]      # (T,1)
 
+    # Validate before simulating. Both of these used to fail silently: the
+    # clamp below rewrote out-of-range `poison_roots` while the row still
+    # reported the value the caller passed, and the policy name was only
+    # checked inside the `verify_rate > 0` branch, so a typo at verify_rate=0
+    # was accepted and written to the CSV under a policy nobody implements.
+    # Either way the mislabelled row then set the denominator of every
+    # policy- or roots-filtered mean in analysis_tables.py.
+    if not 1 <= cfg.poison_roots <= N:
+        raise ValueError(
+            f"poison_roots must be in [1, n_workers={N}], got {cfg.poison_roots}")
+    if cfg.verify_policy not in VERIFY_POLICIES:
+        raise ValueError(f"unknown verify_policy {cfg.verify_policy!r}; "
+                         f"expected one of {sorted(VERIFY_POLICIES)}")
+
     # root(j): genuine tasks always have N independent roots.
     # poisoned tasks fold N apparent sources onto `poison_roots` hidden roots.
     src = np.arange(N)[None, :].repeat(T, axis=0)               # (T,N)
-    roots_poison = src % max(cfg.poison_roots, 1)
+    roots_poison = src % cfg.poison_roots
     root_of = np.where(gen[:, None], src, roots_poison)         # (T,N)
 
     prov = np.take_along_axis(draws.prov, root_of, axis=1) * cfg.sigma_prov
@@ -175,8 +199,8 @@ def run(cfg: Config, draws: Draws) -> Dict:
             # component is independent -- this policy does not hand the worker
             # a source that knows the item is poisoned.
             prov2 = draws.prov_extra * cfg.sigma_prov
-        else:
-            raise ValueError(f"unknown verify_policy {cfg.verify_policy!r}")
+        else:  # pragma: no cover -- unreachable, validated above
+            raise AssertionError(cfg.verify_policy)
         second = mu + prov2 + draws.noise2 * cfg.sigma_ind
         signal = np.where(verifying, 0.5 * (signal + second), signal)
 
@@ -223,10 +247,18 @@ def run(cfg: Config, draws: Draws) -> Dict:
     }
 
 
-def sweep(reps: int = 5, n_tasks: int = 1000) -> pd.DataFrame:
+def sweep(reps: int = 5, n_tasks: int = 1000,
+          n_workers: int = Config.n_workers) -> pd.DataFrame:
     rows: List[Dict] = []
     qualities = [0.0, 0.3, 0.6, 0.9]
-    roots = [10, 5, 2, 1]
+    # The baseline is M = N -- fully independent provenance -- so it is derived
+    # from n_workers, never written as a literal. Hardcoding 10 meant that at
+    # n_workers=20 the "baseline" was the already-consolidated M=10 case, and
+    # the CRN identity assert passed vacuously because it filtered on the same
+    # literal. baseline_roots is returned in the frame so the assert can key
+    # off the value actually used.
+    baseline_roots = n_workers
+    roots = [m for m in (10, 5, 2, 1) if m <= n_workers]
     verify_rates = [0.0, 0.5, 1.0]
     policies = ["same", "different", "independent"]
 
@@ -235,7 +267,9 @@ def sweep(reps: int = 5, n_tasks: int = 1000) -> pd.DataFrame:
             for vr in verify_rates:
                 for pol in policies:
                     base_cfg = Config(poison_quality=q, verify_rate=vr,
-                                      verify_policy=pol, poison_roots=10,
+                                      verify_policy=pol,
+                                      poison_roots=baseline_roots,
+                                      n_workers=n_workers,
                                       n_tasks=n_tasks)
                     draws = Draws(base_cfg, seed=10_000 + rep)   # CRN
                     base = run(base_cfg, draws)
@@ -243,9 +277,11 @@ def sweep(reps: int = 5, n_tasks: int = 1000) -> pd.DataFrame:
                     for m in roots:
                         cfg = Config(poison_quality=q, verify_rate=vr,
                                      verify_policy=pol, poison_roots=m,
-                                     n_tasks=n_tasks)
+                                     n_workers=n_workers, n_tasks=n_tasks)
                         r = run(cfg, draws)                      # same draws
                         r["rep"] = rep
+                        r["n_workers"] = n_workers
+                        r["baseline_roots"] = baseline_roots
                         r["planner_D_baseline"] = base["planner_D"]
                         r["planner_D_delta"] = r["planner_D"] - base["planner_D"]
                         r["commit_rate_baseline"] = base["commit_rate"]
@@ -256,19 +292,23 @@ def sweep(reps: int = 5, n_tasks: int = 1000) -> pd.DataFrame:
 
 if __name__ == "__main__":
     df = sweep(reps=5, n_tasks=1000)
-    df.to_csv("v4_sweep.csv", index=False)
 
-    print("=== TEST: poison_roots=10 must equal matched baseline (CRN) ===")
-    ident = df[df.poison_roots == 10]
+    print("=== TEST: poison_roots = N must equal matched baseline (CRN) ===")
+    ident = df[df.poison_roots == df.baseline_roots]
+    assert len(ident) > 0, "no baseline rows selected -- the identity is vacuous"
     d_max = ident.planner_D_delta.abs().max()
     c_max = ident.commit_rate_delta.abs().max()
+    print("rows checked          :", len(ident))
     print("max |planner_D delta| :", d_max)
     print("max |commit delta|    :", c_max)
-    # Assert, do not merely report. If the CRN pairing breaks, every contrast
-    # in the sweep is confounded, and a run that only printed the failure would
-    # still exit 0 and still write a CSV that looks fine.
+    # Assert BEFORE writing. The previous version asserted but had already
+    # called to_csv, so a broken pairing still left the confounded sweep on
+    # disk for plot_v4.py and analysis_tables.py to read. Gate the write on
+    # the identity instead: if the CRN pairing breaks there is no CSV at all.
     assert d_max == 0.0, f"CRN identity broken: planner_D delta {d_max}"
     assert c_max == 0.0, f"CRN identity broken: commit delta {c_max}"
+
+    df.to_csv("v4_sweep.csv", index=False)
 
     print("\n=== worker vs planner D, by roots (verify_rate=0) ===")
     v0 = df[(df.verify_rate == 0.0)]

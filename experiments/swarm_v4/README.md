@@ -22,8 +22,13 @@ apparent diversity overstates its evidential independence.
   tail approximation.
 
 ```
-pip install numpy pandas scipy matplotlib
+pip install -r requirements.txt
 ```
+
+Versions are pinned in `requirements.txt` because CI asserts the committed
+`v4_sweep.csv` reproduces bit-for-bit, and floating-point output is only
+reproducible against a fixed toolchain. Bump them in a commit that also
+regenerates the CSV.
 
 ## Files
 
@@ -59,17 +64,25 @@ python3 test_v4.py
 ```
 
 `v4_simulation.py` **asserts** the common-random-numbers identity on every
-execution: at `poison_roots = 10` the treatment must reproduce its matched
-baseline exactly. If the CRN pairing breaks, every contrast in the sweep is
-confounded, so the run must fail rather than write a CSV that looks fine.
+execution, and writes `v4_sweep.csv` only once it holds: at `poison_roots = N`
+the treatment must reproduce its matched baseline exactly. If the CRN pairing
+breaks, every contrast in the sweep is confounded, so the run fails and leaves
+no CSV behind for the plotting and table scripts to read.
+
+> An earlier revision asserted the identity but had already called `to_csv`
+> above it. The exit code was right and the file on disk was still the
+> confounded one. Ordering matters here: a check that runs after the artefact
+> is written does not gate the artefact.
 
 `test_v4.py` covers two layers. The estimators: AUROC at perfect separation (1.0),
 reversed separation (0.0), all values tied (0.5) and partial ties (0.875); the
 log-linear rate correction distinguished from the Laplace add-one it is often
 mistaken for; d′ at chance. And the structural properties the walkthrough's claims
 rest on — CRN identity, latency invariance to `poison_roots`, worker d′ flat in M
-and monotone in quality, and the M = 1 identity between `different` and `same` on
-the poisoned class.
+and monotone in quality, the d′ gap the figures actually plot (which is a
+different function from `aggregation_gain` and needed its own test), the M = 1
+identity between `different` and `same` on the poisoned class, and that invalid
+configuration is rejected rather than silently clamped.
 
 These check that the model does what it is documented to do. They do not, and
 cannot, check that it says anything true about real swarms.
