@@ -145,6 +145,68 @@ def test_planner_advantage_falls_as_roots_consolidate():
     assert gains[0] > gains[-1], gains
 
 
+def test_dprime_gap_falls_as_roots_consolidate():
+    """Same headline, but on the quantity the walkthrough actually publishes.
+
+    `aggregation_gain` is a difference of RATES; the walkthrough's gain column
+    and all three *_dprime_gap.png figures plot planner_dprime - worker_dprime.
+    The two are not the same function and they disagree about monotonicity in
+    a minority of sweep cells, so guarding only the rate version left the
+    published quantity untested."""
+    for q in (0.0, 0.3, 0.6, 0.9):
+        rows = [_matched(m, poison_quality=q) for m in (10, 5, 2, 1)]
+        gaps = [r["planner_dprime"] - r["worker_dprime"] for r in rows]
+        assert gaps[0] > gaps[-1], f"quality={q}: d' gap {gaps} did not fall"
+
+
+def test_dprime_gap_vanishes_at_extreme_poison():
+    """The walkthrough's strongest claim about the gap: by q=0.9, M=1 the
+    planner's redundancy premium is spent. Pin the sign, not the magnitude --
+    the point is that the gain is gone, not that the planner is a liability."""
+    r = _matched(1, poison_quality=0.9)
+    gap = r["planner_dprime"] - r["worker_dprime"]
+    assert gap < 0.05, f"expected a spent premium at q=0.9, M=1; got {gap:.3f}"
+
+
+def test_invalid_config_is_rejected_not_clamped():
+    """Out-of-range poison_roots used to be clamped with max(., 1) while the
+    row still reported the value passed, and a misspelled verify_policy was
+    only caught when verify_rate > 0. Both produced mislabelled CSV rows that
+    silently moved the denominators of the filtered means."""
+    import v4_simulation as v4
+
+    cfg = v4.Config(n_tasks=20)
+    draws = v4.Draws(cfg, seed=0)
+
+    for bad in (0, -3, 11):
+        try:
+            v4.run(v4.Config(poison_roots=bad, n_tasks=20), draws)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"poison_roots={bad} should have been rejected")
+
+    # the typo must be caught even where no verification runs
+    for vr in (0.0, 1.0):
+        try:
+            v4.run(v4.Config(verify_policy="diffrent", verify_rate=vr,
+                             n_tasks=20), draws)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"bad policy accepted at verify_rate={vr}")
+
+
+def test_single_worker_does_not_crash():
+    """n_workers=1 is the degenerate control the walkthrough invites readers
+    to run; rng.integers(1, 1) used to raise before it could."""
+    import v4_simulation as v4
+
+    cfg = v4.Config(n_workers=1, poison_roots=1, n_tasks=50)
+    r = v4.run(cfg, v4.Draws(cfg, seed=0))
+    assert 0.0 <= r["commit_rate"] <= 1.0
+
+
 def test_selective_disablement_at_single_root():
     """At M=1 every poisoned apparent source shares the one root, so on
     POISONED tasks 'different' must be bit-identical to 'same'. Any margin

@@ -32,7 +32,12 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: pip install numpy pandas scipy matplotlib
+        # Pinned deliberately. The CSV check below is bit-exact, so an
+        # unpinned upgrade -- a scipy erfinv ULP change is enough -- would red
+        # the build on an unrelated PR with a message that reads like a real
+        # regression. Bump these on purpose, and regenerate the CSV in the
+        # same commit.
+        run: pip install -r requirements.txt
       - name: Run the self-checks
         run: python test_v4.py
       - name: Re-run the sweep (asserts the CRN identity)
